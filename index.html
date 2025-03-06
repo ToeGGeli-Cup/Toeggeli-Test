@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TöGGeli-Cup 2025</title>
+    <style>
+        body { font-family: Arial, sans-serif; background-color: #5B3A2E; color: white; text-align: center; }
+        h1 { font-size: 28px; }
+        .news-container { width: 80%; margin: auto; padding: 15px; background-color: #D81B60; border-radius: 10px; text-align: left; }
+        table { width: 80%; margin: 10px auto; border-collapse: collapse; }
+        th, td { padding: 10px; border: 1px solid black; background-color: white; color: black; }
+        th { background-color: #0059B2; color: white; }
+    </style>
+</head>
+<body>
+    <h1>TöGGeli-Cup 2025</h1>
+    
+    <div class="news-container">
+        <h2>News</h2>
+        <div id="newsSection"></div>
+    </div>
+    
+    <h2>Teams</h2>
+    <table>
+        <thead><tr><th>Teamname</th><th>Spieler:in 1</th><th>Spieler:in 2</th></tr></thead>
+        <tbody id="teamsTable"></tbody>
+    </table>
+    
+    <h2>Resultate</h2>
+    <table>
+        <thead><tr><th>Team 1</th><th>Ergebnis</th><th>Team 2</th></tr></thead>
+        <tbody id="resultsTable"></tbody>
+    </table>
+    
+    <h2>Offene Spiele</h2>
+    <table>
+        <thead><tr><th>Team 1</th><th>Team 2</th></tr></thead>
+        <tbody id="upcomingMatches"></tbody>
+    </table>
+    
+    <h2>Rangliste</h2>
+    <table>
+        <thead><tr><th>Team</th><th>Spiele</th><th>Punkte</th><th>Tore</th><th>Gegentore</th><th>Tordifferenz</th></tr></thead>
+        <tbody id="rankingTable"></tbody>
+    </table>
+
+    <script>
+        async function loadFromGitHub() {
+            try {
+                let response = await fetch('https://raw.githubusercontent.com/DEIN_GITHUB_USERNAME/DEIN_REPOSITORY/main/turnierdaten.json');
+                if (response.ok) {
+                    let data = await response.json();
+                    updateUI(data);
+                }
+            } catch (error) {
+                console.error("Fehler beim Laden der Daten:", error);
+            }
+        }
+
+        function updateUI(data) {
+            let teamsTable = document.getElementById("teamsTable");
+            teamsTable.innerHTML = "";
+            data.teams.forEach(team => {
+                teamsTable.innerHTML += `<tr><td>${team.name}</td><td>${team.player1}</td><td>${team.player2}</td></tr>`;
+            });
+
+            let resultsTable = document.getElementById("resultsTable");
+            resultsTable.innerHTML = "";
+            data.matches.filter(m => m.score !== "-").forEach(match => {
+                resultsTable.innerHTML += `<tr><td>${match.team1}</td><td>${match.score}</td><td>${match.team2}</td></tr>`;
+            });
+
+            let upcomingTable = document.getElementById("upcomingMatches");
+            upcomingTable.innerHTML = "";
+            data.matches.filter(m => m.score === "-").forEach(match => {
+                upcomingTable.innerHTML += `<tr><td>${match.team1}</td><td>${match.team2}</td></tr>`;
+            });
+
+            let rankings = data.teams.map(team => ({ name: team.name, games: 0, points: 0, goals: 0, conceded: 0, diff: 0 }));
+            data.matches.forEach(match => {
+                if (match.score !== "-") {
+                    let [goals1, goals2] = match.score.split(":").map(Number);
+                    let team1 = rankings.find(t => t.name === match.team1);
+                    let team2 = rankings.find(t => t.name === match.team2);
+                    team1.games++; team2.games++;
+                    team1.goals += goals1; team2.goals += goals2;
+                    team1.conceded += goals2; team2.conceded += goals1;
+                    team1.diff = team1.goals - team1.conceded;
+                    team2.diff = team2.goals - team2.conceded;
+                    if (goals1 > goals2) team1.points += 1;
+                    else if (goals2 > goals1) team2.points += 1;
+                    else { team1.points += 1; team2.points += 1; }
+                }
+            });
+            rankings.sort((a, b) => b.points - a.points || b.diff - a.diff || b.goals - a.goals);
+            let rankingTable = document.getElementById("rankingTable");
+            rankingTable.innerHTML = "";
+            rankings.forEach(team => {
+                rankingTable.innerHTML += `<tr><td>${team.name}</td><td>${team.games}</td><td>${team.points}</td><td>${team.goals}</td><td>${team.conceded}</td><td>${team.diff}</td></tr>`;
+            });
+
+            let newsSection = document.getElementById("newsSection");
+            newsSection.innerHTML = "";
+            data.news.forEach(n => {
+                newsSection.innerHTML += `<p><strong>${n.date}:</strong> ${n.text}</p>`;
+            });
+        }
+
+        loadFromGitHub();
+    </script>
+</body>
+</html>

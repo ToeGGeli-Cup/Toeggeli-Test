@@ -1,0 +1,25 @@
+name: Update turnierdaten.json
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+
+jobs:
+  update-json:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v2
+
+      - name: Verwende GitHub Secret, um `turnierdaten.json` zu aktualisieren
+        env:
+          GITHUB_TOKEN: ${{ secrets.ACCESS_TOKEN }}
+        run: |
+          echo '{{"teams":[],"matches":[],"news":[]}}' > turnierdaten.json
+          git config --global user.name "GitHub Actions"
+          git config --global user.email "actions@github.com"
+          git add turnierdaten.json
+          git commit -m "Automatische Aktualisierung durch GitHub Actions"
+          git push

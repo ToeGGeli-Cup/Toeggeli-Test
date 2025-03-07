@@ -40,7 +40,7 @@
     <button onclick="saveToGitHub()">💾 Änderungen speichern</button>
 
     <script>
-       const GITHUB_USERNAME = "ToeGGeli-Cup";
+        const GITHUB_USERNAME = "ToeGGeli-Cup";
         const GITHUB_REPO = "Toeggeli-Test";
         const SECRET_NAME = "ACCESS_TOKEN";
         const FILE_PATH = "turnierdaten.json";
@@ -79,7 +79,7 @@
             let response = await fetch(`https://api.github.com/repos/${GITHUB_USERNAME}/${GITHUB_REPO}/contents/${FILE_PATH}`, {
                 method: "PUT",
                 headers: {
-                    "Authorization": `token ${GITHUB_TOKEN}`,
+                    "Authorization": `token ${SECRET_NAME}`,
                     "Content-Type": "application/json"
                 },
                 body: JSON.stringify(updateData)
@@ -162,12 +162,6 @@
                 matchTable.innerHTML += `<tr><td>${match.team1}</td><td>${match.team2}</td>
                     <td>${match.score}</td>
                     <td><button onclick="submitResult(${index})">Ergebnis eintragen</button></td></tr>`;
-            });
-
-            let newsContainer = document.querySelector("#newsContainer");
-            newsContainer.innerHTML = "";
-            news.forEach((n, index) => {
-                newsContainer.innerHTML += `<p><strong>${n.date}:</strong> ${n.text} <button onclick="deleteNews(${index})">🗑️</button></p>`;
             });
         }
 

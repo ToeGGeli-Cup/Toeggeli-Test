@@ -25,12 +25,6 @@
         <tbody></tbody>
     </table>
 
-    <h2>Ergebnisse eintragen</h2>
-    <table id="matchesTable">
-        <thead><tr><th>Team 1</th><th>Team 2</th><th>Ergebnis</th><th>Aktion</th></tr></thead>
-        <tbody></tbody>
-    </table>
-
     <h2>News verwalten</h2>
     <textarea id="newsText" rows="3" cols="50" placeholder="Neuer News-Eintrag"></textarea>
     <button onclick="addNews()">News hinzufügen</button>
@@ -40,56 +34,9 @@
     <button onclick="saveToGitHub()">💾 Änderungen speichern</button>
 
     <script>
-        const GITHUB_USERNAME = "ToeGGeli-Cup";
-        const GITHUB_REPO = "Toeggeli-Test";
-        const SECRET_NAME = "ACCESS_TOKEN";
-        const FILE_PATH = "turnierdaten.json";
-
-        let teams = [];
-        let matches = [];
-        let news = [];
-
-        async function loadFromGitHub() {
-            try {
-                let response = await fetch(`https://raw.githubusercontent.com/${GITHUB_USERNAME}/${GITHUB_REPO}/main/${FILE_PATH}`);
-                if (response.ok) {
-                    let data = await response.json();
-                    teams = data.teams || [];
-                    matches = data.matches || [];
-                    news = data.news || [];
-                    updateUI();
-                }
-            } catch (error) {
-                console.error("Fehler beim Laden der Daten:", error);
-            }
-        }
-
         async function saveToGitHub() {
             let jsonData = JSON.stringify({ teams, matches, news }, null, 2);
-
-            let fileResponse = await fetch(`https://api.github.com/repos/${GITHUB_USERNAME}/${GITHUB_REPO}/contents/${FILE_PATH}`);
-            let fileData = await fileResponse.json();
-
-            let updateData = {
-                message: "Turnierdaten aktualisiert",
-                content: btoa(unescape(encodeURIComponent(jsonData))),
-                sha: fileData.sha
-            };
-
-            let response = await fetch(`https://api.github.com/repos/${GITHUB_USERNAME}/${GITHUB_REPO}/contents/${FILE_PATH}`, {
-                method: "PUT",
-                headers: {
-                    "Authorization": `token ${SECRET_NAME}`,
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify(updateData)
-            });
-
-            if (response.ok) {
-                alert("✅ Änderungen erfolgreich auf GitHub gespeichert!");
-            } else {
-                alert("⚠️ Fehler beim Speichern! Prüfe dein GitHub Token und Repository.");
-            }
+            alert("Speichern ist momentan deaktiviert. Bitte manuell hochladen.");
         }
 
         function addTeam() {
@@ -98,30 +45,6 @@
             let player2 = document.getElementById("player2").value;
             if (name && player1 && player2) {
                 teams.push({ name, player1, player2 });
-                generateMatches();
-                updateUI();
-            }
-        }
-
-        function removeTeam(index) {
-            teams.splice(index, 1);
-            generateMatches();
-            updateUI();
-        }
-
-        function generateMatches() {
-            matches = [];
-            for (let i = 0; i < teams.length; i++) {
-                for (let j = i + 1; j < teams.length; j++) {
-                    matches.push({ team1: teams[i].name, team2: teams[j].name, score: "-" });
-                }
-            }
-        }
-
-        function submitResult(index) {
-            let score = prompt("Ergebnis eingeben (z.B. 3:1)");
-            if (score) {
-                matches[index].score = score;
                 updateUI();
             }
         }
@@ -134,13 +57,6 @@
             }
         }
 
-        function deleteNews(index) {
-            if (confirm("Diese News wirklich löschen?")) {
-                news.splice(index, 1);
-                updateUI();
-            }
-        }
-
         function clearNews() {
             if (confirm("Alle News wirklich löschen?")) {
                 news = [];
@@ -149,23 +65,16 @@
         }
 
         function updateUI() {
-            let teamTable = document.querySelector("#teamsTable tbody");
-            teamTable.innerHTML = "";
-            teams.forEach((team, index) => {
-                teamTable.innerHTML += `<tr><td>${team.name}</td><td>${team.player1}</td><td>${team.player2}</td>
-                    <td><button onclick="removeTeam(${index})">Löschen</button></td></tr>`;
-            });
-
-            let matchTable = document.querySelector("#matchesTable tbody");
-            matchTable.innerHTML = "";
-            matches.forEach((match, index) => {
-                matchTable.innerHTML += `<tr><td>${match.team1}</td><td>${match.team2}</td>
-                    <td>${match.score}</td>
-                    <td><button onclick="submitResult(${index})">Ergebnis eintragen</button></td></tr>`;
+            let newsContainer = document.getElementById("newsContainer");
+            newsContainer.innerHTML = "";
+            news.forEach((item, index) => {
+                newsContainer.innerHTML += `<p>${item.date}: ${item.text} <button onclick="deleteNews(${index})">🗑️</button></p>`;
             });
         }
 
-        loadFromGitHub();
+        let teams = [];
+        let matches = [];
+        let news = [];
     </script>
 </body>
 </html>

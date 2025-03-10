@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TöGGeli-Cup 2025</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #5B3A2E;
+            color: white;
+            text-align: center;
+            margin: 0;
+            padding: 20px;
+        }
+        h1 { color: white; }
+        .news-container {
+            background: #D81B60;
+            color: white;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+        }
+    </style>
+</head>
+<body>
+    <h1>TöGGeli-Cup 2025</h1>
+
+    <div class="news-container">
+        <h2>News</h2>
+        <div id="news"></div>
+    </div>
+
+    <script>
+        async function loadTournamentData() {
+            try {
+                const response = await fetch("turnierdaten.json");
+                if (!response.ok) throw new Error("Datei nicht gefunden");
+                const data = await response.json();
+
+                document.getElementById("news").innerHTML = data.news.length > 0 ? 
+                    data.news.map(n => `<p><strong>${n.date || "Datum unbekannt"}:</strong> ${n.text || ""}</p>`).join("") 
+                    : "<p>Keine aktuellen News.</p>";
+
+            } catch (error) {
+                console.error("Fehler beim Laden der Turnierdaten:", error);
+                document.getElementById("news").innerHTML = "<p>Fehler beim Laden der Daten.</p>";
+            }
+        }
+
+        loadTournamentData();
+    </script>
+</body>
+</html>

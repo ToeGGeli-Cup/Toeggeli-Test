@@ -11,7 +11,7 @@
             color: white;
             text-align: center;
             margin: 20px;
-            padding-bottom: 50px; /* Mehr Platz unten für mobile Ansicht */
+            padding-bottom: 50px;
         }
         h1 {
             font-size: 28px;
@@ -80,7 +80,9 @@
                 <th>Ergebnis</th>
             </tr>
         </thead>
-        <tbody id="results"></tbody>
+        <tbody id="results">
+            <tr><td colspan="3">Noch keine Ergebnisse vorhanden</td></tr>
+        </tbody>
     </table>
 
     <h2>Offene Spiele</h2>
@@ -98,6 +100,7 @@
     <table>
         <thead>
             <tr>
+                <th>Rang</th>
                 <th>Team</th>
                 <th>Spiele</th>
                 <th>Punkte</th>
@@ -127,10 +130,10 @@
 
                 // Resultate anzeigen
                 const resultsTable = document.getElementById("results");
-                resultsTable.innerHTML = data.matches
-                    .filter(m => m.score !== "-")
-                    .map(m => `<tr><td>${m.team1}</td><td>${m.team2}</td><td>${m.score}</td></tr>`)
-                    .join("");
+                const results = data.matches.filter(m => m.score !== "-");
+                resultsTable.innerHTML = results.length > 0 
+                    ? results.map(m => `<tr><td>${m.team1}</td><td>${m.team2}</td><td>${m.score}</td></tr>`).join("")
+                    : "<tr><td colspan='3'>Noch keine Ergebnisse vorhanden</td></tr>";
 
                 // Offene Spiele anzeigen
                 const upcomingTable = document.getElementById("upcoming");
@@ -169,8 +172,9 @@
                     rankings[b].goals - rankings[a].goals
                 );
 
-                rankingTable.innerHTML = sortedTeams.map(team => 
+                rankingTable.innerHTML = sortedTeams.map((team, index) => 
                     `<tr>
+                        <td>${index + 1}</td>
                         <td>${team}</td>
                         <td>${rankings[team].games}</td>
                         <td>${rankings[team].points}</td>

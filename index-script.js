@@ -6,6 +6,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Spiele anzeigen
     onValue(matchesRef, (snapshot) => {
+        if (!snapshot.exists()) return;
         const upcomingTable = document.getElementById("upcomingTable");
         const resultsTable = document.getElementById("resultsTable");
         upcomingTable.innerHTML = "";
@@ -25,24 +26,6 @@ document.addEventListener("DOMContentLoaded", () => {
                     <td>${match.score}</td>
                 </tr>`;
             }
-        });
-    });
-
-    // Rangliste anzeigen
-    onValue(rankingRef, (snapshot) => {
-        const rankingTable = document.getElementById("rankingTable");
-        rankingTable.innerHTML = "";
-        Object.keys(snapshot.val() || {}).forEach((team, index) => {
-            const data = snapshot.val()[team];
-            rankingTable.innerHTML += `<tr>
-                <td>${index + 1}</td>
-                <td>${team}</td>
-                <td>${data.games}</td>
-                <td>${data.points}</td>
-                <td>${data.goals}</td>
-                <td>${data.conceded}</td>
-                <td>${data.diff}</td>
-            </tr>`;
         });
     });
 });

@@ -21,7 +21,9 @@ document.addEventListener("DOMContentLoaded", () => {
             </tr>`;
         });
 
-        generateMatches(teams);
+        if (teams.length > 1) {
+            generateMatches(teams);
+        }
     });
 
     // Teams löschen
@@ -31,7 +33,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Spiele generieren (Round-Robin)
     function generateMatches(teams) {
-        if (teams.length < 2) return;
         const matches = {};
         for (let i = 0; i < teams.length; i++) {
             for (let j = i + 1; j < teams.length; j++) {
@@ -111,20 +112,22 @@ document.addEventListener("DOMContentLoaded", () => {
                     const match = childSnapshot.val();
                     if (match.score !== "-") {
                         const [g1, g2] = match.score.split(":").map(Number);
-                        rankings[match.team1].games++;
-                        rankings[match.team2].games++;
-                        rankings[match.team1].goals += g1;
-                        rankings[match.team2].goals += g2;
-                        rankings[match.team1].conceded += g2;
-                        rankings[match.team2].conceded += g1;
-                        rankings[match.team1].diff = rankings[match.team1].goals - rankings[match.team1].conceded;
-                        rankings[match.team2].diff = rankings[match.team2].goals - rankings[match.team2].conceded;
+                        if (rankings[match.team1] && rankings[match.team2]) {
+                            rankings[match.team1].games++;
+                            rankings[match.team2].games++;
+                            rankings[match.team1].goals += g1;
+                            rankings[match.team2].goals += g2;
+                            rankings[match.team1].conceded += g2;
+                            rankings[match.team2].conceded += g1;
+                            rankings[match.team1].diff = rankings[match.team1].goals - rankings[match.team1].conceded;
+                            rankings[match.team2].diff = rankings[match.team2].goals - rankings[match.team2].conceded;
 
-                        if (g1 > g2) rankings[match.team1].points += 3;
-                        else if (g2 > g1) rankings[match.team2].points += 3;
-                        else {
-                            rankings[match.team1].points += 1;
-                            rankings[match.team2].points += 1;
+                            if (g1 > g2) rankings[match.team1].points += 3;
+                            else if (g2 > g1) rankings[match.team2].points += 3;
+                            else {
+                                rankings[match.team1].points += 1;
+                                rankings[match.team2].points += 1;
+                            }
                         }
                     }
                 });
@@ -138,7 +141,8 @@ document.addEventListener("DOMContentLoaded", () => {
     onValue(rankingRef, (snapshot) => {
         const rankingTable = document.getElementById("rankingTable");
         rankingTable.innerHTML = "";
-        const sortedTeams = Object.keys(snapshot.val() || {}).sort((a, b) =>
+        if (!snapshot.exists()) return;
+        const sortedTeams = Object.keys(snapshot.val()).sort((a, b) =>
             snapshot.val()[b].points - snapshot.val()[a].points ||
             snapshot.val()[b].diff - snapshot.val()[a].diff ||
             snapshot.val()[b].goals - snapshot.val()[a].goals

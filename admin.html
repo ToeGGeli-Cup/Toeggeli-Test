@@ -6,25 +6,18 @@
     <title>Admin-Bereich</title>
     <script type="module" src="firebase.js"></script>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #5B3A2E;
+        body { 
+            font-family: Arial, sans-serif; 
+            background-color: #5B3A2E; 
             color: white;
             text-align: center;
             margin: 20px;
             padding-bottom: 50px;
         }
         h1, h2 {
+            font-size: 22px;
             font-weight: bold;
-        }
-        .news-container {
-            width: 80%;
-            margin: 20px auto;
-            padding: 15px;
-            background-color: #D81B60;
-            color: white;
-            border-radius: 10px;
-            text-align: left;
+            margin-top: 30px;
         }
         table {
             width: 80%;
@@ -41,16 +34,14 @@
             background-color: #0059B2;
             color: white;
         }
-        .open-matches th {
-            background-color: #D81B60;
-        }
-        button {
-            margin: 10px;
-            padding: 10px;
+        .news-container {
+            width: 80%;
+            margin: 20px auto;
+            padding: 15px;
             background-color: #D81B60;
             color: white;
-            border: none;
-            cursor: pointer;
+            border-radius: 10px;
+            text-align: left;
         }
     </style>
 </head>
@@ -62,9 +53,9 @@
     <input type="text" id="player1" placeholder="Spieler:in 1">
     <input type="text" id="player2" placeholder="Spieler:in 2">
     <button onclick="addTeam()">Team hinzufügen</button>
-    <table>
+    <table id="teamsTable">
         <thead><tr><th>Team</th><th>Spieler:in 1</th><th>Spieler:in 2</th><th>Aktion</th></tr></thead>
-        <tbody id="teamsTable"></tbody>
+        <tbody></tbody>
     </table>
 
     <h2>News verwalten</h2>
@@ -73,29 +64,44 @@
     <div id="newsContainer"></div>
 
     <h2>Ergebnisse eintragen</h2>
-    <table>
+    <table id="matchesTable">
         <thead><tr><th>Team 1</th><th>Team 2</th><th>Ergebnis</th><th>Aktion</th></tr></thead>
-        <tbody id="matchesTable"></tbody>
+        <tbody></tbody>
     </table>
     <button onclick="saveResults()">Änderungen speichern</button>
 
     <script type="module">
-        import { db, ref, push, set, onValue } from "./firebase.js";
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
+        import { getDatabase, ref, set, get, onValue, remove } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyD2nmuFhdG0ZU5wO9H7CqsxPnRF04WZLzY",
+            authDomain: "toeggeli-cup-2025.firebaseapp.com",
+            databaseURL: "https://toeggeli-cup-2025-default-rtdb.europe-west1.firebasedatabase.app",
+            projectId: "toeggeli-cup-2025",
+            storageBucket: "toeggeli-cup-2025.appspot.com",
+            messagingSenderId: "810841513587",
+            appId: "1:810841513587:web:fc9d2b0274cf92b3ae1406"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
 
         function addTeam() {
-            const teamName = document.getElementById("teamName").value.trim();
-            const player1 = document.getElementById("player1").value.trim();
-            const player2 = document.getElementById("player2").value.trim();
-            if (teamName && player1 && player2) {
-                push(ref(db, "teams"), { name: teamName, player1, player2 });
+            const name = document.getElementById("teamName").value;
+            const player1 = document.getElementById("player1").value;
+            const player2 = document.getElementById("player2").value;
+            if (name && player1 && player2) {
+                set(ref(db, 'teams/' + name), { player1, player2 });
                 alert("Team erfolgreich hinzugefügt!");
             }
         }
 
         function addNews() {
-            const newsText = document.getElementById("newsText").value.trim();
-            if (newsText) {
-                push(ref(db, "news"), { text: newsText, date: new Date().toLocaleString() });
+            const text = document.getElementById("newsText").value;
+            if (text) {
+                const timestamp = new Date().toLocaleString();
+                set(ref(db, 'news/' + timestamp), { text });
                 alert("News erfolgreich hinzugefügt!");
             }
         }
@@ -105,33 +111,25 @@
         }
 
         function loadTeams() {
-            onValue(ref(db, "teams"), (snapshot) => {
-                const teams = snapshot.val();
-                const tableBody = document.getElementById("teamsTable");
-                tableBody.innerHTML = "";
-                for (const key in teams) {
-                    tableBody.innerHTML += `<tr>
-                        <td>${teams[key].name}</td>
-                        <td>${teams[key].player1}</td>
-                        <td>${teams[key].player2}</td>
+            onValue(ref(db, 'teams'), (snapshot) => {
+                const data = snapshot.val();
+                const teamsTable = document.querySelector("#teamsTable tbody");
+                teamsTable.innerHTML = "";
+                for (let team in data) {
+                    teamsTable.innerHTML += `<tr>
+                        <td>${team}</td><td>${data[team].player1}</td><td>${data[team].player2}</td>
+                        <td><button onclick="deleteTeam('${team}')">Löschen</button></td>
                     </tr>`;
                 }
             });
         }
 
-        function loadNews() {
-            onValue(ref(db, "news"), (snapshot) => {
-                const news = snapshot.val();
-                const newsContainer = document.getElementById("newsContainer");
-                newsContainer.innerHTML = "";
-                for (const key in news) {
-                    newsContainer.innerHTML += `<p><strong>${news[key].date}:</strong> ${news[key].text}</p>`;
-                }
-            });
+        function deleteTeam(team) {
+            remove(ref(db, 'teams/' + team));
+            alert("Team gelöscht!");
         }
 
         loadTeams();
-        loadNews();
     </script>
 </body>
 </html>

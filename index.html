@@ -7,8 +7,8 @@
     <style>
         body {
             font-family: Arial, sans-serif;
-            background-color: #1C1C1C;
-            color: #FFFFFF;
+            background-color: #222;
+            color: #fff;
             text-align: center;
             margin: 0;
             padding: 20px;
@@ -16,87 +16,97 @@
         h1 {
             color: #F8D210;
         }
+        .container {
+            max-width: 900px;
+            margin: auto;
+        }
+        .news-container {
+            background: #444;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            text-align: left;
+        }
+        .news-container h2 {
+            color: #F8D210;
+        }
         table {
-            width: 90%;
+            width: 100%;
             margin: 20px auto;
             border-collapse: collapse;
-            background: #2E2E2E;
+            background: #333;
             color: white;
         }
         th, td {
             padding: 10px;
-            border: 1px solid #444;
+            border: 1px solid #666;
+            text-align: center;
         }
         th {
             background-color: #F8D210;
             color: black;
         }
-        .news-container {
-            background: #444;
-            color: white;
-            padding: 15px;
-            margin-bottom: 20px;
-            border-radius: 8px;
-        }
     </style>
 </head>
 <body>
-    <h1>TöGGeli-Cup 2025</h1>
+    <div class="container">
+        <h1>TöGGeli-Cup 2025</h1>
 
-    <div class="news-container">
-        <h2>News</h2>
-        <div id="news"></div>
+        <div class="news-container">
+            <h2>News</h2>
+            <div id="news"></div>
+        </div>
+
+        <h2>Teams</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Team</th>
+                    <th>Spieler:in 1</th>
+                    <th>Spieler:in 2</th>
+                </tr>
+            </thead>
+            <tbody id="teams"></tbody>
+        </table>
+
+        <h2>Resultate</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Team 1</th>
+                    <th>Team 2</th>
+                    <th>Ergebnis</th>
+                </tr>
+            </thead>
+            <tbody id="results"></tbody>
+        </table>
+
+        <h2>Offene Spiele</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Team 1</th>
+                    <th>Team 2</th>
+                </tr>
+            </thead>
+            <tbody id="upcoming"></tbody>
+        </table>
+
+        <h2>Rangliste</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Team</th>
+                    <th>Spiele</th>
+                    <th>Punkte</th>
+                    <th>Tore</th>
+                    <th>Gegentore</th>
+                    <th>Tordifferenz</th>
+                </tr>
+            </thead>
+            <tbody id="ranking"></tbody>
+        </table>
     </div>
-
-    <h2>Teams</h2>
-    <table>
-        <thead>
-            <tr>
-                <th>Team</th>
-                <th>Spieler:in 1</th>
-                <th>Spieler:in 2</th>
-            </tr>
-        </thead>
-        <tbody id="teams"></tbody>
-    </table>
-
-    <h2>Resultate</h2>
-    <table>
-        <thead>
-            <tr>
-                <th>Team 1</th>
-                <th>Team 2</th>
-                <th>Ergebnis</th>
-            </tr>
-        </thead>
-        <tbody id="results"></tbody>
-    </table>
-
-    <h2>Offene Spiele</h2>
-    <table>
-        <thead>
-            <tr>
-                <th>Team 1</th>
-                <th>Team 2</th>
-            </tr>
-        </thead>
-        <tbody id="upcoming"></tbody>
-    </table>
-
-    <h2>Rangliste</h2>
-    <table>
-        <thead>
-            <tr>
-                <th>Team</th>
-                <th>Spiele</th>
-                <th>Punkte</th>
-                <th>Tore</th>
-                <th>Gegentore</th>
-                <th>Tordifferenz</th>
-            </tr>
-        </thead>
-        <tbody id="ranking"></tbody>
-    </table>
 
     <script>
         async function loadTournamentData() {
@@ -104,11 +114,9 @@
                 const response = await fetch("turnierdaten.json");
                 const data = await response.json();
 
-                // News laden (Fehler behoben: undefined entfernt)
+                // News anzeigen
                 const newsContainer = document.getElementById("news");
-                newsContainer.innerHTML = data.news.map(n => 
-                    `<p>${n.text || ""}</p>`
-                ).join("");
+                newsContainer.innerHTML = data.news.map(n => `<p>${n.text || ""}</p>`).join("");
 
                 // Teams anzeigen
                 const teamsTable = document.getElementById("teams");

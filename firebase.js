@@ -1,3 +1,4 @@
+// Import Firebase SDK-Module
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
 import { getDatabase, ref, push, set, remove, onValue, update } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
 
@@ -16,4 +17,5 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 
+// **WICHTIG: `update` hinzufügen**
 export { db, ref, push, set, remove, onValue, update };

@@ -6,34 +6,75 @@
     <title>Admin - TöGGeli-Cup</title>
     <script type="module" src="firebase.js"></script>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #1C1C1C;
+        body { 
+            font-family: Arial, sans-serif; 
+            background-color: #5B3A2E; 
             color: white;
             text-align: center;
+            margin: 20px;
+            padding-bottom: 50px;
         }
-        h1 { color: #F8D210; }
+        h1 {
+            font-size: 28px;
+            font-weight: bold;
+        }
+        h2 {
+            font-size: 22px;
+            font-weight: bold;
+            margin-top: 30px;
+        }
+        .news-container {
+            width: 80%;
+            margin: 20px auto;
+            padding: 15px;
+            background-color: #D81B60;
+            color: white;
+            border-radius: 10px;
+            text-align: left;
+        }
         table {
             width: 80%;
-            margin: auto;
+            margin: 10px auto;
             border-collapse: collapse;
         }
         th, td {
             padding: 10px;
-            border: 1px solid #FFF;
+            border: 1px solid black;
+            background-color: white;
+            color: black;
         }
         th {
-            background-color: #D81B60;
+            background-color: #0059B2;
             color: white;
         }
-        input, button {
+        .open-matches th {
+            background-color: #D81B60;
+        }
+        input, button, textarea {
             margin: 5px;
             padding: 10px;
+            font-size: 16px;
+        }
+        button {
+            background-color: #D81B60;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #B01550;
         }
     </style>
 </head>
 <body>
-    <h1>Admin-Bereich</h1>
+    <h1>Admin-Bereich - TöGGeli-Cup 2025</h1>
+
+    <div class="news-container">
+        <h2>News verwalten</h2>
+        <textarea id="newsText" rows="3" placeholder="Neue News..."></textarea>
+        <button id="addNews">News hinzufügen</button>
+        <div id="news"></div>
+    </div>
 
     <h2>Teams verwalten</h2>
     <input type="text" id="teamName" placeholder="Teamname">
@@ -44,11 +85,6 @@
         <thead><tr><th>Team</th><th>Spieler:in 1</th><th>Spieler:in 2</th><th>Aktion</th></tr></thead>
         <tbody id="teams"></tbody>
     </table>
-
-    <h2>News verwalten</h2>
-    <textarea id="newsText" rows="3" placeholder="Neue News..."></textarea>
-    <button id="addNews">News hinzufügen</button>
-    <div id="news"></div>
 
     <h2>Resultate</h2>
     <table>

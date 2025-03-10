@@ -3,22 +3,25 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin-Bereich - TöGGeli-Cup</title>
+    <title>Admin-Bereich</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #5B3A2E;
+        body { 
+            font-family: Arial, sans-serif; 
+            background-color: #5B3A2E; 
             color: white;
             text-align: center;
             margin: 20px;
+            padding-bottom: 50px;
         }
-        h1, h2 {
-            font-weight: bold;
-        }
-        input, textarea, button {
-            margin: 5px;
-            padding: 10px;
-            font-size: 16px;
+        h1, h2 { font-weight: bold; }
+        .news-container {
+            width: 80%;
+            margin: 20px auto;
+            padding: 15px;
+            background-color: #D81B60;
+            color: white;
+            border-radius: 10px;
+            text-align: left;
         }
         table {
             width: 80%;
@@ -60,109 +63,70 @@
                 <th>Aktion</th>
             </tr>
         </thead>
-        <tbody id="resultsTable"></tbody>
+        <tbody id="resultsTable">
+        </tbody>
     </table>
     <button onclick="saveResults()">Änderungen speichern</button>
 
-    <!-- Firebase JS -->
     <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
-        import { getDatabase, ref, push, set, get, child } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
+        import { db, ref, push, set, get } from './firebase.js';
 
-        // 🔥 Firebase Konfiguration
-        const firebaseConfig = {
-            apiKey: "AIzaSyD2nmuFhdG0ZU5wO9H7CqsxPnRF04WZLzY",
-            authDomain: "toeggeli-cup-2025.firebaseapp.com",
-            databaseURL: "https://toeggeli-cup-2025-default-rtdb.europe-west1.firebasedatabase.app",
-            projectId: "toeggeli-cup-2025",
-            storageBucket: "toeggeli-cup-2025.firebasestorage.app",
-            messagingSenderId: "810841513587",
-            appId: "1:810841513587:web:fc9d2b0274cf92b3ae1406"
-        };
-
-        // Firebase Initialisieren
-        const app = initializeApp(firebaseConfig);
-        const db = getDatabase(app);
-
-        // 🏆 **Team hinzufügen**
-        function addTeam() {
+        async function addTeam() {
             const teamName = document.getElementById("teamName").value.trim();
             const player1 = document.getElementById("player1").value.trim();
             const player2 = document.getElementById("player2").value.trim();
 
-            if (teamName && player1 && player2) {
-                const newTeamRef = push(ref(db, "teams/"));  // 🔥 `push()` richtig angewendet
-                set(newTeamRef, { name: teamName, player1: player1, player2: player2 })
-                    .then(() => console.log("✅ Team erfolgreich hinzugefügt:", teamName))
-                    .catch(error => console.error("❌ Fehler beim Speichern des Teams:", error));
-
-                document.getElementById("teamName").value = "";
-                document.getElementById("player1").value = "";
-                document.getElementById("player2").value = "";
-            } else {
+            if (!teamName || !player1 || !player2) {
                 alert("Bitte alle Felder ausfüllen!");
+                return;
+            }
+
+            try {
+                const teamRef = push(ref(db, "teams"));
+                await set(teamRef, { name: teamName, player1, player2 });
+                alert("Team erfolgreich hinzugefügt!");
+            } catch (error) {
+                console.error("Fehler beim Hinzufügen des Teams:", error);
             }
         }
 
-        // 📰 **News hinzufügen**
-        function addNews() {
+        async function addNews() {
             const newsText = document.getElementById("newsText").value.trim();
-            if (newsText) {
-                const newNewsRef = push(ref(db, "news/"));  // 🔥 `push()` für News richtig angewendet
-                set(newNewsRef, { text: newsText, date: new Date().toLocaleString() })
-                    .then(() => console.log("✅ News erfolgreich hinzugefügt:", newsText))
-                    .catch(error => console.error("❌ Fehler beim Speichern der News:", error));
+            if (!newsText) {
+                alert("News darf nicht leer sein!");
+                return;
+            }
 
-                document.getElementById("newsText").value = "";
-            } else {
-                alert("Bitte eine News eingeben!");
+            try {
+                const newsRef = push(ref(db, "news"));
+                await set(newsRef, { text: newsText, date: new Date().toLocaleString() });
+                alert("News erfolgreich hinzugefügt!");
+            } catch (error) {
+                console.error("Fehler beim Hinzufügen der News:", error);
             }
         }
 
-        // ⚽ **Resultate speichern**
-        function saveResults() {
-            const results = [];
-            document.querySelectorAll("#resultsTable tr").forEach(row => {
-                const team1 = row.cells[0].innerText;
-                const team2 = row.cells[1].innerText;
-                const score = row.cells[2].querySelector("input").value;
+        async function saveResults() {
+            const resultsTable = document.getElementById("resultsTable").children;
+            let updates = {};
+
+            for (let row of resultsTable) {
+                const team1 = row.children[0].textContent;
+                const team2 = row.children[1].textContent;
+                const score = row.children[2].querySelector("input").value;
+
                 if (score) {
-                    results.push({ team1, team2, score });
+                    updates[`matches/${team1}_${team2}`] = { team1, team2, score };
                 }
-            });
+            }
 
-            if (results.length > 0) {
-                set(ref(db, "results/"), results)
-                    .then(() => console.log("✅ Ergebnisse gespeichert"))
-                    .catch(error => console.error("❌ Fehler beim Speichern der Ergebnisse:", error));
-            } else {
-                alert("Keine Ergebnisse zum Speichern!");
+            try {
+                await set(ref(db, "matches"), updates);
+                alert("Ergebnisse erfolgreich gespeichert!");
+            } catch (error) {
+                console.error("Fehler beim Speichern der Ergebnisse:", error);
             }
         }
-
-        // 🔄 **Daten aus Firebase laden**
-        function loadData() {
-            get(child(ref(db), "teams")).then(snapshot => {
-                if (snapshot.exists()) {
-                    console.log("📥 Teams geladen:", snapshot.val());
-                }
-            }).catch(error => console.error("❌ Fehler beim Laden der Teams:", error));
-
-            get(child(ref(db), "news")).then(snapshot => {
-                if (snapshot.exists()) {
-                    console.log("📥 News geladen:", snapshot.val());
-                }
-            }).catch(error => console.error("❌ Fehler beim Laden der News:", error));
-
-            get(child(ref(db), "results")).then(snapshot => {
-                if (snapshot.exists()) {
-                    console.log("📥 Ergebnisse geladen:", snapshot.val());
-                }
-            }).catch(error => console.error("❌ Fehler beim Laden der Ergebnisse:", error));
-        }
-
-        // Starte das Laden der Daten
-        loadData();
     </script>
 </body>
 </html>

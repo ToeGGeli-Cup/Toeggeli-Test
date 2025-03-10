@@ -4,8 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin-Bereich</title>
-    <script type="module" src="firebase.js"></script>
-    <script type="module" src="admin-script.js"></script>
     <style>
         body { 
             font-family: Arial, sans-serif; 
@@ -13,6 +11,7 @@
             color: white;
             text-align: center;
             margin: 20px;
+            padding-bottom: 50px; /* Mehr Platz unten für mobile Ansicht */
         }
         h1 {
             font-size: 28px;
@@ -47,6 +46,9 @@
             background-color: #0059B2;
             color: white;
         }
+        .open-matches th {
+            background-color: #D81B60;
+        }
     </style>
 </head>
 <body>
@@ -66,4 +68,64 @@
     <table>
         <thead>
             <tr>
-                <th>
+                <th>Team 1</th>
+                <th>Team 2</th>
+                <th>Ergebnis</th>
+            </tr>
+        </thead>
+        <tbody id="results"></tbody>
+    </table>
+
+    <button onclick="saveResults()">Änderungen speichern</button>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
+        import { getDatabase, ref, set, push, get } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
+
+        // Firebase-Konfiguration
+        const firebaseConfig = {
+            apiKey: "AIzaSyD2nmuFhdG0ZU5wO9H7CqsxPnRF04WZLzY",
+            authDomain: "toeggeli-cup-2025.firebaseapp.com",
+            databaseURL: "https://toeggeli-cup-2025-default-rtdb.europe-west1.firebasedatabase.app",
+            projectId: "toeggeli-cup-2025",
+            storageBucket: "toeggeli-cup-2025.appspot.com",
+            messagingSenderId: "810841513587",
+            appId: "1:810841513587:web:fc9d2b0274cf92b3ae1406"
+        };
+
+        // Firebase initialisieren
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+        console.log("🔥 Firebase erfolgreich initialisiert!");
+
+        function addTeam() {
+            const teamName = document.getElementById("teamName").value;
+            const player1 = document.getElementById("player1").value;
+            const player2 = document.getElementById("player2").value;
+
+            if (teamName && player1 && player2) {
+                push(ref(db, "teams"), { name: teamName, player1, player2 })
+                    .then(() => alert("Team erfolgreich hinzugefügt!"))
+                    .catch(error => console.error("Fehler beim Speichern:", error));
+            } else {
+                alert("Bitte alle Felder ausfüllen!");
+            }
+        }
+
+        function addNews() {
+            const newsText = document.getElementById("newsText").value;
+            if (newsText) {
+                push(ref(db, "news"), { text: newsText, date: new Date().toLocaleString() })
+                    .then(() => alert("News erfolgreich hinzugefügt!"))
+                    .catch(error => console.error("Fehler beim Speichern:", error));
+            } else {
+                alert("Bitte eine News eingeben!");
+            }
+        }
+
+        function saveResults() {
+            alert("Ergebnisse speichern ist noch in Arbeit!");
+        }
+    </script>
+</body>
+</html>

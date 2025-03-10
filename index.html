@@ -4,8 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TöGGeli-Cup 2025</title>
-    <script type="module" src="firebase.js"></script>
-    <script type="module" src="index-script.js"></script>
     <style>
         body { 
             font-family: Arial, sans-serif; 
@@ -13,6 +11,7 @@
             color: white;
             text-align: center;
             margin: 20px;
+            padding-bottom: 50px;
         }
         h1 {
             font-size: 28px;
@@ -47,6 +46,9 @@
             background-color: #0059B2;
             color: white;
         }
+        .open-matches th {
+            background-color: #D81B60;
+        }
     </style>
 </head>
 <body>
@@ -69,6 +71,18 @@
         <tbody id="teams"></tbody>
     </table>
 
+    <h2>Resultate</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Team 1</th>
+                <th>Team 2</th>
+                <th>Ergebnis</th>
+            </tr>
+        </thead>
+        <tbody id="results"></tbody>
+    </table>
+
     <h2>Offene Spiele</h2>
     <table>
         <thead>
@@ -77,7 +91,7 @@
                 <th>Team 2</th>
             </tr>
         </thead>
-        <tbody id="upcomingMatches"></tbody>
+        <tbody id="upcoming"></tbody>
     </table>
 
     <h2>Rangliste</h2>
@@ -88,10 +102,114 @@
                 <th>Team</th>
                 <th>Spiele</th>
                 <th>Punkte</th>
-                <th>Tordiff</th>
+                <th>Tore</th>
+                <th>Gegentore</th>
+                <th>Tordifferenz</th>
             </tr>
         </thead>
         <tbody id="ranking"></tbody>
     </table>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
+        import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
+
+        // Firebase-Konfiguration
+        const firebaseConfig = {
+            apiKey: "AIzaSyD2nmuFhdG0ZU5wO9H7CqsxPnRF04WZLzY",
+            authDomain: "toeggeli-cup-2025.firebaseapp.com",
+            databaseURL: "https://toeggeli-cup-2025-default-rtdb.europe-west1.firebasedatabase.app",
+            projectId: "toeggeli-cup-2025",
+            storageBucket: "toeggeli-cup-2025.appspot.com",
+            messagingSenderId: "810841513587",
+            appId: "1:810841513587:web:fc9d2b0274cf92b3ae1406"
+        };
+
+        // Firebase initialisieren
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+        console.log("🔥 Firebase erfolgreich initialisiert!");
+
+        function loadData() {
+            // Teams laden
+            onValue(ref(db, "teams"), snapshot => {
+                const teamsTable = document.getElementById("teams");
+                teamsTable.innerHTML = "";
+                snapshot.forEach(childSnapshot => {
+                    const team = childSnapshot.val();
+                    teamsTable.innerHTML += `<tr><td>${team.name}</td><td>${team.player1}</td><td>${team.player2}</td></tr>`;
+                });
+            });
+
+            // News laden
+            onValue(ref(db, "news"), snapshot => {
+                const newsContainer = document.getElementById("news");
+                newsContainer.innerHTML = "";
+                snapshot.forEach(childSnapshot => {
+                    const news = childSnapshot.val();
+                    newsContainer.innerHTML += `<p><strong>${news.date}:</strong> ${news.text}</p>`;
+                });
+            });
+
+            // Resultate anzeigen
+            onValue(ref(db, "matches"), snapshot => {
+                const resultsTable = document.getElementById("results");
+                const upcomingTable = document.getElementById("upcoming");
+                resultsTable.innerHTML = "";
+                upcomingTable.innerHTML = "";
+
+                snapshot.forEach(childSnapshot => {
+                    const match = childSnapshot.val();
+                    if (match.score !== "-") {
+                        resultsTable.innerHTML += `<tr><td>${match.team1}</td><td>${match.team2}</td><td>${match.score}</td></tr>`;
+                    } else {
+                        upcomingTable.innerHTML += `<tr><td>${match.team1}</td><td>${match.team2}</td></tr>`;
+                    }
+                });
+            });
+
+            // Rangliste berechnen
+            onValue(ref(db, "matches"), snapshot => {
+                const rankings = {};
+
+                snapshot.forEach(childSnapshot => {
+                    const match = childSnapshot.val();
+                    if (match.score !== "-") {
+                        const [g1, g2] = match.score.split(":").map(Number);
+                        rankings[match.team1] = rankings[match.team1] || { games: 0, points: 0, goals: 0, conceded: 0 };
+                        rankings[match.team2] = rankings[match.team2] || { games: 0, points: 0, goals: 0, conceded: 0 };
+
+                        rankings[match.team1].games++;
+                        rankings[match.team2].games++;
+                        rankings[match.team1].goals += g1;
+                        rankings[match.team2].goals += g2;
+                        rankings[match.team1].conceded += g2;
+                        rankings[match.team2].conceded += g1;
+
+                        if (g1 > g2) rankings[match.team1].points++;
+                        else if (g2 > g1) rankings[match.team2].points++;
+                    }
+                });
+
+                const rankingTable = document.getElementById("ranking");
+                rankingTable.innerHTML = "";
+                Object.entries(rankings)
+                    .sort((a, b) => b[1].points - a[1].points || (b[1].goals - b[1].conceded) - (a[1].goals - a[1].conceded))
+                    .forEach(([team, stats], index) => {
+                        rankingTable.innerHTML += `<tr>
+                            <td>${index + 1}</td>
+                            <td>${team}</td>
+                            <td>${stats.games}</td>
+                            <td>${stats.points}</td>
+                            <td>${stats.goals}</td>
+                            <td>${stats.conceded}</td>
+                            <td>${stats.goals - stats.conceded}</td>
+                        </tr>`;
+                    });
+            });
+        }
+
+        loadData();
+    </script>
 </body>
 </html>

@@ -4,105 +4,52 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TöGGeli-Cup 2025</title>
-    <script type="module" src="firebase.js"></script>
-    <script type="module" src="index-script.js"></script>
-    <style>
-        body { 
-            font-family: Arial, sans-serif; 
-            background-color: #5B3A2E; 
-            color: white;
-            text-align: center;
-            margin: 20px;
-            padding-bottom: 50px;
-        }
-        h1, h2 {
-            font-size: 22px;
-            font-weight: bold;
-            margin-top: 30px;
-        }
-        table {
-            width: 80%;
-            margin: 10px auto;
-            border-collapse: collapse;
-        }
-        th, td {
-            padding: 10px;
-            border: 1px solid black;
-            background-color: white;
-            color: black;
-        }
-        th {
-            background-color: #0059B2;
-            color: white;
-        }
-        .news-container {
-            width: 80%;
-            margin: 20px auto;
-            padding: 15px;
-            background-color: #D81B60;
-            color: white;
-            border-radius: 10px;
-            text-align: left;
-        }
-    </style>
+    <script type="module" src="./firebase.js"></script>
+    <script type="module">
+        import { db, ref, onValue } from "./firebase.js";
+
+        document.addEventListener("DOMContentLoaded", () => {
+            const teamsRef = ref(db, "teams");
+            const newsRef = ref(db, "news");
+
+            // Teams anzeigen
+            onValue(teamsRef, (snapshot) => {
+                const teamsTable = document.getElementById("teamsTable");
+                teamsTable.innerHTML = "";
+                snapshot.forEach((childSnapshot) => {
+                    const team = childSnapshot.val();
+                    teamsTable.innerHTML += `<tr>
+                        <td>${team.name}</td>
+                        <td>${team.player1}</td>
+                        <td>${team.player2}</td>
+                    </tr>`;
+                });
+            });
+
+            // News anzeigen
+            onValue(newsRef, (snapshot) => {
+                const newsContainer = document.getElementById("newsContainer");
+                newsContainer.innerHTML = "";
+                snapshot.forEach((childSnapshot) => {
+                    const newsItem = childSnapshot.val();
+                    newsContainer.innerHTML += `<p>${newsItem.date}: ${newsItem.text}</p>`;
+                });
+            });
+        });
+    </script>
 </head>
 <body>
     <h1>TöGGeli-Cup 2025</h1>
 
-    <div class="news-container">
-        <h2>News</h2>
-        <div id="news"></div>
-    </div>
+    <h2>News</h2>
+    <div id="newsContainer"></div>
 
     <h2>Teams</h2>
     <table>
         <thead>
-            <tr>
-                <th>Team</th>
-                <th>Spieler:in 1</th>
-                <th>Spieler:in 2</th>
-            </tr>
+            <tr><th>Team</th><th>Spieler:in 1</th><th>Spieler:in 2</th></tr>
         </thead>
-        <tbody id="teams"></tbody>
-    </table>
-
-    <h2>Resultate</h2>
-    <table>
-        <thead>
-            <tr>
-                <th>Team 1</th>
-                <th>Team 2</th>
-                <th>Ergebnis</th>
-            </tr>
-        </thead>
-        <tbody id="results"></tbody>
-    </table>
-
-    <h2>Offene Spiele</h2>
-    <table>
-        <thead>
-            <tr>
-                <th>Team 1</th>
-                <th>Team 2</th>
-            </tr>
-        </thead>
-        <tbody id="upcoming"></tbody>
-    </table>
-
-    <h2>Rangliste</h2>
-    <table>
-        <thead>
-            <tr>
-                <th>Rang</th>
-                <th>Team</th>
-                <th>Spiele</th>
-                <th>Punkte</th>
-                <th>Tore</th>
-                <th>Gegentore</th>
-                <th>Tordifferenz</th>
-            </tr>
-        </thead>
-        <tbody id="ranking"></tbody>
+        <tbody id="teamsTable"></tbody>
     </table>
 </body>
 </html>

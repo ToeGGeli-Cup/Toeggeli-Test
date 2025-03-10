@@ -4,46 +4,76 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin-Bereich</title>
-    <script type="module" src="firebase.js"></script>
-    <style>
-        body { 
-            font-family: Arial, sans-serif; 
-            background-color: #5B3A2E; 
-            color: white;
-            text-align: center;
-            margin: 20px;
-            padding-bottom: 50px;
-        }
-        h1, h2 {
-            font-size: 22px;
-            font-weight: bold;
-            margin-top: 30px;
-        }
-        table {
-            width: 80%;
-            margin: 10px auto;
-            border-collapse: collapse;
-        }
-        th, td {
-            padding: 10px;
-            border: 1px solid black;
-            background-color: white;
-            color: black;
-        }
-        th {
-            background-color: #0059B2;
-            color: white;
-        }
-        .news-container {
-            width: 80%;
-            margin: 20px auto;
-            padding: 15px;
-            background-color: #D81B60;
-            color: white;
-            border-radius: 10px;
-            text-align: left;
-        }
-    </style>
+    <script type="module" src="./firebase.js"></script>
+    <script type="module">
+        import { db, ref, push, set, remove, onValue } from "./firebase.js";
+
+        document.addEventListener("DOMContentLoaded", () => {
+            const teamsRef = ref(db, "teams");
+            const newsRef = ref(db, "news");
+
+            // Teams hinzufügen
+            document.getElementById("addTeam").addEventListener("click", () => {
+                const teamName = document.getElementById("teamName").value;
+                const player1 = document.getElementById("player1").value;
+                const player2 = document.getElementById("player2").value;
+
+                if (teamName && player1 && player2) {
+                    const newTeamRef = push(teamsRef);
+                    set(newTeamRef, { name: teamName, player1: player1, player2: player2 });
+                    alert("Team erfolgreich hinzugefügt!");
+                }
+            });
+
+            // Teams laden
+            onValue(teamsRef, (snapshot) => {
+                const teamsTable = document.getElementById("teamsTable");
+                teamsTable.innerHTML = "";
+                snapshot.forEach((childSnapshot) => {
+                    const team = childSnapshot.val();
+                    teamsTable.innerHTML += `<tr>
+                        <td>${team.name}</td>
+                        <td>${team.player1}</td>
+                        <td>${team.player2}</td>
+                        <td><button onclick="deleteTeam('${childSnapshot.key}')">Löschen</button></td>
+                    </tr>`;
+                });
+            });
+
+            // Team löschen
+            window.deleteTeam = (teamId) => {
+                remove(ref(db, `teams/${teamId}`));
+                alert("Team gelöscht!");
+            };
+
+            // News hinzufügen
+            document.getElementById("addNews").addEventListener("click", () => {
+                const newsText = document.getElementById("newsText").value;
+                if (newsText) {
+                    const newNewsRef = push(newsRef);
+                    set(newNewsRef, { text: newsText, date: new Date().toLocaleString() });
+                    alert("News erfolgreich hinzugefügt!");
+                }
+            });
+
+            // News anzeigen
+            onValue(newsRef, (snapshot) => {
+                const newsContainer = document.getElementById("newsContainer");
+                newsContainer.innerHTML = "";
+                snapshot.forEach((childSnapshot) => {
+                    const newsItem = childSnapshot.val();
+                    newsContainer.innerHTML += `<p>${newsItem.date}: ${newsItem.text} 
+                        <button onclick="deleteNews('${childSnapshot.key}')">🗑️</button></p>`;
+                });
+            });
+
+            // News löschen
+            window.deleteNews = (newsId) => {
+                remove(ref(db, `news/${newsId}`));
+                alert("News gelöscht!");
+            };
+        });
+    </script>
 </head>
 <body>
     <h1>Admin-Bereich</h1>
@@ -52,84 +82,18 @@
     <input type="text" id="teamName" placeholder="Teamname">
     <input type="text" id="player1" placeholder="Spieler:in 1">
     <input type="text" id="player2" placeholder="Spieler:in 2">
-    <button onclick="addTeam()">Team hinzufügen</button>
-    <table id="teamsTable">
-        <thead><tr><th>Team</th><th>Spieler:in 1</th><th>Spieler:in 2</th><th>Aktion</th></tr></thead>
-        <tbody></tbody>
+    <button id="addTeam">Team hinzufügen</button>
+
+    <table>
+        <thead>
+            <tr><th>Team</th><th>Spieler:in 1</th><th>Spieler:in 2</th><th>Aktion</th></tr>
+        </thead>
+        <tbody id="teamsTable"></tbody>
     </table>
 
     <h2>News verwalten</h2>
-    <textarea id="newsText" rows="3" cols="50" placeholder="Neuer News-Eintrag"></textarea>
-    <button onclick="addNews()">News hinzufügen</button>
+    <textarea id="newsText"></textarea>
+    <button id="addNews">News hinzufügen</button>
     <div id="newsContainer"></div>
-
-    <h2>Ergebnisse eintragen</h2>
-    <table id="matchesTable">
-        <thead><tr><th>Team 1</th><th>Team 2</th><th>Ergebnis</th><th>Aktion</th></tr></thead>
-        <tbody></tbody>
-    </table>
-    <button onclick="saveResults()">Änderungen speichern</button>
-
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
-        import { getDatabase, ref, set, get, onValue, remove } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
-
-        const firebaseConfig = {
-            apiKey: "AIzaSyD2nmuFhdG0ZU5wO9H7CqsxPnRF04WZLzY",
-            authDomain: "toeggeli-cup-2025.firebaseapp.com",
-            databaseURL: "https://toeggeli-cup-2025-default-rtdb.europe-west1.firebasedatabase.app",
-            projectId: "toeggeli-cup-2025",
-            storageBucket: "toeggeli-cup-2025.appspot.com",
-            messagingSenderId: "810841513587",
-            appId: "1:810841513587:web:fc9d2b0274cf92b3ae1406"
-        };
-
-        const app = initializeApp(firebaseConfig);
-        const db = getDatabase(app);
-
-        function addTeam() {
-            const name = document.getElementById("teamName").value;
-            const player1 = document.getElementById("player1").value;
-            const player2 = document.getElementById("player2").value;
-            if (name && player1 && player2) {
-                set(ref(db, 'teams/' + name), { player1, player2 });
-                alert("Team erfolgreich hinzugefügt!");
-            }
-        }
-
-        function addNews() {
-            const text = document.getElementById("newsText").value;
-            if (text) {
-                const timestamp = new Date().toLocaleString();
-                set(ref(db, 'news/' + timestamp), { text });
-                alert("News erfolgreich hinzugefügt!");
-            }
-        }
-
-        function saveResults() {
-            alert("Ergebnisse speichern ist noch in Arbeit!");
-        }
-
-        function loadTeams() {
-            onValue(ref(db, 'teams'), (snapshot) => {
-                const data = snapshot.val();
-                const teamsTable = document.querySelector("#teamsTable tbody");
-                teamsTable.innerHTML = "";
-                for (let team in data) {
-                    teamsTable.innerHTML += `<tr>
-                        <td>${team}</td><td>${data[team].player1}</td><td>${data[team].player2}</td>
-                        <td><button onclick="deleteTeam('${team}')">Löschen</button></td>
-                    </tr>`;
-                }
-            });
-        }
-
-        function deleteTeam(team) {
-            remove(ref(db, 'teams/' + team));
-            alert("Team gelöscht!");
-        }
-
-        loadTeams();
-    </script>
 </body>
 </html>

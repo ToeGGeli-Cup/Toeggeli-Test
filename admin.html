@@ -3,15 +3,38 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin-Bereich</title>
+    <title>Admin-Bereich - TöGGeli-Cup</title>
     <style>
-        body { font-family: Arial, sans-serif; background-color: #5B3A2E; color: white; text-align: center; margin: 20px; }
-        h1 { font-size: 28px; font-weight: bold; }
-        h2 { font-size: 22px; font-weight: bold; margin-top: 30px; }
-        table { width: 80%; margin: 10px auto; border-collapse: collapse; }
-        th, td { padding: 10px; border: 1px solid black; background-color: white; color: black; }
-        th { background-color: #0059B2; color: white; }
-        .news-container { width: 80%; margin: 20px auto; padding: 15px; background-color: #D81B60; color: white; border-radius: 10px; text-align: left; }
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #5B3A2E;
+            color: white;
+            text-align: center;
+            margin: 20px;
+        }
+        h1, h2 {
+            font-weight: bold;
+        }
+        input, textarea, button {
+            margin: 5px;
+            padding: 10px;
+            font-size: 16px;
+        }
+        table {
+            width: 80%;
+            margin: 10px auto;
+            border-collapse: collapse;
+        }
+        th, td {
+            padding: 10px;
+            border: 1px solid black;
+            background-color: white;
+            color: black;
+        }
+        th {
+            background-color: #0059B2;
+            color: white;
+        }
     </style>
 </head>
 <body>
@@ -21,105 +44,125 @@
     <input type="text" id="teamName" placeholder="Teamname">
     <input type="text" id="player1" placeholder="Spieler:in 1">
     <input type="text" id="player2" placeholder="Spieler:in 2">
-    <button id="addTeam">Team hinzufügen</button>
+    <button onclick="addTeam()">Team hinzufügen</button>
 
     <h2>News verwalten</h2>
     <textarea id="newsText" rows="3" cols="50" placeholder="Neue News..."></textarea>
-    <button id="addNews">News hinzufügen</button>
+    <button onclick="addNews()">News hinzufügen</button>
 
     <h2>Resultate</h2>
     <table>
         <thead>
-            <tr><th>Team 1</th><th>Team 2</th><th>Ergebnis</th><th>Aktion</th></tr>
+            <tr>
+                <th>Team 1</th>
+                <th>Team 2</th>
+                <th>Ergebnis</th>
+                <th>Aktion</th>
+            </tr>
         </thead>
-        <tbody id="results"></tbody>
+        <tbody id="resultsTable"></tbody>
     </table>
-    <button id="saveResults">Änderungen speichern</button>
+    <button onclick="saveResults()">Änderungen speichern</button>
 
+    <!-- Firebase JS -->
     <script type="module">
-        import { db, ref, set, get, update, push } from "./firebase.js";
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
+        import { getDatabase, ref, push, set, get, child } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
 
-        console.log("🔥 Admin-Skript geladen.");
+        // 🔥 Firebase Konfiguration
+        const firebaseConfig = {
+            apiKey: "AIzaSyD2nmuFhdG0ZU5wO9H7CqsxPnRF04WZLzY",
+            authDomain: "toeggeli-cup-2025.firebaseapp.com",
+            databaseURL: "https://toeggeli-cup-2025-default-rtdb.europe-west1.firebasedatabase.app",
+            projectId: "toeggeli-cup-2025",
+            storageBucket: "toeggeli-cup-2025.firebasestorage.app",
+            messagingSenderId: "810841513587",
+            appId: "1:810841513587:web:fc9d2b0274cf92b3ae1406"
+        };
 
-        // 🔥 Teams hinzufügen
-        document.getElementById("addTeam").addEventListener("click", async () => {
-            const teamName = document.getElementById("teamName").value;
-            const player1 = document.getElementById("player1").value;
-            const player2 = document.getElementById("player2").value;
+        // Firebase Initialisieren
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
 
-            if (!teamName || !player1 || !player2) {
-                console.log("⚠️ Team-Eingaben unvollständig!");
-                return;
-            }
+        // 🏆 **Team hinzufügen**
+        function addTeam() {
+            const teamName = document.getElementById("teamName").value.trim();
+            const player1 = document.getElementById("player1").value.trim();
+            const player2 = document.getElementById("player2").value.trim();
 
-            const newTeamRef = push(ref(db, "teams"));
-            await set(newTeamRef, { name: teamName, player1, player2 });
-            console.log("✅ Team gespeichert:", { name: teamName, player1, player2 });
-        });
+            if (teamName && player1 && player2) {
+                const newTeamRef = push(ref(db, "teams/"));  // 🔥 `push()` richtig angewendet
+                set(newTeamRef, { name: teamName, player1: player1, player2: player2 })
+                    .then(() => console.log("✅ Team erfolgreich hinzugefügt:", teamName))
+                    .catch(error => console.error("❌ Fehler beim Speichern des Teams:", error));
 
-        // 🔥 News hinzufügen
-        document.getElementById("addNews").addEventListener("click", async () => {
-            const newsText = document.getElementById("newsText").value;
-            if (!newsText) {
-                console.log("⚠️ Kein News-Text eingegeben!");
-                return;
-            }
-
-            try {
-                console.log("🔥 Speichere News in Firebase...");
-                await set(ref(db, "news/latest"), { text: newsText, date: new Date().toISOString() });
-                console.log("✅ News erfolgreich gespeichert!");
-            } catch (error) {
-                console.error("❌ Fehler beim Speichern in Firebase:", error);
-            }
-        });
-
-        // 🔥 Resultate speichern
-        document.getElementById("saveResults").addEventListener("click", async () => {
-            const resultsTable = document.getElementById("results").children;
-            const matches = [];
-
-            for (let row of resultsTable) {
-                const team1 = row.children[0].innerText;
-                const team2 = row.children[1].innerText;
-                const score = row.children[2].querySelector("input").value;
-                if (score) matches.push({ team1, team2, score });
-            }
-
-            try {
-                console.log("🔥 Speichere Resultate...");
-                await set(ref(db, "matches"), matches);
-                console.log("✅ Resultate erfolgreich gespeichert!");
-            } catch (error) {
-                console.error("❌ Fehler beim Speichern der Resultate:", error);
-            }
-        });
-
-        // 🔥 Live-Daten aus Firebase laden
-        async function loadMatches() {
-            try {
-                const snapshot = await get(ref(db, "matches"));
-                if (snapshot.exists()) {
-                    console.log("🔥 Resultate geladen:", snapshot.val());
-                    const matches = snapshot.val();
-                    const resultsTable = document.getElementById("results");
-                    resultsTable.innerHTML = matches.map(m => `
-                        <tr>
-                            <td>${m.team1}</td>
-                            <td>${m.team2}</td>
-                            <td><input type="text" value="${m.score}"></td>
-                            <td><button onclick="deleteMatch('${m.team1}', '${m.team2}')">🗑️</button></td>
-                        </tr>
-                    `).join("");
-                } else {
-                    console.log("⚠️ Keine Matches in Firebase.");
-                }
-            } catch (error) {
-                console.error("❌ Fehler beim Laden der Matches:", error);
+                document.getElementById("teamName").value = "";
+                document.getElementById("player1").value = "";
+                document.getElementById("player2").value = "";
+            } else {
+                alert("Bitte alle Felder ausfüllen!");
             }
         }
 
-        loadMatches();
+        // 📰 **News hinzufügen**
+        function addNews() {
+            const newsText = document.getElementById("newsText").value.trim();
+            if (newsText) {
+                const newNewsRef = push(ref(db, "news/"));  // 🔥 `push()` für News richtig angewendet
+                set(newNewsRef, { text: newsText, date: new Date().toLocaleString() })
+                    .then(() => console.log("✅ News erfolgreich hinzugefügt:", newsText))
+                    .catch(error => console.error("❌ Fehler beim Speichern der News:", error));
+
+                document.getElementById("newsText").value = "";
+            } else {
+                alert("Bitte eine News eingeben!");
+            }
+        }
+
+        // ⚽ **Resultate speichern**
+        function saveResults() {
+            const results = [];
+            document.querySelectorAll("#resultsTable tr").forEach(row => {
+                const team1 = row.cells[0].innerText;
+                const team2 = row.cells[1].innerText;
+                const score = row.cells[2].querySelector("input").value;
+                if (score) {
+                    results.push({ team1, team2, score });
+                }
+            });
+
+            if (results.length > 0) {
+                set(ref(db, "results/"), results)
+                    .then(() => console.log("✅ Ergebnisse gespeichert"))
+                    .catch(error => console.error("❌ Fehler beim Speichern der Ergebnisse:", error));
+            } else {
+                alert("Keine Ergebnisse zum Speichern!");
+            }
+        }
+
+        // 🔄 **Daten aus Firebase laden**
+        function loadData() {
+            get(child(ref(db), "teams")).then(snapshot => {
+                if (snapshot.exists()) {
+                    console.log("📥 Teams geladen:", snapshot.val());
+                }
+            }).catch(error => console.error("❌ Fehler beim Laden der Teams:", error));
+
+            get(child(ref(db), "news")).then(snapshot => {
+                if (snapshot.exists()) {
+                    console.log("📥 News geladen:", snapshot.val());
+                }
+            }).catch(error => console.error("❌ Fehler beim Laden der News:", error));
+
+            get(child(ref(db), "results")).then(snapshot => {
+                if (snapshot.exists()) {
+                    console.log("📥 Ergebnisse geladen:", snapshot.val());
+                }
+            }).catch(error => console.error("❌ Fehler beim Laden der Ergebnisse:", error));
+        }
+
+        // Starte das Laden der Daten
+        loadData();
     </script>
 </body>
 </html>

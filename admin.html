@@ -13,18 +13,13 @@
             color: white;
             text-align: center;
             margin: 20px;
-            padding-bottom: 50px;
         }
         h1, h2 {
             font-weight: bold;
         }
-        .container {
-            width: 80%;
-            margin: auto;
-        }
         table {
-            width: 100%;
-            margin-top: 10px;
+            width: 80%;
+            margin: 10px auto;
             border-collapse: collapse;
         }
         th, td {
@@ -37,26 +32,22 @@
             background-color: #0059B2;
             color: white;
         }
-        .open-matches th {
-            background-color: #D81B60;
-        }
-        button {
+        .news-container {
+            width: 80%;
+            margin: 20px auto;
+            padding: 15px;
             background-color: #D81B60;
             color: white;
-            border: none;
-            padding: 5px 10px;
-            cursor: pointer;
-            margin: 5px;
-        }
-        button:hover {
-            background-color: #9b1446;
+            border-radius: 10px;
+            text-align: left;
         }
     </style>
 </head>
 <body>
+
     <h1>Admin-Bereich</h1>
 
-    <!-- TEAMS VERWALTEN -->
+    <!-- Teams verwalten -->
     <h2>Teams verwalten</h2>
     <input type="text" id="teamName" placeholder="Teamname">
     <input type="text" id="player1" placeholder="Spieler:in 1">
@@ -65,18 +56,18 @@
 
     <table>
         <thead>
-            <tr><th>Team</th><th>Aktion</th></tr>
+            <tr><th>Team</th><th>Spieler:in 1</th><th>Spieler:in 2</th><th>Aktion</th></tr>
         </thead>
         <tbody id="teamsTable"></tbody>
     </table>
 
-    <!-- NEWS VERWALTEN -->
+    <!-- News verwalten -->
     <h2>News verwalten</h2>
-    <textarea id="newsText"></textarea>
+    <textarea id="newsText" placeholder="Neuer News-Eintrag"></textarea>
     <button id="addNews">News hinzufügen</button>
     <div id="newsContainer"></div>
 
-    <!-- OFFENE SPIELE -->
+    <!-- Offene Spiele -->
     <h2>Offene Spiele</h2>
     <table>
         <thead>
@@ -85,7 +76,12 @@
         <tbody id="upcomingMatches"></tbody>
     </table>
 
-    <!-- RESULTATE EINTRAGEN -->
+    <!-- Spiel hinzufügen -->
+    <input type="text" id="matchTeam1" placeholder="Team 1">
+    <input type="text" id="matchTeam2" placeholder="Team 2">
+    <button id="addMatch">Spiel hinzufügen</button>
+
+    <!-- Resultate eintragen -->
     <h2>Resultate</h2>
     <table>
         <thead>
@@ -94,21 +90,23 @@
         <tbody id="resultsTable"></tbody>
     </table>
 
-    <!-- RANGLISTE -->
+    <!-- Ergebnis speichern -->
+    <input type="text" id="resultTeam1" placeholder="Team 1">
+    <input type="text" id="resultTeam2" placeholder="Team 2">
+    <input type="text" id="matchScore" placeholder="Ergebnis (z.B. 3:2)">
+    <button id="saveResult">Ergebnis speichern</button>
+
+    <!-- Rangliste -->
     <h2>Rangliste</h2>
     <table>
         <thead>
             <tr>
-                <th>Rang</th>
-                <th>Team</th>
-                <th>Spiele</th>
-                <th>Punkte</th>
-                <th>Tore</th>
-                <th>Gegentore</th>
-                <th>Tordifferenz</th>
+                <th>Rang</th><th>Team</th><th>Spiele</th><th>Punkte</th>
+                <th>Tore</th><th>Gegentore</th><th>Tordifferenz</th>
             </tr>
         </thead>
         <tbody id="rankingTable"></tbody>
     </table>
+
 </body>
 </html>

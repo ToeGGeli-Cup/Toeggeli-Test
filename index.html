@@ -5,49 +5,38 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TöGGeli-Cup 2025</title>
     <style>
-        body { 
-            font-family: Arial, sans-serif; 
-            background-color: #5B3A2E; 
-            color: white;
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #1C1C1C;
+            color: #FFFFFF;
             text-align: center;
-            margin: 20px;
-            padding-bottom: 50px;
+            margin: 0;
+            padding: 20px;
         }
         h1 {
-            font-size: 28px;
-            font-weight: bold;
-        }
-        h2 {
-            font-size: 22px;
-            font-weight: bold;
-            margin-top: 30px;
-        }
-        .news-container {
-            width: 80%;
-            margin: 20px auto;
-            padding: 15px;
-            background-color: #D81B60;
-            color: white;
-            border-radius: 10px;
-            text-align: left;
+            color: #F8D210;
         }
         table {
-            width: 80%;
-            margin: 10px auto;
+            width: 90%;
+            margin: 20px auto;
             border-collapse: collapse;
+            background: #2E2E2E;
+            color: white;
         }
         th, td {
             padding: 10px;
-            border: 1px solid black;
-            background-color: white;
-            color: black;
+            border: 1px solid #444;
         }
         th {
-            background-color: #0059B2;
-            color: white;
+            background-color: #F8D210;
+            color: black;
         }
-        .open-matches th {
-            background-color: #D81B60;
+        .news-container {
+            background: #444;
+            color: white;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 8px;
         }
     </style>
 </head>
@@ -80,13 +69,11 @@
                 <th>Ergebnis</th>
             </tr>
         </thead>
-        <tbody id="results">
-            <tr><td colspan="3">Noch keine Ergebnisse vorhanden</td></tr>
-        </tbody>
+        <tbody id="results"></tbody>
     </table>
 
     <h2>Offene Spiele</h2>
-    <table class="open-matches">
+    <table>
         <thead>
             <tr>
                 <th>Team 1</th>
@@ -118,9 +105,11 @@
                 const response = await fetch("turnierdaten.json");
                 const data = await response.json();
 
-                // News anzeigen
+                // News laden
                 const newsContainer = document.getElementById("news");
-                newsContainer.innerHTML = data.news.map(n => `<p>${n.text || ""}</p>`).join("");
+                newsContainer.innerHTML = data.news.length > 0 ? 
+                    data.news.map(n => `<p><strong>${n.date || "Datum unbekannt"}:</strong> ${n.text || ""}</p>`).join("") 
+                    : "<p>Keine aktuellen News.</p>";
 
                 // Teams anzeigen
                 const teamsTable = document.getElementById("teams");
@@ -130,17 +119,17 @@
 
                 // Resultate anzeigen
                 const resultsTable = document.getElementById("results");
-                const results = data.matches.filter(m => m.score !== "-");
-                resultsTable.innerHTML = results.length > 0 
-                    ? results.map(m => `<tr><td>${m.team1}</td><td>${m.team2}</td><td>${m.score}</td></tr>`).join("")
-                    : "<tr><td colspan='3'>Noch keine Ergebnisse vorhanden</td></tr>";
+                resultsTable.innerHTML = data.matches
+                    .filter(m => m.score !== "-")
+                    .map(m => `<tr><td>${m.team1}</td><td>${m.team2}</td><td>${m.score}</td></tr>`)
+                    .join("") || `<tr><td colspan="3">Noch keine Ergebnisse vorhanden</td></tr>`;
 
                 // Offene Spiele anzeigen
                 const upcomingTable = document.getElementById("upcoming");
                 upcomingTable.innerHTML = data.matches
                     .filter(m => m.score === "-")
                     .map(m => `<tr><td>${m.team1}</td><td>${m.team2}</td></tr>`)
-                    .join("");
+                    .join("") || `<tr><td colspan="2">Keine offenen Spiele</td></tr>`;
 
                 // Rangliste berechnen
                 const rankings = {};
@@ -151,16 +140,16 @@
                 data.matches.forEach(m => {
                     if (m.score !== "-") {
                         const [g1, g2] = m.score.split(":").map(Number);
-                        rankings[m.team1].games += 1;
-                        rankings[m.team2].games += 1;
+                        rankings[m.team1].games++;
+                        rankings[m.team2].games++;
                         rankings[m.team1].goals += g1;
                         rankings[m.team2].goals += g2;
                         rankings[m.team1].conceded += g2;
                         rankings[m.team2].conceded += g1;
                         rankings[m.team1].diff = rankings[m.team1].goals - rankings[m.team1].conceded;
                         rankings[m.team2].diff = rankings[m.team2].goals - rankings[m.team2].conceded;
-                        if (g1 > g2) rankings[m.team1].points += 1;
-                        else if (g2 > g1) rankings[m.team2].points += 1;
+                        if (g1 > g2) rankings[m.team1].points++;
+                        else if (g2 > g1) rankings[m.team2].points++;
                     }
                 });
 
@@ -182,7 +171,7 @@
                         <td>${rankings[team].conceded}</td>
                         <td>${rankings[team].diff}</td>
                     </tr>`
-                ).join("");
+                ).join("") || `<tr><td colspan="7">Noch keine Spiele gespielt</td></tr>`;
 
             } catch (error) {
                 console.error("Fehler beim Laden der Turnierdaten:", error);

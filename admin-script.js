@@ -1,35 +1,21 @@
-import { db, ref, push, set, remove, onValue } from "./firebase.js";
+import { db, ref, push, set, remove, onValue, update } from "./firebase.js";
 
 document.addEventListener("DOMContentLoaded", () => {
     const teamsRef = ref(db, "teams");
     const newsRef = ref(db, "news");
     const matchesRef = ref(db, "matches");
 
-    // Teams anzeigen & verwalten
-    onValue(teamsRef, (snapshot) => {
-        const teamsTable = document.getElementById("teamsTable");
-        teamsTable.innerHTML = "";
-        const teams = [];
-
-        snapshot.forEach((childSnapshot) => {
-            const team = childSnapshot.val();
-            teams.push(team.name);
-            teamsTable.innerHTML += `<tr>
-                <td>${team.name}</td>
-                <td>${team.player1}</td>
-                <td>${team.player2}</td>
-                <td><button onclick="deleteTeam('${childSnapshot.key}')">🗑️</button></td>
-            </tr>`;
-        });
-
-        generateMatches(teams);
+    // News hinzufügen
+    document.getElementById("addNews").addEventListener("click", () => {
+        const newsText = document.getElementById("newsText").value;
+        if (newsText) {
+            const newNewsRef = push(newsRef);
+            set(newNewsRef, { text: newsText, date: new Date().toLocaleString() });
+            document.getElementById("newsText").value = "";
+        }
     });
 
-    window.deleteTeam = (teamId) => {
-        remove(ref(db, `teams/${teamId}`));
-    };
-
-    // News anzeigen und verwalten
+    // News anzeigen und löschen
     onValue(newsRef, (snapshot) => {
         const newsContainer = document.getElementById("newsContainer");
         newsContainer.innerHTML = "";
@@ -44,40 +30,53 @@ document.addEventListener("DOMContentLoaded", () => {
         remove(ref(db, `news/${newsId}`));
     };
 
-    // Spiele anzeigen & Resultate verwalten
-    onValue(matchesRef, (snapshot) => {
-        const matchesTable = document.getElementById("matchesTable");
-        matchesTable.innerHTML = "";
+    // Teams hinzufügen
+    document.getElementById("addTeam").addEventListener("click", () => {
+        const teamName = document.getElementById("teamName").value;
+        const player1 = document.getElementById("player1").value;
+        const player2 = document.getElementById("player2").value;
 
+        if (teamName && player1 && player2) {
+            const newTeamRef = push(teamsRef);
+            set(newTeamRef, { name: teamName, player1: player1, player2: player2 });
+            document.getElementById("teamName").value = "";
+            document.getElementById("player1").value = "";
+            document.getElementById("player2").value = "";
+        }
+    });
+
+    // Teams anzeigen und bearbeiten
+    onValue(teamsRef, (snapshot) => {
+        const teamsTable = document.getElementById("teamsTable");
+        teamsTable.innerHTML = "";
         snapshot.forEach((childSnapshot) => {
-            const match = childSnapshot.val();
-            matchesTable.innerHTML += `<tr>
-                <td>${match.team1}</td>
-                <td>${match.team2}</td>
+            const team = childSnapshot.val();
+            teamsTable.innerHTML += `<tr>
+                <td>${team.name}</td>
+                <td>${team.player1}</td>
+                <td>${team.player2}</td>
                 <td>
-                    <input type="text" id="result_${childSnapshot.key}" value="${match.score !== '-' ? match.score : ''}">
-                    <button onclick="saveResult('${childSnapshot.key}')">Speichern</button>
+                    <button onclick="editTeam('${childSnapshot.key}', '${team.name}', '${team.player1}', '${team.player2}')">🖊️</button>
+                    <button onclick="deleteTeam('${childSnapshot.key}')">🗑️</button>
                 </td>
             </tr>`;
         });
     });
 
-    window.saveResult = (matchId) => {
-        const resultInput = document.getElementById(`result_${matchId}`).value;
-        const matchRef = ref(db, `matches/${matchId}`);
-
-        set(matchRef, { ...matchRef, score: resultInput || "-" });
+    window.editTeam = (teamId, name, player1, player2) => {
+        document.getElementById("teamName").value = name;
+        document.getElementById("player1").value = player1;
+        document.getElementById("player2").value = player2;
+        document.getElementById("addTeam").onclick = () => {
+            update(ref(db, `teams/${teamId}`), {
+                name: document.getElementById("teamName").value,
+                player1: document.getElementById("player1").value,
+                player2: document.getElementById("player2").value
+            });
+        };
     };
 
-    function generateMatches(teams) {
-        if (teams.length < 2) return;
-
-        teams.forEach((team1, i) => {
-            for (let j = i + 1; j < teams.length; j++) {
-                const team2 = teams[j];
-                const matchId = `${team1}_${team2}`;
-                set(ref(db, `matches/${matchId}`), { team1, team2, score: "-" });
-            }
-        });
-    }
+    window.deleteTeam = (teamId) => {
+        remove(ref(db, `teams/${teamId}`));
+    };
 });

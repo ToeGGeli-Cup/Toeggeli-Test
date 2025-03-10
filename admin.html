@@ -13,12 +13,17 @@
             color: white;
             text-align: center;
             margin: 20px;
+            padding-bottom: 50px;
         }
         h1, h2 {
             font-weight: bold;
         }
-        table {
+        .container {
             width: 80%;
+            margin: auto;
+        }
+        table {
+            width: 100%;
             margin: 10px auto;
             border-collapse: collapse;
         }
@@ -44,16 +49,20 @@
     </style>
 </head>
 <body>
-
     <h1>Admin-Bereich</h1>
 
-    <!-- Teams verwalten -->
+    <h2>News verwalten</h2>
+    <div class="news-container">
+        <textarea id="newsText" placeholder="Neuer News-Eintrag"></textarea>
+        <button id="addNews">News hinzufügen</button>
+        <div id="newsContainer"></div>
+    </div>
+
     <h2>Teams verwalten</h2>
     <input type="text" id="teamName" placeholder="Teamname">
     <input type="text" id="player1" placeholder="Spieler:in 1">
     <input type="text" id="player2" placeholder="Spieler:in 2">
     <button id="addTeam">Team hinzufügen</button>
-
     <table>
         <thead>
             <tr><th>Team</th><th>Spieler:in 1</th><th>Spieler:in 2</th><th>Aktion</th></tr>
@@ -61,32 +70,28 @@
         <tbody id="teamsTable"></tbody>
     </table>
 
-    <!-- News verwalten -->
-    <h2>News verwalten</h2>
-    <textarea id="newsText" placeholder="Neuer News-Eintrag"></textarea>
-    <button id="addNews">News hinzufügen</button>
-    <div id="newsContainer"></div>
-
-    <!-- Offene Spiele -->
     <h2>Offene Spiele</h2>
     <table>
         <thead>
             <tr><th>Team 1</th><th>Team 2</th><th>Ergebnis</th></tr>
         </thead>
-        <tbody id="matchesTable"></tbody>
+        <tbody id="upcomingMatches"></tbody>
     </table>
 
-    <!-- Rangliste -->
+    <h2>Resultate</h2>
+    <table>
+        <thead>
+            <tr><th>Team 1</th><th>Team 2</th><th>Ergebnis</th></tr>
+        </thead>
+        <tbody id="resultsTable"></tbody>
+    </table>
+
     <h2>Rangliste</h2>
     <table>
         <thead>
-            <tr>
-                <th>Rang</th><th>Team</th><th>Spiele</th><th>Punkte</th>
-                <th>Tore</th><th>Gegentore</th><th>Tordifferenz</th>
-            </tr>
+            <tr><th>Rang</th><th>Team</th><th>Spiele</th><th>Punkte</th><th>Tore</th><th>Gegentore</th><th>Tordifferenz</th></tr>
         </thead>
         <tbody id="rankingTable"></tbody>
     </table>
-
 </body>
 </html>

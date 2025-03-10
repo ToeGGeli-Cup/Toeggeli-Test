@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TöGGeli-Cup 2025</title>
+    <script type="module" src="./firebase.js"></script>
+    <script type="module" src="./index-script.js"></script>
     <style>
         body { 
             font-family: Arial, sans-serif; 
@@ -13,8 +15,15 @@
             margin: 20px;
             padding-bottom: 50px;
         }
-        h1 { font-size: 28px; font-weight: bold; }
-        h2 { font-size: 22px; font-weight: bold; margin-top: 30px; }
+        h1 {
+            font-size: 28px;
+            font-weight: bold;
+        }
+        h2 {
+            font-size: 22px;
+            font-weight: bold;
+            margin-top: 30px;
+        }
         .news-container {
             width: 80%;
             margin: 20px auto;
@@ -35,8 +44,13 @@
             background-color: white;
             color: black;
         }
-        th { background-color: #0059B2; color: white; }
-        .open-matches th { background-color: #D81B60; }
+        th {
+            background-color: #0059B2;
+            color: white;
+        }
+        .open-matches th {
+            background-color: #D81B60;
+        }
     </style>
 </head>
 <body>
@@ -49,29 +63,53 @@
 
     <h2>Teams</h2>
     <table>
-        <thead><tr><th>Team</th><th>Spieler:in 1</th><th>Spieler:in 2</th></tr></thead>
+        <thead>
+            <tr>
+                <th>Team</th>
+                <th>Spieler:in 1</th>
+                <th>Spieler:in 2</th>
+            </tr>
+        </thead>
         <tbody id="teams"></tbody>
     </table>
 
     <h2>Resultate</h2>
     <table>
-        <thead><tr><th>Team 1</th><th>Team 2</th><th>Ergebnis</th></tr></thead>
+        <thead>
+            <tr>
+                <th>Team 1</th>
+                <th>Team 2</th>
+                <th>Ergebnis</th>
+            </tr>
+        </thead>
         <tbody id="results"></tbody>
     </table>
 
     <h2>Offene Spiele</h2>
     <table>
-        <thead><tr><th>Team 1</th><th>Team 2</th></tr></thead>
+        <thead>
+            <tr>
+                <th>Team 1</th>
+                <th>Team 2</th>
+            </tr>
+        </thead>
         <tbody id="upcoming"></tbody>
     </table>
 
     <h2>Rangliste</h2>
     <table>
-        <thead><tr><th>Rang</th><th>Team</th><th>Spiele</th><th>Punkte</th><th>Tore</th><th>Gegentore</th><th>Tordifferenz</th></tr></thead>
+        <thead>
+            <tr>
+                <th>Rang</th>
+                <th>Team</th>
+                <th>Spiele</th>
+                <th>Punkte</th>
+                <th>Tore</th>
+                <th>Gegentore</th>
+                <th>Tordifferenz</th>
+            </tr>
+        </thead>
         <tbody id="ranking"></tbody>
     </table>
-
-    <script src="firebase.js"></script>
-    <script src="index-script.js"></script>
 </body>
 </html>

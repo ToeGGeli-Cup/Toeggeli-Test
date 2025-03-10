@@ -4,14 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin-Bereich</title>
-    <style>
-        body { font-family: Arial, sans-serif; background-color: #5B3A2E; color: white; text-align: center; }
-        h1 { font-size: 28px; }
-        button { margin: 10px; padding: 10px; background-color: #D81B60; color: white; border: none; cursor: pointer; }
-        table { width: 80%; margin: auto; border-collapse: collapse; }
-        th, td { padding: 10px; border: 1px solid black; background-color: white; color: black; }
-        th { background-color: #0059B2; color: white; }
-    </style>
+    <script type="module" src="./firebase.js"></script>
+    <script type="module" src="./admin-script.js"></script>
+    <link rel="stylesheet" href="./styles.css">
 </head>
 <body>
     <h1>Admin-Bereich</h1>
@@ -21,23 +16,15 @@
     <input type="text" id="player1" placeholder="Spieler:in 1">
     <input type="text" id="player2" placeholder="Spieler:in 2">
     <button onclick="addTeam()">Team hinzufügen</button>
-    <table id="teamsTable">
-        <thead><tr><th>Team</th><th>Spieler:in 1</th><th>Spieler:in 2</th><th>Aktion</th></tr></thead>
-        <tbody></tbody>
-    </table>
+    <table id="teamTable"></table>
 
     <h2>News verwalten</h2>
-    <textarea id="newsText" rows="3" cols="50" placeholder="Neuer News-Eintrag"></textarea>
+    <textarea id="newsText" placeholder="Neuer News-Eintrag"></textarea>
     <button onclick="addNews()">News hinzufügen</button>
-    <div id="newsContainer"></div>
+    <div id="newsList"></div>
 
     <h2>Ergebnisse eintragen</h2>
-    <table id="matchesTable">
-        <thead><tr><th>Team 1</th><th>Team 2</th><th>Ergebnis</th><th>Aktion</th></tr></thead>
-        <tbody></tbody>
-    </table>
-
-    <script src="firebase.js"></script>
-    <script src="admin-script.js"></script>
+    <table id="resultsTable"></table>
+    <button onclick="saveResults()">Änderungen speichern</button>
 </body>
 </html>

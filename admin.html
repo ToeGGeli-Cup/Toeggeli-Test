@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - TöGGeli-Cup</title>
+    <script type="module" src="firebase.js"></script>
+    <script type="module" src="admin-script.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #2E2E2E;
+            color: white;
+            text-align: center;
+        }
+        table {
+            width: 80%;
+            margin: auto;
+            border-collapse: collapse;
+        }
+        th, td {
+            padding: 10px;
+            border: 1px solid #FFF;
+        }
+        th {
+            background-color: #D81B60;
+            color: white;
+        }
+        input, button {
+            margin: 5px;
+            padding: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Admin-Bereich</h1>
+
+    <h2>Teams verwalten</h2>
+    <input type="text" id="teamName" placeholder="Teamname">
+    <input type="text" id="player1" placeholder="Spieler:in 1">
+    <input type="text" id="player2" placeholder="Spieler:in 2">
+    <button id="addTeam">Team hinzufügen</button>
+    <table>
+        <thead><tr><th>Team</th><th>Spieler:in 1</th><th>Spieler:in 2</th><th>Aktion</th></tr></thead>
+        <tbody id="teams"></tbody>
+    </table>
+
+    <h2>News verwalten</h2>
+    <textarea id="newsText" rows="3" placeholder="Neue News..."></textarea>
+    <button id="addNews">News hinzufügen</button>
+    <div id="news"></div>
+
+    <h2>Resultate</h2>
+    <table>
+        <thead><tr><th>Team 1</th><th>Team 2</th><th>Ergebnis</th><th>Aktion</th></tr></thead>
+        <tbody id="results"></tbody>
+    </table>
+
+    <button id="saveBtn">Änderungen speichern</button>
+</body>
+</html>
+

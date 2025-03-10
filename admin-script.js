@@ -9,60 +9,70 @@ document.addEventListener("DOMContentLoaded", () => {
     onValue(teamsRef, (snapshot) => {
         const teamsTable = document.getElementById("teamsTable");
         teamsTable.innerHTML = "";
+        const teams = [];
+
         snapshot.forEach((childSnapshot) => {
             const team = childSnapshot.val();
+            teams.push(team.name);
             teamsTable.innerHTML += `<tr>
                 <td>${team.name}</td>
                 <td>${team.player1}</td>
                 <td>${team.player2}</td>
             </tr>`;
         });
+
+        generateMatches(teams);
     });
 
-    // News anzeigen
+    // News anzeigen und verwalten
     onValue(newsRef, (snapshot) => {
         const newsContainer = document.getElementById("newsContainer");
         newsContainer.innerHTML = "";
         snapshot.forEach((childSnapshot) => {
             const newsItem = childSnapshot.val();
-            newsContainer.innerHTML += `<p>${newsItem.date}: ${newsItem.text}</p>`;
+            newsContainer.innerHTML += `<p>${newsItem.date}: ${newsItem.text} 
+                <button onclick="deleteNews('${childSnapshot.key}')">🗑️</button></p>`;
         });
     });
 
-    // Spiele anzeigen (Offene & Resultate)
+    window.deleteNews = (newsId) => {
+        remove(ref(db, `news/${newsId}`));
+    };
+
+    // Spiele anzeigen & Resultate verwalten
     onValue(matchesRef, (snapshot) => {
-        const resultsTable = document.getElementById("resultsTable");
-        const upcomingTable = document.getElementById("upcomingMatches");
-        resultsTable.innerHTML = "";
-        upcomingTable.innerHTML = "";
-        
+        const matchesTable = document.getElementById("matchesTable");
+        matchesTable.innerHTML = "";
+
         snapshot.forEach((childSnapshot) => {
             const match = childSnapshot.val();
-            if (match.score && match.score !== "-") {
-                resultsTable.innerHTML += `<tr>
-                    <td>${match.team1}</td>
-                    <td>${match.team2}</td>
-                    <td>${match.score}</td>
-                </tr>`;
-            } else {
-                upcomingTable.innerHTML += `<tr>
-                    <td>${match.team1}</td>
-                    <td>${match.team2}</td>
-                </tr>`;
-            }
+            matchesTable.innerHTML += `<tr>
+                <td>${match.team1}</td>
+                <td>${match.team2}</td>
+                <td>
+                    <input type="text" id="result_${childSnapshot.key}" value="${match.score !== '-' ? match.score : ''}">
+                    <button onclick="saveResult('${childSnapshot.key}')">Speichern</button>
+                </td>
+            </tr>`;
         });
     });
 
-    // Ergebnis speichern
-    document.getElementById("saveResult").addEventListener("click", () => {
-        const team1 = document.getElementById("resultTeam1").value;
-        const team2 = document.getElementById("resultTeam2").value;
-        const score = document.getElementById("matchScore").value;
+    window.saveResult = (matchId) => {
+        const resultInput = document.getElementById(`result_${matchId}`).value;
+        const matchRef = ref(db, `matches/${matchId}`);
 
-        if (team1 && team2) {
-            const matchRef = ref(db, `matches/${team1}_${team2}`);
-            set(matchRef, { team1, team2, score: score || "-" });
-        }
-    });
+        set(matchRef, { ...matchRef, score: resultInput || "-" });
+    };
 
+    function generateMatches(teams) {
+        if (teams.length < 2) return;
+
+        teams.forEach((team1, i) => {
+            for (let j = i + 1; j < teams.length; j++) {
+                const team2 = teams[j];
+                const matchId = `${team1}_${team2}`;
+                set(ref(db, `matches/${matchId}`), { team1, team2, score: "-" });
+            }
+        });
+    }
 });

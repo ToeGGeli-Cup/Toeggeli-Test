@@ -1,10 +1,10 @@
 // Import Firebase SDK-Module
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
-import { getDatabase, ref, push, set, remove, onValue, update } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
+import { getDatabase, ref, push, set, remove, update, onValue } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
 
 // Firebase-Konfiguration
 const firebaseConfig = {
-    apiKey: "AIzaSyD2nmuFhdG0ZU5wO9H7CqsxPnRF04WZLzY",
+    apiKey: "DEINE_API_KEY",
     authDomain: "toeggeli-cup-2025.firebaseapp.com",
     databaseURL: "https://toeggeli-cup-2025-default-rtdb.europe-west1.firebasedatabase.app",
     projectId: "toeggeli-cup-2025",
@@ -17,5 +17,4 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 
-// **WICHTIG: `update` hinzufügen**
-export { db, ref, push, set, remove, onValue, update };
+export { db, ref, push, set, remove, update, onValue };

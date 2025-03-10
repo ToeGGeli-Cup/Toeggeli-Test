@@ -5,16 +5,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin-Bereich</title>
     <script type="module" src="./firebase.js"></script>
+    <script type="module" src="./admin-script.js"></script>
     <style>
-        body { 
-            font-family: Arial, sans-serif; 
-            background-color: #5B3A2E; 
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #5B3A2E;
             color: white;
             text-align: center;
             margin: 20px;
         }
         h1, h2 {
-            font-size: 24px;
             font-weight: bold;
         }
         .news-container {
@@ -24,7 +24,6 @@
             background-color: #D81B60;
             color: white;
             border-radius: 10px;
-            text-align: left;
         }
         table {
             width: 80%;
@@ -41,28 +40,18 @@
             background-color: #0059B2;
             color: white;
         }
-        .delete-btn {
-            background: none;
-            border: none;
-            cursor: pointer;
-            color: red;
-            font-size: 16px;
-        }
-        .delete-btn:hover {
-            color: darkred;
-        }
     </style>
 </head>
 <body>
     <h1>Admin-Bereich</h1>
 
-    <!-- NEWS VERWALTEN -->
     <h2>News verwalten</h2>
     <div class="news-container">
-        <ul id="newsList"></ul>
+        <textarea id="newsText"></textarea>
+        <button id="addNews">News hinzufügen</button>
+        <div id="newsContainer"></div>
     </div>
 
-    <!-- TEAMS VERWALTEN -->
     <h2>Teams verwalten</h2>
     <input type="text" id="teamName" placeholder="Teamname">
     <input type="text" id="player1" placeholder="Spieler:in 1">
@@ -75,7 +64,6 @@
         <tbody id="teamsTable"></tbody>
     </table>
 
-    <!-- OFFENE SPIELE VERWALTEN -->
     <h2>Offene Spiele</h2>
     <table>
         <thead>
@@ -84,7 +72,6 @@
         <tbody id="upcomingMatches"></tbody>
     </table>
 
-    <!-- RESULTATE VERWALTEN -->
     <h2>Resultate</h2>
     <table>
         <thead>
@@ -93,7 +80,6 @@
         <tbody id="resultsTable"></tbody>
     </table>
 
-    <!-- RANGLISTE -->
     <h2>Rangliste</h2>
     <table>
         <thead>
@@ -101,6 +87,5 @@
         </thead>
         <tbody id="rankingTable"></tbody>
     </table>
- <script type="module" src="./admin-script.js"></script>
 </body>
 </html>

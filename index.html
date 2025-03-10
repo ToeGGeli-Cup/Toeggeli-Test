@@ -107,7 +107,7 @@
                 // News laden (Fehler behoben: undefined entfernt)
                 const newsContainer = document.getElementById("news");
                 newsContainer.innerHTML = data.news.map(n => 
-                    `<p><strong>${n.date || "Datum unbekannt"}:</strong> ${n.text || ""}</p>`
+                    `<p>${n.text || ""}</p>`
                 ).join("");
 
                 // Teams anzeigen

@@ -5,6 +5,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const newsRef = ref(db, "news");
     const matchesRef = ref(db, "matches");
 
+    // TEAMS ANZEIGEN
     onValue(teamsRef, (snapshot) => {
         const teamsTable = document.getElementById("teamsTable");
         teamsTable.innerHTML = "";
@@ -18,6 +19,7 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     });
 
+    // NEWS ANZEIGEN
     onValue(newsRef, (snapshot) => {
         const newsContainer = document.getElementById("newsContainer");
         newsContainer.innerHTML = "";
@@ -27,12 +29,13 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     });
 
+    // RESULTATE UND OFFENE SPIELE ANZEIGEN
     onValue(matchesRef, (snapshot) => {
         const resultsTable = document.getElementById("resultsTable");
-        const upcomingTable = document.getElementById("upcomingTable");
+        const upcomingTable = document.getElementById("upcomingMatches");
         resultsTable.innerHTML = "";
         upcomingTable.innerHTML = "";
-
+        
         snapshot.forEach((childSnapshot) => {
             const match = childSnapshot.val();
             if (match.score && match.score !== "-") {
@@ -48,5 +51,61 @@ document.addEventListener("DOMContentLoaded", () => {
                 </tr>`;
             }
         });
+
+        updateRankings(snapshot);
     });
+
+    // RANGLISTE BERECHNEN UND ANZEIGEN
+    function updateRankings(snapshot) {
+        const rankings = {};
+
+        // Initialisierung aller Teams in der Rangliste
+        onValue(teamsRef, (teamsSnapshot) => {
+            teamsSnapshot.forEach((childSnapshot) => {
+                const team = childSnapshot.val().name;
+                rankings[team] = { games: 0, points: 0, goals: 0, conceded: 0, diff: 0 };
+            });
+
+            snapshot.forEach((childSnapshot) => {
+                const match = childSnapshot.val();
+                if (match.score && match.score !== "-") {
+                    const [g1, g2] = match.score.split(":").map(Number);
+
+                    rankings[match.team1].games += 1;
+                    rankings[match.team2].games += 1;
+                    rankings[match.team1].goals += g1;
+                    rankings[match.team2].goals += g2;
+                    rankings[match.team1].conceded += g2;
+                    rankings[match.team2].conceded += g1;
+                    rankings[match.team1].diff = rankings[match.team1].goals - rankings[match.team1].conceded;
+                    rankings[match.team2].diff = rankings[match.team2].goals - rankings[match.team2].conceded;
+
+                    // Punktevergabe (1 Punkt für Sieg)
+                    if (g1 > g2) rankings[match.team1].points += 1;
+                    else if (g2 > g1) rankings[match.team2].points += 1;
+                }
+            });
+
+            // Rangliste sortieren und anzeigen
+            const rankingTable = document.getElementById("rankingTable");
+            rankingTable.innerHTML = "";
+            const sortedTeams = Object.keys(rankings).sort((a, b) =>
+                rankings[b].points - rankings[a].points ||
+                rankings[b].diff - rankings[a].diff ||
+                rankings[b].goals - rankings[a].goals
+            );
+
+            sortedTeams.forEach((team, index) => {
+                rankingTable.innerHTML += `<tr>
+                    <td>${index + 1}</td>
+                    <td>${team}</td>
+                    <td>${rankings[team].games}</td>
+                    <td>${rankings[team].points}</td>
+                    <td>${rankings[team].goals}</td>
+                    <td>${rankings[team].conceded}</td>
+                    <td>${rankings[team].diff}</td>
+                </tr>`;
+            });
+        });
+    }
 });

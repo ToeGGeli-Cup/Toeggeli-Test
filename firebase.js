@@ -1,8 +1,7 @@
-// Import the functions you need from the SDKs you need
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
-import { getDatabase, ref, set, get, update } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
+import { getDatabase, ref, set, get, update, onValue, push } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
 
-// Your web app's Firebase configuration
+// 🔥 Firebase-Konfiguration
 const firebaseConfig = {
     apiKey: "AIzaSyD2nmuFhdG0ZU5wO9H7CqsxPnRF04WZLzY",
     authDomain: "toeggeli-cup-2025.firebaseapp.com",
@@ -13,8 +12,20 @@ const firebaseConfig = {
     appId: "1:810841513587:web:fc9d2b0274cf92b3ae1406"
 };
 
-// Initialize Firebase
+// Firebase initialisieren
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 
-export { db, ref, set, get, update };
+console.log("✅ Firebase erfolgreich initialisiert!");
+
+// Test: Daten auslesen
+const testRef = ref(db, "/");
+get(testRef).then(snapshot => {
+    if (snapshot.exists()) {
+        console.log("🔥 Firebase Daten gefunden:", snapshot.val());
+    } else {
+        console.log("⚠️ Keine Daten in Firebase gefunden!");
+    }
+}).catch(error => console.error("❌ Fehler beim Firebase-Lesen:", error));
+
+export { db, ref, set, get, update, onValue, push };

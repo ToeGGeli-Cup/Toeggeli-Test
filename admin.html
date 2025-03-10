@@ -3,95 +3,123 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin - TöGGeli-Cup</title>
-    <script type="module" src="firebase.js"></script>
+    <title>Admin-Bereich</title>
     <style>
-        body { 
-            font-family: Arial, sans-serif; 
-            background-color: #5B3A2E; 
-            color: white;
-            text-align: center;
-            margin: 20px;
-            padding-bottom: 50px;
-        }
-        h1 {
-            font-size: 28px;
-            font-weight: bold;
-        }
-        h2 {
-            font-size: 22px;
-            font-weight: bold;
-            margin-top: 30px;
-        }
-        .news-container {
-            width: 80%;
-            margin: 20px auto;
-            padding: 15px;
-            background-color: #D81B60;
-            color: white;
-            border-radius: 10px;
-            text-align: left;
-        }
-        table {
-            width: 80%;
-            margin: 10px auto;
-            border-collapse: collapse;
-        }
-        th, td {
-            padding: 10px;
-            border: 1px solid black;
-            background-color: white;
-            color: black;
-        }
-        th {
-            background-color: #0059B2;
-            color: white;
-        }
-        .open-matches th {
-            background-color: #D81B60;
-        }
-        input, button, textarea {
-            margin: 5px;
-            padding: 10px;
-            font-size: 16px;
-        }
-        button {
-            background-color: #D81B60;
-            color: white;
-            border: none;
-            cursor: pointer;
-        }
-        button:hover {
-            background-color: #B01550;
-        }
+        body { font-family: Arial, sans-serif; background-color: #5B3A2E; color: white; text-align: center; margin: 20px; }
+        h1 { font-size: 28px; font-weight: bold; }
+        h2 { font-size: 22px; font-weight: bold; margin-top: 30px; }
+        table { width: 80%; margin: 10px auto; border-collapse: collapse; }
+        th, td { padding: 10px; border: 1px solid black; background-color: white; color: black; }
+        th { background-color: #0059B2; color: white; }
+        .news-container { width: 80%; margin: 20px auto; padding: 15px; background-color: #D81B60; color: white; border-radius: 10px; text-align: left; }
     </style>
 </head>
 <body>
-    <h1>Admin-Bereich - TöGGeli-Cup 2025</h1>
-
-    <div class="news-container">
-        <h2>News verwalten</h2>
-        <textarea id="newsText" rows="3" placeholder="Neue News..."></textarea>
-        <button id="addNews">News hinzufügen</button>
-        <div id="news"></div>
-    </div>
+    <h1>Admin-Bereich</h1>
 
     <h2>Teams verwalten</h2>
     <input type="text" id="teamName" placeholder="Teamname">
     <input type="text" id="player1" placeholder="Spieler:in 1">
     <input type="text" id="player2" placeholder="Spieler:in 2">
     <button id="addTeam">Team hinzufügen</button>
-    <table>
-        <thead><tr><th>Team</th><th>Spieler:in 1</th><th>Spieler:in 2</th><th>Aktion</th></tr></thead>
-        <tbody id="teams"></tbody>
-    </table>
+
+    <h2>News verwalten</h2>
+    <textarea id="newsText" rows="3" cols="50" placeholder="Neue News..."></textarea>
+    <button id="addNews">News hinzufügen</button>
 
     <h2>Resultate</h2>
     <table>
-        <thead><tr><th>Team 1</th><th>Team 2</th><th>Ergebnis</th><th>Aktion</th></tr></thead>
+        <thead>
+            <tr><th>Team 1</th><th>Team 2</th><th>Ergebnis</th><th>Aktion</th></tr>
+        </thead>
         <tbody id="results"></tbody>
     </table>
+    <button id="saveResults">Änderungen speichern</button>
 
-    <button id="saveBtn">Änderungen speichern</button>
+    <script type="module">
+        import { db, ref, set, get, update, push } from "./firebase.js";
+
+        console.log("🔥 Admin-Skript geladen.");
+
+        // 🔥 Teams hinzufügen
+        document.getElementById("addTeam").addEventListener("click", async () => {
+            const teamName = document.getElementById("teamName").value;
+            const player1 = document.getElementById("player1").value;
+            const player2 = document.getElementById("player2").value;
+
+            if (!teamName || !player1 || !player2) {
+                console.log("⚠️ Team-Eingaben unvollständig!");
+                return;
+            }
+
+            const newTeamRef = push(ref(db, "teams"));
+            await set(newTeamRef, { name: teamName, player1, player2 });
+            console.log("✅ Team gespeichert:", { name: teamName, player1, player2 });
+        });
+
+        // 🔥 News hinzufügen
+        document.getElementById("addNews").addEventListener("click", async () => {
+            const newsText = document.getElementById("newsText").value;
+            if (!newsText) {
+                console.log("⚠️ Kein News-Text eingegeben!");
+                return;
+            }
+
+            try {
+                console.log("🔥 Speichere News in Firebase...");
+                await set(ref(db, "news/latest"), { text: newsText, date: new Date().toISOString() });
+                console.log("✅ News erfolgreich gespeichert!");
+            } catch (error) {
+                console.error("❌ Fehler beim Speichern in Firebase:", error);
+            }
+        });
+
+        // 🔥 Resultate speichern
+        document.getElementById("saveResults").addEventListener("click", async () => {
+            const resultsTable = document.getElementById("results").children;
+            const matches = [];
+
+            for (let row of resultsTable) {
+                const team1 = row.children[0].innerText;
+                const team2 = row.children[1].innerText;
+                const score = row.children[2].querySelector("input").value;
+                if (score) matches.push({ team1, team2, score });
+            }
+
+            try {
+                console.log("🔥 Speichere Resultate...");
+                await set(ref(db, "matches"), matches);
+                console.log("✅ Resultate erfolgreich gespeichert!");
+            } catch (error) {
+                console.error("❌ Fehler beim Speichern der Resultate:", error);
+            }
+        });
+
+        // 🔥 Live-Daten aus Firebase laden
+        async function loadMatches() {
+            try {
+                const snapshot = await get(ref(db, "matches"));
+                if (snapshot.exists()) {
+                    console.log("🔥 Resultate geladen:", snapshot.val());
+                    const matches = snapshot.val();
+                    const resultsTable = document.getElementById("results");
+                    resultsTable.innerHTML = matches.map(m => `
+                        <tr>
+                            <td>${m.team1}</td>
+                            <td>${m.team2}</td>
+                            <td><input type="text" value="${m.score}"></td>
+                            <td><button onclick="deleteMatch('${m.team1}', '${m.team2}')">🗑️</button></td>
+                        </tr>
+                    `).join("");
+                } else {
+                    console.log("⚠️ Keine Matches in Firebase.");
+                }
+            } catch (error) {
+                console.error("❌ Fehler beim Laden der Matches:", error);
+            }
+        }
+
+        loadMatches();
+    </script>
 </body>
 </html>

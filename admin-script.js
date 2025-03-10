@@ -5,7 +5,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const newsRef = ref(db, "news");
     const matchesRef = ref(db, "matches");
 
-    // Teams anzeigen
+    // Teams anzeigen & verwalten
     onValue(teamsRef, (snapshot) => {
         const teamsTable = document.getElementById("teamsTable");
         teamsTable.innerHTML = "";
@@ -18,11 +18,16 @@ document.addEventListener("DOMContentLoaded", () => {
                 <td>${team.name}</td>
                 <td>${team.player1}</td>
                 <td>${team.player2}</td>
+                <td><button onclick="deleteTeam('${childSnapshot.key}')">🗑️</button></td>
             </tr>`;
         });
 
         generateMatches(teams);
     });
+
+    window.deleteTeam = (teamId) => {
+        remove(ref(db, `teams/${teamId}`));
+    };
 
     // News anzeigen und verwalten
     onValue(newsRef, (snapshot) => {

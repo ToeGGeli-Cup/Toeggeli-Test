@@ -1,1 +1,36 @@
-{"teams":[],"matches":[],"news":[]}
+{
+  "teams": [
+    {"name": "LB Strikers", "player1": "Yahya", "player2": "Luis"},
+    {"name": "GGoldies", "player1": "Rolf Tobler", "player2": "Benedikt"},
+    {"name": "Team Watos", "player1": "Mojtaba", "player2": "Sina"},
+    {"name": "Inter Madrid", "player1": "Daniel", "player2": "Leon"},
+    {"name": "UnderdoGGs", "player1": "Rami", "player2": "Joel"},
+    {"name": "Make Kitchen Great Again", "player1": "Marion Wirth", "player2": "Philipp Kaluza"},
+    {"name": "GGschirrSpüeler", "player1": "Gabriela Rafique", "player2": "Simon de Roche"},
+    {"name": "Asian Warriors", "player1": "Jacob", "player2": "Songpol"},
+    {"name": "m&m's", "player1": "Marco Fischetto", "player2": "Marcel Schlatter"},
+    {"name": "?", "player1": "Niels", "player2": "Sascha Stanimirov"}
+  ],
+  "matches": [
+    {"team1": "LB Strikers", "team2": "GGoldies", "score": "-"},
+    {"team1": "Team Watos", "team2": "Inter Madrid", "score": "-"},
+    {"team1": "UnderdoGGs", "team2": "Make Kitchen Great Again", "score": "-"},
+    {"team1": "GGschirrSpüeler", "team2": "Asian Warriors", "score": "-"},
+    {"team1": "m&m's", "team2": "?", "score": "-"},
+    {"team1": "LB Strikers", "team2": "Team Watos", "score": "-"},
+    {"team1": "GGoldies", "team2": "Inter Madrid", "score": "-"},
+    {"team1": "UnderdoGGs", "team2": "GGschirrSpüeler", "score": "-"},
+    {"team1": "Make Kitchen Great Again", "team2": "Asian Warriors", "score": "-"},
+    {"team1": "m&m's", "team2": "LB Strikers", "score": "-"},
+    {"team1": "?", "team2": "GGoldies", "score": "-"},
+    {"team1": "Team Watos", "team2": "UnderdoGGs", "score": "-"},
+    {"team1": "Inter Madrid", "team2": "Make Kitchen Great Again", "score": "-"},
+    {"team1": "GGschirrSpüeler", "team2": "m&m's", "score": "-"},
+    {"team1": "Asian Warriors", "team2": "?", "score": "-"}
+  ],
+  "news": [
+    "Herzlich willkommen beim TöGGeli-Cup 2025!",
+    "Anmeldeschluss für Teams ist der 14. März.",
+    "Bisher haben sich folgende Teams angemeldet:"
+  ]
+}

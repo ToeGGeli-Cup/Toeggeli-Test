@@ -47,11 +47,11 @@
     <input type="text" id="teamName" placeholder="Teamname">
     <input type="text" id="player1" placeholder="Spieler:in 1">
     <input type="text" id="player2" placeholder="Spieler:in 2">
-    <button onclick="addTeam()">Team hinzufügen</button>
+    <button id="addTeamBtn">Team hinzufügen</button>
 
     <h2>News verwalten</h2>
     <textarea id="newsText" rows="3" cols="50" placeholder="Neue News..."></textarea>
-    <button onclick="addNews()">News hinzufügen</button>
+    <button id="addNewsBtn">News hinzufügen</button>
 
     <h2>Resultate</h2>
     <table>
@@ -66,10 +66,14 @@
         <tbody id="resultsTable">
         </tbody>
     </table>
-    <button onclick="saveResults()">Änderungen speichern</button>
+    <button id="saveResultsBtn">Änderungen speichern</button>
 
     <script type="module">
-        import { db, ref, push, set, get } from './firebase.js';
+        import { db, ref, push, set } from './firebase.js';
+
+        document.getElementById("addTeamBtn").addEventListener("click", addTeam);
+        document.getElementById("addNewsBtn").addEventListener("click", addNews);
+        document.getElementById("saveResultsBtn").addEventListener("click", saveResults);
 
         async function addTeam() {
             const teamName = document.getElementById("teamName").value.trim();
@@ -107,25 +111,7 @@
         }
 
         async function saveResults() {
-            const resultsTable = document.getElementById("resultsTable").children;
-            let updates = {};
-
-            for (let row of resultsTable) {
-                const team1 = row.children[0].textContent;
-                const team2 = row.children[1].textContent;
-                const score = row.children[2].querySelector("input").value;
-
-                if (score) {
-                    updates[`matches/${team1}_${team2}`] = { team1, team2, score };
-                }
-            }
-
-            try {
-                await set(ref(db, "matches"), updates);
-                alert("Ergebnisse erfolgreich gespeichert!");
-            } catch (error) {
-                console.error("Fehler beim Speichern der Ergebnisse:", error);
-            }
+            alert("Ergebnisse speichern ist noch in Arbeit!");
         }
     </script>
 </body>

@@ -13,17 +13,22 @@
             color: white;
             text-align: center;
             margin: 20px;
-            padding-bottom: 50px;
         }
         h1, h2 {
+            font-size: 24px;
             font-weight: bold;
         }
-        .container {
+        .news-container {
             width: 80%;
-            margin: auto;
+            margin: 20px auto;
+            padding: 15px;
+            background-color: #D81B60;
+            color: white;
+            border-radius: 10px;
+            text-align: left;
         }
         table {
-            width: 100%;
+            width: 80%;
             margin: 10px auto;
             border-collapse: collapse;
         }
@@ -37,27 +42,28 @@
             background-color: #0059B2;
             color: white;
         }
-        .news-container {
-            width: 80%;
-            margin: 20px auto;
-            padding: 15px;
-            background-color: #D81B60;
-            color: white;
-            border-radius: 10px;
-            text-align: left;
+        .delete-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: red;
+            font-size: 16px;
+        }
+        .delete-btn:hover {
+            color: darkred;
         }
     </style>
 </head>
 <body>
     <h1>Admin-Bereich</h1>
 
+    <!-- NEWS VERWALTEN -->
     <h2>News verwalten</h2>
     <div class="news-container">
-        <textarea id="newsText" placeholder="Neuer News-Eintrag"></textarea>
-        <button id="addNews">News hinzufügen</button>
-        <div id="newsContainer"></div>
+        <ul id="newsList"></ul>
     </div>
 
+    <!-- TEAMS VERWALTEN -->
     <h2>Teams verwalten</h2>
     <input type="text" id="teamName" placeholder="Teamname">
     <input type="text" id="player1" placeholder="Spieler:in 1">
@@ -70,6 +76,7 @@
         <tbody id="teamsTable"></tbody>
     </table>
 
+    <!-- OFFENE SPIELE VERWALTEN -->
     <h2>Offene Spiele</h2>
     <table>
         <thead>
@@ -78,6 +85,7 @@
         <tbody id="upcomingMatches"></tbody>
     </table>
 
+    <!-- RESULTATE VERWALTEN -->
     <h2>Resultate</h2>
     <table>
         <thead>
@@ -86,6 +94,7 @@
         <tbody id="resultsTable"></tbody>
     </table>
 
+    <!-- RANGLISTE -->
     <h2>Rangliste</h2>
     <table>
         <thead>

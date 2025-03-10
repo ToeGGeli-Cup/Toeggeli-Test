@@ -1,1 +1,12 @@
-{"teams":[],"matches":[],"news":[]}
+{
+    "news": [
+        {"date": "2025-03-15", "text": "Willkommen beim TöGGeli-Cup 2025! Die Teams sind bereit!"}
+    ],
+    "teams": [
+        {"name": "Team A", "player1": "Spieler 1", "player2": "Spieler 2"},
+        {"name": "Team B", "player1": "Spieler 3", "player2": "Spieler 4"}
+    ],
+    "results": [
+        {"team1": "Team A", "team2": "Team B", "score1": 3, "score2": 1}
+    ]
+}

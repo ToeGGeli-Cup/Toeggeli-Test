@@ -1,31 +1,23 @@
-<!DOCTYPE html>
-<html lang="de">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin-Bereich</title>
-    <script type="module" src="./firebase.js"></script>
-    <script type="module" src="./admin-script.js"></script>
-</head>
-<body>
-    <h1>Admin-Bereich</h1>
+<h2>Offene Spiele</h2>
+<table>
+    <thead>
+        <tr><th>Team 1</th><th>Team 2</th></tr>
+    </thead>
+    <tbody id="upcomingTable"></tbody>
+</table>
 
-    <h2>Teams verwalten</h2>
-    <input type="text" id="teamName" placeholder="Teamname">
-    <input type="text" id="player1" placeholder="Spieler:in 1">
-    <input type="text" id="player2" placeholder="Spieler:in 2">
-    <button id="addTeam">Team hinzufügen</button>
+<h2>Resultate</h2>
+<table>
+    <thead>
+        <tr><th>Team 1</th><th>Team 2</th><th>Ergebnis</th><th>Aktion</th></tr>
+    </thead>
+    <tbody id="resultsTable"></tbody>
+</table>
 
-    <table>
-        <thead>
-            <tr><th>Team</th><th>Spieler:in 1</th><th>Spieler:in 2</th><th>Aktion</th></tr>
-        </thead>
-        <tbody id="teamsTable"></tbody>
-    </table>
-
-    <h2>News verwalten</h2>
-    <textarea id="newsText"></textarea>
-    <button id="addNews">News hinzufügen</button>
-    <div id="newsContainer"></div>
-</body>
-</html>
+<h2>Rangliste</h2>
+<table>
+    <thead>
+        <tr><th>Rang</th><th>Team</th><th>Spiele</th><th>Punkte</th><th>Tore</th><th>Gegentore</th><th>Tordifferenz</th></tr>
+    </thead>
+    <tbody id="rankingTable"></tbody>
+</table>

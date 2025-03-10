@@ -7,30 +7,32 @@
     <style>
         body {
             font-family: Arial, sans-serif;
-            background-color: #f7efee;
-            color: #5B3A2E;
+            background-color: #1C1C1C;
+            color: #FFFFFF;
             text-align: center;
             margin: 0;
             padding: 20px;
         }
         h1 {
-            color: #0075BE;
+            color: #F8D210;
         }
         table {
             width: 90%;
             margin: 20px auto;
             border-collapse: collapse;
+            background: #2E2E2E;
+            color: white;
         }
         th, td {
             padding: 10px;
-            border: 1px solid #5B3A2E;
+            border: 1px solid #444;
         }
         th {
-            background-color: #0075BE;
-            color: white;
+            background-color: #F8D210;
+            color: black;
         }
         .news-container {
-            background: #694f50;
+            background: #444;
             color: white;
             padding: 15px;
             margin-bottom: 20px;
@@ -102,9 +104,11 @@
                 const response = await fetch("turnierdaten.json");
                 const data = await response.json();
 
-                // News laden
+                // News laden (Fehler behoben: undefined entfernt)
                 const newsContainer = document.getElementById("news");
-                newsContainer.innerHTML = data.news.map(n => `<p><strong>${n.date}:</strong> ${n.text}</p>`).join("");
+                newsContainer.innerHTML = data.news.map(n => 
+                    `<p><strong>${n.date || "Datum unbekannt"}:</strong> ${n.text || ""}</p>`
+                ).join("");
 
                 // Teams anzeigen
                 const teamsTable = document.getElementById("teams");

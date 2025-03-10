@@ -5,108 +5,109 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TöGGeli-Cup 2025</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #222;
-            color: #fff;
+        body { 
+            font-family: Arial, sans-serif; 
+            background-color: #5B3A2E; 
+            color: white;
             text-align: center;
-            margin: 0;
-            padding: 20px;
+            margin: 20px;
+            padding-bottom: 50px; /* Mehr Platz unten für mobile Ansicht */
         }
         h1 {
-            color: #F8D210;
+            font-size: 28px;
+            font-weight: bold;
         }
-        .container {
-            max-width: 900px;
-            margin: auto;
+        h2 {
+            font-size: 22px;
+            font-weight: bold;
+            margin-top: 30px;
         }
         .news-container {
-            background: #444;
+            width: 80%;
+            margin: 20px auto;
             padding: 15px;
-            margin-bottom: 20px;
-            border-radius: 8px;
+            background-color: #D81B60;
+            color: white;
+            border-radius: 10px;
             text-align: left;
         }
-        .news-container h2 {
-            color: #F8D210;
-        }
         table {
-            width: 100%;
-            margin: 20px auto;
+            width: 80%;
+            margin: 10px auto;
             border-collapse: collapse;
-            background: #333;
-            color: white;
         }
         th, td {
             padding: 10px;
-            border: 1px solid #666;
-            text-align: center;
+            border: 1px solid black;
+            background-color: white;
+            color: black;
         }
         th {
-            background-color: #F8D210;
-            color: black;
+            background-color: #0059B2;
+            color: white;
+        }
+        .open-matches th {
+            background-color: #D81B60;
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>TöGGeli-Cup 2025</h1>
+    <h1>TöGGeli-Cup 2025</h1>
 
-        <div class="news-container">
-            <h2>News</h2>
-            <div id="news"></div>
-        </div>
-
-        <h2>Teams</h2>
-        <table>
-            <thead>
-                <tr>
-                    <th>Team</th>
-                    <th>Spieler:in 1</th>
-                    <th>Spieler:in 2</th>
-                </tr>
-            </thead>
-            <tbody id="teams"></tbody>
-        </table>
-
-        <h2>Resultate</h2>
-        <table>
-            <thead>
-                <tr>
-                    <th>Team 1</th>
-                    <th>Team 2</th>
-                    <th>Ergebnis</th>
-                </tr>
-            </thead>
-            <tbody id="results"></tbody>
-        </table>
-
-        <h2>Offene Spiele</h2>
-        <table>
-            <thead>
-                <tr>
-                    <th>Team 1</th>
-                    <th>Team 2</th>
-                </tr>
-            </thead>
-            <tbody id="upcoming"></tbody>
-        </table>
-
-        <h2>Rangliste</h2>
-        <table>
-            <thead>
-                <tr>
-                    <th>Team</th>
-                    <th>Spiele</th>
-                    <th>Punkte</th>
-                    <th>Tore</th>
-                    <th>Gegentore</th>
-                    <th>Tordifferenz</th>
-                </tr>
-            </thead>
-            <tbody id="ranking"></tbody>
-        </table>
+    <div class="news-container">
+        <h2>News</h2>
+        <div id="news"></div>
     </div>
+
+    <h2>Teams</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Team</th>
+                <th>Spieler:in 1</th>
+                <th>Spieler:in 2</th>
+            </tr>
+        </thead>
+        <tbody id="teams"></tbody>
+    </table>
+
+    <h2>Resultate</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Team 1</th>
+                <th>Team 2</th>
+                <th>Ergebnis</th>
+            </tr>
+        </thead>
+        <tbody id="results"></tbody>
+    </table>
+
+    <h2>Offene Spiele</h2>
+    <table class="open-matches">
+        <thead>
+            <tr>
+                <th>Team 1</th>
+                <th>Team 2</th>
+            </tr>
+        </thead>
+        <tbody id="upcoming"></tbody>
+    </table>
+
+    <h2>Rangliste</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Team</th>
+                <th>Spiele</th>
+                <th>Punkte</th>
+                <th>Tore</th>
+                <th>Gegentore</th>
+                <th>Tordifferenz</th>
+            </tr>
+        </thead>
+        <tbody id="ranking"></tbody>
+    </table>
 
     <script>
         async function loadTournamentData() {

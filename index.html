@@ -1,13 +1,12 @@
-﻿
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="de">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="Cache-Control" content="max-age=0, no-cache, no-store, must-revalidate">
-    <meta http-equiv="Pragma" content="no-cache">
-    <meta http-equiv="Expires" content="0">
     <title>TöGGeli-Cup 2025</title>
+    <script type="module" src="./firebase.js"></script>
+    <script type="module" src="./index-script.js"></script>
+    
     <style>
         body { 
             font-family: Arial, sans-serif; 
@@ -15,7 +14,7 @@
             color: white;
             text-align: center;
             margin: 20px;
-            padding-bottom: 50px; /* Mehr Platz unten für mobile Ansicht */
+            padding-bottom: 50px;
         }
         h1 {
             font-size: 28px;
@@ -60,49 +59,59 @@
 
     <div class="news-container">
         <h2>News</h2>
-        <p>Hallo zusammen und herzlich willkommen beim TöGGeli-Cup 2025!<p>
-	Eine Anmeldung ist noch bis am 14. März möglich.<br>Ab dem 17. März geht's endlich los: Spiele vereinbaren und ab an die Tische!!!<p>
-	Bis heute haben sich die folgenden hammerstarken Teams angemeldet:</p>
+        <div id="newsContainer"></div>
     </div>
 
     <h2>Teams</h2>
     <table>
         <thead>
-            <tr><th>Teamname</th><th>Spieler:in 1</th><th>Spieler:in 2</th></tr>
+            <tr>
+                <th>Team</th>
+                <th>Spieler:in 1</th>
+                <th>Spieler:in 2</th>
+            </tr>
         </thead>
-        <tbody>
-            <tr><td>LB Strikers</td><td>Yahya</td><td>Luis</td></tr><tr><td>GGoldies</td><td>Rolf Tobler</td><td>Benedikt</td></tr><tr><td>Team Watos</td><td>Mojtaba</td><td>Sina</td></tr><tr><td>Inter Madrid</td><td>Daniel</td><td>Leon</td></tr><tr><td>UnderdoGGs</td><td>Rami</td><td>Joel</td></tr><tr><td>Make Kitchen Great Again</td><td>Marion Wirth</td><td>Philipp Kaluza</td></tr><tr><td>GGschirrSpüeler</td><td>Gabriela Rafique</td><td>Simon de Roche</td></tr><tr><td>Asian Warriors</td><td>Jacob</td><td>Songpol</td></tr>
-        </tbody>
+        <tbody id="teamsTable"></tbody>
     </table>
 
     <h2>Resultate</h2>
     <table>
         <thead>
-            <tr><th>Team 1</th><th>Resultat</th><th>Team 2</th></tr>
+            <tr>
+                <th>Team 1</th>
+                <th>Team 2</th>
+                <th>Ergebnis</th>
+            </tr>
         </thead>
-        <tbody>
-            <tr><td colspan="3">Noch keine Ergebnisse vorhanden</td></tr>
-        </tbody>
+        <tbody id="resultsTable"></tbody>
     </table>
 
     <h2>Offene Spiele</h2>
-    <table class="open-matches">
+    <table>
         <thead>
-            <tr><th>Team 1</th><th>Team 2</th></tr>
+            <tr>
+                <th>Team 1</th>
+                <th>Team 2</th>
+            </tr>
         </thead>
-        <tbody>
-            <tr><td>LB Strikers</td><td>GGoldies</td></tr><tr><td>LB Strikers</td><td>Team Watos</td></tr><tr><td>LB Strikers</td><td>Inter Madrid</td></tr><tr><td>LB Strikers</td><td>UnderdoGGs</td></tr><tr><td>LB Strikers</td><td>Make Kitchen Great Again</td></tr><tr><td>LB Strikers</td><td>GGschirrSpüeler</td></tr><tr><td>LB Strikers</td><td>Asian Warriors</td></tr><tr><td>GGoldies</td><td>Team Watos</td></tr><tr><td>GGoldies</td><td>Inter Madrid</td></tr><tr><td>GGoldies</td><td>UnderdoGGs</td></tr><tr><td>GGoldies</td><td>Make Kitchen Great Again</td></tr><tr><td>GGoldies</td><td>GGschirrSpüeler</td></tr><tr><td>GGoldies</td><td>Asian Warriors</td></tr><tr><td>Team Watos</td><td>Inter Madrid</td></tr><tr><td>Team Watos</td><td>UnderdoGGs</td></tr><tr><td>Team Watos</td><td>Make Kitchen Great Again</td></tr><tr><td>Team Watos</td><td>GGschirrSpüeler</td></tr><tr><td>Team Watos</td><td>Asian Warriors</td></tr><tr><td>Inter Madrid</td><td>UnderdoGGs</td></tr><tr><td>Inter Madrid</td><td>Make Kitchen Great Again</td></tr><tr><td>Inter Madrid</td><td>GGschirrSpüeler</td></tr><tr><td>Inter Madrid</td><td>Asian Warriors</td></tr><tr><td>UnderdoGGs</td><td>Make Kitchen Great Again</td></tr><tr><td>UnderdoGGs</td><td>GGschirrSpüeler</td></tr><tr><td>UnderdoGGs</td><td>Asian Warriors</td></tr><tr><td>Make Kitchen Great Again</td><td>GGschirrSpüeler</td></tr><tr><td>Make Kitchen Great Again</td><td>Asian Warriors</td></tr><tr><td>GGschirrSpüeler</td><td>Asian Warriors</td></tr>
-        </tbody>
+        <tbody id="upcomingTable"></tbody>
     </table>
 
     <h2>Rangliste</h2>
     <table>
         <thead>
-            <tr><th>Team</th><th>Spiele</th><th>Punkte</th><th>Tore</th><th>Gegentore</th><th>Tordifferenz</th></tr>
+            <tr>
+                <th>Rang</th>
+                <th>Team</th>
+                <th>Spiele</th>
+                <th>Punkte</th>
+                <th>Tore</th>
+                <th>Gegentore</th>
+                <th>Tordifferenz</th>
+            </tr>
         </thead>
-        <tbody>
-            <tr><td>LB Strikers</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td></tr><tr><td>GGoldies</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td></tr><tr><td>Team Watos</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td></tr><tr><td>Inter Madrid</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td></tr><tr><td>UnderdoGGs</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td></tr><tr><td>Make Kitchen Great Again</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td></tr><tr><td>GGschirrSpüeler</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td></tr><tr><td>Asian Warriors</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td></tr>
-        </tbody>
+        <tbody id="rankingTable"></tbody>
     </table>
+
 </body>
 </html>

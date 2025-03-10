@@ -29,12 +29,14 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     });
 
-    // Resultate und offene Spiele anzeigen
+    // Spiele & Rangliste
     onValue(matchesRef, (snapshot) => {
         const resultsTable = document.getElementById("resultsTable");
         const upcomingTable = document.getElementById("upcomingTable");
         resultsTable.innerHTML = "";
         upcomingTable.innerHTML = "";
+
+        const rankings = {};
 
         snapshot.forEach((childSnapshot) => {
             const match = childSnapshot.val();
@@ -44,6 +46,9 @@ document.addEventListener("DOMContentLoaded", () => {
                     <td>${match.team2}</td>
                     <td>${match.score}</td>
                 </tr>`;
+
+                const [g1, g2] = match.score.split(":").map(Number);
+                updateRanking(rankings, match.team1, match.team2, g1, g2);
             } else {
                 upcomingTable.innerHTML += `<tr>
                     <td>${match.team1}</td>
@@ -52,60 +57,46 @@ document.addEventListener("DOMContentLoaded", () => {
             }
         });
 
-        updateRankings(snapshot);
+        displayRankings(rankings);
     });
 
-    // Rangliste berechnen
-    function updateRankings(snapshot) {
-        const rankings = {};
+    function updateRanking(rankings, team1, team2, g1, g2) {
+        if (!rankings[team1]) rankings[team1] = { games: 0, points: 0, goals: 0, conceded: 0, diff: 0 };
+        if (!rankings[team2]) rankings[team2] = { games: 0, points: 0, goals: 0, conceded: 0, diff: 0 };
 
-        // Initialisierung aller Teams in der Rangliste
-        onValue(teamsRef, (teamsSnapshot) => {
-            teamsSnapshot.forEach((childSnapshot) => {
-                const team = childSnapshot.val().name;
-                rankings[team] = { games: 0, points: 0, goals: 0, conceded: 0, diff: 0 };
-            });
+        rankings[team1].games++;
+        rankings[team2].games++;
+        rankings[team1].goals += g1;
+        rankings[team2].goals += g2;
+        rankings[team1].conceded += g2;
+        rankings[team2].conceded += g1;
+        rankings[team1].diff = rankings[team1].goals - rankings[team1].conceded;
+        rankings[team2].diff = rankings[team2].goals - rankings[team2].conceded;
 
-            snapshot.forEach((childSnapshot) => {
-                const match = childSnapshot.val();
-                if (match.score && match.score !== "-") {
-                    const [g1, g2] = match.score.split(":").map(Number);
+        if (g1 > g2) rankings[team1].points++;
+        else if (g2 > g1) rankings[team2].points++;
+    }
 
-                    rankings[match.team1].games += 1;
-                    rankings[match.team2].games += 1;
-                    rankings[match.team1].goals += g1;
-                    rankings[match.team2].goals += g2;
-                    rankings[match.team1].conceded += g2;
-                    rankings[match.team2].conceded += g1;
-                    rankings[match.team1].diff = rankings[match.team1].goals - rankings[match.team1].conceded;
-                    rankings[match.team2].diff = rankings[match.team2].goals - rankings[match.team2].conceded;
+    function displayRankings(rankings) {
+        const rankingTable = document.getElementById("rankingTable");
+        rankingTable.innerHTML = "";
 
-                    // Punktevergabe
-                    if (g1 > g2) rankings[match.team1].points += 1;
-                    else if (g2 > g1) rankings[match.team2].points += 1;
-                }
-            });
+        const sortedTeams = Object.keys(rankings).sort((a, b) =>
+            rankings[b].points - rankings[a].points ||
+            rankings[b].diff - rankings[a].diff ||
+            rankings[b].goals - rankings[a].goals
+        );
 
-            // Rangliste sortieren und anzeigen
-            const rankingTable = document.getElementById("rankingTable");
-            rankingTable.innerHTML = "";
-            const sortedTeams = Object.keys(rankings).sort((a, b) =>
-                rankings[b].points - rankings[a].points ||
-                rankings[b].diff - rankings[a].diff ||
-                rankings[b].goals - rankings[a].goals
-            );
-
-            sortedTeams.forEach((team, index) => {
-                rankingTable.innerHTML += `<tr>
-                    <td>${index + 1}</td>
-                    <td>${team}</td>
-                    <td>${rankings[team].games}</td>
-                    <td>${rankings[team].points}</td>
-                    <td>${rankings[team].goals}</td>
-                    <td>${rankings[team].conceded}</td>
-                    <td>${rankings[team].diff}</td>
-                </tr>`;
-            });
+        sortedTeams.forEach((team, index) => {
+            rankingTable.innerHTML += `<tr>
+                <td>${index + 1}</td>
+                <td>${team}</td>
+                <td>${rankings[team].games}</td>
+                <td>${rankings[team].points}</td>
+                <td>${rankings[team].goals}</td>
+                <td>${rankings[team].conceded}</td>
+                <td>${rankings[team].diff}</td>
+            </tr>`;
         });
     }
 });

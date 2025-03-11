@@ -4,32 +4,8 @@ document.addEventListener("DOMContentLoaded", () => {
     const teamsRef = ref(db, "teams");
     const matchesRef = ref(db, "matches");
     const rankingRef = ref(db, "ranking");
-    const newsRef = ref(db, "news");
 
-    /*** NEWS VERWALTEN ***/
-    onValue(newsRef, (snapshot) => {
-        const newsContainer = document.getElementById("newsContainer");
-        newsContainer.innerHTML = "";
-        snapshot.forEach((childSnapshot) => {
-            const newsItem = childSnapshot.val();
-            newsContainer.innerHTML += `
-                <div>${newsItem.text} <button onclick="deleteNews('${childSnapshot.key}')">🗑️</button></div>
-            `;
-        });
-    });
-
-    document.getElementById("addNews").addEventListener("click", () => {
-        const newsText = document.getElementById("newsInput").value.trim();
-        if (newsText === "") return;
-        push(newsRef, { text: newsText });
-        document.getElementById("newsInput").value = "";
-    });
-
-    window.deleteNews = (newsId) => {
-        remove(ref(db, `news/${newsId}`));
-    };
-
-    /*** TEAMS VERWALTEN ***/
+    // Teams anzeigen
     onValue(teamsRef, (snapshot) => {
         const teamsTable = document.getElementById("teamsTable");
         teamsTable.innerHTML = "";
@@ -50,22 +26,12 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 
-    document.getElementById("addTeam").addEventListener("click", () => {
-        const teamName = document.getElementById("teamName").value.trim();
-        const player1 = document.getElementById("player1").value.trim();
-        const player2 = document.getElementById("player2").value.trim();
-        if (teamName === "" || player1 === "" || player2 === "") return;
-        push(teamsRef, { name: teamName, player1, player2 });
-        document.getElementById("teamName").value = "";
-        document.getElementById("player1").value = "";
-        document.getElementById("player2").value = "";
-    });
-
+    // Teams löschen
     window.deleteTeam = (teamId) => {
         remove(ref(db, `teams/${teamId}`));
     };
 
-    /*** SPIELE GENERIEREN (ROUND ROBIN) ***/
+    // Spiele generieren (Round-Robin)
     function generateMatches(teams) {
         const matches = {};
         for (let i = 0; i < teams.length; i++) {
@@ -81,7 +47,7 @@ document.addEventListener("DOMContentLoaded", () => {
         set(matchesRef, matches);
     }
 
-    /*** SPIELE VERWALTEN ***/
+    // Spiele anzeigen
     onValue(matchesRef, (snapshot) => {
         const upcomingMatches = document.getElementById("upcomingMatches");
         const resultsTable = document.getElementById("resultsTable");
@@ -111,6 +77,7 @@ document.addEventListener("DOMContentLoaded", () => {
         updateRankings();
     });
 
+    // Ergebnis speichern
     window.saveResult = (matchId) => {
         const scoreInput = document.getElementById(`score_${matchId}`).value;
         if (!scoreInput.match(/^\d+:\d+$/)) {
@@ -121,6 +88,7 @@ document.addEventListener("DOMContentLoaded", () => {
         updateRankings();
     };
 
+    // Ergebnis bearbeiten
     window.editResult = (matchId, oldScore) => {
         const newScore = prompt("Neues Ergebnis eingeben:", oldScore);
         if (newScore && newScore.match(/^\d+:\d+$/)) {
@@ -129,7 +97,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     };
 
-    /*** RANGLISTE ***/
+    // Rangliste berechnen
     function updateRankings() {
         onValue(matchesRef, (snapshot) => {
             const rankings = {};
@@ -169,6 +137,7 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
+    // Rangliste anzeigen
     onValue(rankingRef, (snapshot) => {
         const rankingTable = document.getElementById("rankingTable");
         rankingTable.innerHTML = "";

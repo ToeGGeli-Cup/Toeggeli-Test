@@ -8,7 +8,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Funktion zur Bereinigung von Schlüsseln für Firebase
     function sanitizeKey(key) {
-        return key.replace(/[^a-zA-Z0-9]/g, "_");
+        return key.replace(/[^a-zA-Z0-9]/g, "_"); // Ersetzt alle Sonderzeichen durch "_"
     }
 
     // NEWS VERWALTEN
@@ -74,7 +74,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 
-    // SPIELE GENERIEREN (ROUND-ROBIN) MIT SICHEREN MATCH-IDS
+    // SPIELE GENERIEREN (SAFE MATCH-IDS)
     function generateMatches(teams) {
         onValue(matchesRef, (snapshot) => {
             const existingMatches = snapshot.val() || {};
@@ -155,7 +155,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
             onValue(teamsRef, (teamsSnapshot) => {
                 teamsSnapshot.forEach((childSnapshot) => {
-                    const team = childSnapshot.val().name;
+                    const team = sanitizeKey(childSnapshot.val().name);
                     rankings[team] = { games: 0, points: 0, goals: 0, conceded: 0, diff: 0 };
                 });
 
@@ -163,21 +163,24 @@ document.addEventListener("DOMContentLoaded", () => {
                     const match = childSnapshot.val();
                     if (match.score !== "-") {
                         const [g1, g2] = match.score.split(":").map(Number);
-                        if (rankings[match.team1] && rankings[match.team2]) {
-                            rankings[match.team1].games++;
-                            rankings[match.team2].games++;
-                            rankings[match.team1].goals += g1;
-                            rankings[match.team2].goals += g2;
-                            rankings[match.team1].conceded += g2;
-                            rankings[match.team2].conceded += g1;
-                            rankings[match.team1].diff = rankings[match.team1].goals - rankings[match.team1].conceded;
-                            rankings[match.team2].diff = rankings[match.team2].goals - rankings[match.team2].conceded;
+                        const team1 = sanitizeKey(match.team1);
+                        const team2 = sanitizeKey(match.team2);
 
-                            if (g1 > g2) rankings[match.team1].points += 3;
-                            else if (g2 > g1) rankings[match.team2].points += 3;
+                        if (rankings[team1] && rankings[team2]) {
+                            rankings[team1].games++;
+                            rankings[team2].games++;
+                            rankings[team1].goals += g1;
+                            rankings[team2].goals += g2;
+                            rankings[team1].conceded += g2;
+                            rankings[team2].conceded += g1;
+                            rankings[team1].diff = rankings[team1].goals - rankings[team1].conceded;
+                            rankings[team2].diff = rankings[team2].goals - rankings[team2].conceded;
+
+                            if (g1 > g2) rankings[team1].points += 3;
+                            else if (g2 > g1) rankings[team2].points += 3;
                             else {
-                                rankings[match.team1].points += 1;
-                                rankings[match.team2].points += 1;
+                                rankings[team1].points += 1;
+                                rankings[team2].points += 1;
                             }
                         }
                     }
@@ -187,22 +190,4 @@ document.addEventListener("DOMContentLoaded", () => {
             });
         });
     }
-
-    // RANGLISTE ANZEIGEN
-    onValue(rankingRef, (snapshot) => {
-        const rankingTable = document.getElementById("rankingTable");
-        rankingTable.innerHTML = "";
-        snapshot.forEach((childSnapshot) => {
-            const team = childSnapshot.key;
-            const data = childSnapshot.val();
-            rankingTable.innerHTML += `<tr>
-                <td>${team}</td>
-                <td>${data.games}</td>
-                <td>${data.points}</td>
-                <td>${data.goals}</td>
-                <td>${data.conceded}</td>
-                <td>${data.diff}</td>
-            </tr>`;
-        });
-    });
 });

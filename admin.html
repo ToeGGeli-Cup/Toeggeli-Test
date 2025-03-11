@@ -3,132 +3,35 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Turnierverwaltung</title>
-    <script src="firebase.js" type="module"></script>
-    <script src="admin-script.js" type="module"></script>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f4f4f4;
-            margin: 20px;
-            padding: 20px;
-        }
-        h2 {
-            background-color: #007bff;
-            color: white;
-            padding: 10px;
-            border-radius: 5px;
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 10px;
-            background: white;
-        }
-        th, td {
-            border: 1px solid #ddd;
-            padding: 8px;
-            text-align: center;
-        }
-        th {
-            background-color: #007bff;
-            color: white;
-        }
-        input, button {
-            padding: 8px;
-            margin: 5px;
-            border: 1px solid #ccc;
-        }
-        button {
-            cursor: pointer;
-            background-color: #007bff;
-            color: white;
-            border: none;
-            border-radius: 5px;
-        }
-        button:hover {
-            background-color: #0056b3;
-        }
-        .delete-button {
-            background-color: red;
-        }
-        .delete-button:hover {
-            background-color: darkred;
-        }
-    </style>
+    <title>Admin-Bereich</title>
+    <script type="module" src="admin-script.js"></script>
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
+    <h1>Admin-Bereich</h1>
 
-    <h2>🏆 Turnierverwaltung</h2>
+    <!-- News -->
+    <section>
+        <h2>News</h2>
+        <table id="newsTable" border="1">
+            <tr><th>Nachricht</th></tr>
+        </table>
+    </section>
 
-    <!-- Teams Verwaltung -->
-    <h3>Teams verwalten</h3>
-    <input type="text" id="teamName" placeholder="Teamname">
-    <input type="text" id="player1" placeholder="Spieler 1">
-    <input type="text" id="player2" placeholder="Spieler 2">
-    <button onclick="addTeam()">Team hinzufügen</button>
+    <!-- Teams -->
+    <section>
+        <h2>Teams</h2>
+        <table id="teamsTable" border="1">
+            <tr><th>Name</th><th>Spieler 1</th><th>Spieler 2</th></tr>
+        </table>
+    </section>
 
-    <table>
-        <thead>
-            <tr>
-                <th>Team</th>
-                <th>Spieler 1</th>
-                <th>Spieler 2</th>
-                <th>Löschen</th>
-            </tr>
-        </thead>
-        <tbody id="teamsTable"></tbody>
-    </table>
-
-    <!-- News Verwaltung -->
-    <h3>📰 News verwalten</h3>
-    <input type="text" id="newsText" placeholder="Neue Nachricht">
-    <button onclick="addNews()">News hinzufügen</button>
-
-    <table>
-        <thead>
-            <tr>
-                <th>Nachricht</th>
-                <th>Löschen</th>
-            </tr>
-        </thead>
-        <tbody id="newsTable"></tbody>
-    </table>
-
-    <!-- Spiele Verwaltung -->
-    <h3>⚽ Spiele verwalten</h3>
-    <input type="text" id="matchTeam1" placeholder="Team 1">
-    <input type="text" id="matchTeam2" placeholder="Team 2">
-    <button onclick="addMatch()">Spiel hinzufügen</button>
-
-    <table>
-        <thead>
-            <tr>
-                <th>Team 1</th>
-                <th>Team 2</th>
-                <th>Ergebnis</th>
-                <th>Löschen</th>
-            </tr>
-        </thead>
-        <tbody id="matchesTable"></tbody>
-    </table>
-
-    <!-- Rangliste -->
-    <h3>📊 Rangliste</h3>
-    <table>
-        <thead>
-            <tr>
-                <th>Platz</th>
-                <th>Team</th>
-                <th>Spiele</th>
-                <th>Punkte</th>
-                <th>Tore</th>
-                <th>Gegentore</th>
-                <th>Tordiff.</th>
-            </tr>
-        </thead>
-        <tbody id="rankingTable"></tbody>
-    </table>
-
+    <!-- Spiele & Ergebnisse -->
+    <section>
+        <h2>Spiele & Ergebnisse</h2>
+        <table id="matchesTable" border="1">
+            <tr><th>Team 1</th><th>Team 2</th><th>Ergebnis</th><th>Aktion</th></tr>
+        </table>
+    </section>
 </body>
 </html>

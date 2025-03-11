@@ -3,35 +3,54 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin-Bereich</title>
-    <script type="module" src="admin-script.js"></script>
+    <title>Admin Bereich</title>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
     <h1>Admin-Bereich</h1>
 
     <!-- News -->
-    <section>
-        <h2>News</h2>
-        <table id="newsTable" border="1">
-            <tr><th>Nachricht</th></tr>
-        </table>
-    </section>
+    <h2>News</h2>
+    <input type="text" id="newsText">
+    <button id="addNewsBtn">Hinzufügen</button>
 
-    <!-- Teams -->
-    <section>
-        <h2>Teams</h2>
-        <table id="teamsTable" border="1">
-            <tr><th>Name</th><th>Spieler 1</th><th>Spieler 2</th></tr>
-        </table>
-    </section>
+    <!-- Teams verwalten -->
+    <h2>Teams</h2>
+    <input type="text" id="teamName" placeholder="Teamname">
+    <input type="text" id="player1" placeholder="Spieler 1">
+    <input type="text" id="player2" placeholder="Spieler 2">
+    <button id="addTeamBtn">Team hinzufügen</button>
+    
+    <table id="teamsTable">
+        <tr>
+            <th>Name</th>
+            <th>Spieler 1</th>
+            <th>Spieler 2</th>
+        </tr>
+    </table>
 
-    <!-- Spiele & Ergebnisse -->
-    <section>
-        <h2>Spiele & Ergebnisse</h2>
-        <table id="matchesTable" border="1">
-            <tr><th>Team 1</th><th>Team 2</th><th>Ergebnis</th><th>Aktion</th></tr>
-        </table>
-    </section>
+    <!-- Spiele verwalten -->
+    <h2>Spiele & Ergebnisse</h2>
+    <input type="text" id="gameTeam1" placeholder="Team 1">
+    <input type="text" id="gameTeam2" placeholder="Team 2">
+    <button id="addGameBtn">Spiel hinzufügen</button>
+
+    <table id="gamesTable">
+        <tr>
+            <th>Team 1</th>
+            <th>Team 2</th>
+            <th>Ergebnis</th>
+            <th>Aktion</th>
+        </tr>
+    </table>
+
+    <!-- Ergebnis speichern -->
+    <h3>Ergebnis speichern</h3>
+    <input type="text" id="gameId" placeholder="Spiel-ID">
+    <input type="text" id="score1" placeholder="Team 1 Tore">
+    <input type="text" id="score2" placeholder="Team 2 Tore">
+    <button id="saveResultsBtn">Ergebnis speichern</button>
+
+    <script type="module" src="admin-script.js"></script>
 </body>
 </html>

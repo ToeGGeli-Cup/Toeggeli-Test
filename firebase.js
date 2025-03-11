@@ -1,20 +1,19 @@
-// Import Firebase SDK-Module
-import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
-import { getDatabase, ref, push, set, remove, update, onValue } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
+import { getDatabase, ref, set, push, remove, update, onValue } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-database.js";
 
-// Firebase-Konfiguration
+// Firebase-Konfiguration (füge deine echten Firebase-Daten hier ein)
 const firebaseConfig = {
     apiKey: "DEINE_API_KEY",
-    authDomain: "toeggeli-cup-2025.firebaseapp.com",
-    databaseURL: "https://toeggeli-cup-2025-default-rtdb.europe-west1.firebasedatabase.app",
-    projectId: "toeggeli-cup-2025",
-    storageBucket: "toeggeli-cup-2025.appspot.com",
-    messagingSenderId: "810841513587",
-    appId: "1:810841513587:web:fc9d2b0274cf92b3ae1406"
+    authDomain: "DEIN_AUTH_DOMAIN",
+    databaseURL: "DEINE_DATABASE_URL",
+    projectId: "DEIN_PROJECT_ID",
+    storageBucket: "DEIN_STORAGE_BUCKET",
+    messagingSenderId: "DEIN_MESSAGING_SENDER_ID",
+    appId: "DEIN_APP_ID"
 };
 
 // Firebase initialisieren
 const app = initializeApp(firebaseConfig);
-const db = getDatabase(app);
+const database = getDatabase(app);
 
-export { db, ref, push, set, remove, update, onValue };
+export { database, ref, set, push, remove, update, onValue };

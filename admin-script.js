@@ -1,91 +1,92 @@
 import { database, ref, set, push, remove, update, onValue } from "./firebase.js";
 
-// Teams-Referenz in der Datenbank
+// Referenzen in der Firebase-Datenbank
 const teamsRef = ref(database, "teams");
-const matchesRef = ref(database, "matches");
+const gamesRef = ref(database, "games");
+const newsRef = ref(database, "news");
 
-// Teams aus Firebase laden und anzeigen
+// Teams hinzufügen
+document.getElementById("addTeamBtn").addEventListener("click", function () {
+    const teamName = document.getElementById("teamName").value;
+    const player1 = document.getElementById("player1").value;
+    const player2 = document.getElementById("player2").value;
+
+    if (teamName && player1 && player2) {
+        push(teamsRef, {
+            name: teamName,
+            player1: player1,
+            player2: player2
+        });
+    }
+});
+
+// Spiele hinzufügen
+document.getElementById("addGameBtn").addEventListener("click", function () {
+    const team1 = document.getElementById("gameTeam1").value;
+    const team2 = document.getElementById("gameTeam2").value;
+
+    if (team1 && team2) {
+        push(gamesRef, {
+            team1: team1,
+            team2: team2,
+            score1: 0,
+            score2: 0
+        });
+    }
+});
+
+// Ergebnisse eintragen
+document.getElementById("saveResultsBtn").addEventListener("click", function () {
+    const gameId = document.getElementById("gameId").value;
+    const score1 = document.getElementById("score1").value;
+    const score2 = document.getElementById("score2").value;
+
+    if (gameId && score1 !== "" && score2 !== "") {
+        update(ref(database, "games/" + gameId), {
+            score1: parseInt(score1),
+            score2: parseInt(score2)
+        });
+    }
+});
+
+// Teams laden
 onValue(teamsRef, (snapshot) => {
     const teamsTable = document.getElementById("teamsTable");
-    teamsTable.innerHTML = "<tr><th>Name</th><th>Spieler 1</th><th>Spieler 2</th><th>Aktion</th></tr>";
+    teamsTable.innerHTML = ""; // Tabelle leeren
 
     snapshot.forEach((childSnapshot) => {
         const team = childSnapshot.val();
-        const teamKey = childSnapshot.key;
-        const row = teamsTable.insertRow();
-
-        row.insertCell(0).innerText = team.name;
-        row.insertCell(1).innerText = team.player1;
-        row.insertCell(2).innerText = team.player2;
-
-        // Team löschen Button
-        const deleteButton = document.createElement("button");
-        deleteButton.innerText = "Löschen";
-        deleteButton.onclick = () => remove(ref(database, "teams/" + teamKey));
-        row.insertCell(3).appendChild(deleteButton);
+        teamsTable.innerHTML += `<tr><td>${team.name}</td><td>${team.player1}</td><td>${team.player2}</td></tr>`;
     });
 });
 
-// Neues Team hinzufügen
-document.getElementById("addTeamForm").addEventListener("submit", (e) => {
-    e.preventDefault();
-    const name = document.getElementById("teamName").value.trim();
-    const player1 = document.getElementById("player1").value.trim();
-    const player2 = document.getElementById("player2").value.trim();
-
-    if (name && player1 && player2) {
-        push(teamsRef, { name, player1, player2 });
-        document.getElementById("addTeamForm").reset();
-    } else {
-        alert("Bitte alle Felder ausfüllen!");
-    }
-});
-
-// Spiele aus Firebase laden und anzeigen
-onValue(matchesRef, (snapshot) => {
-    const matchesTable = document.getElementById("matchesTable");
-    matchesTable.innerHTML = "<tr><th>Team 1</th><th>Team 2</th><th>Ergebnis</th><th>Aktion</th></tr>";
+// Spiele laden
+onValue(gamesRef, (snapshot) => {
+    const gamesTable = document.getElementById("gamesTable");
+    gamesTable.innerHTML = "";
 
     snapshot.forEach((childSnapshot) => {
-        const match = childSnapshot.val();
-        const matchKey = childSnapshot.key;
-        const row = matchesTable.insertRow();
-
-        row.insertCell(0).innerText = match.team1;
-        row.insertCell(1).innerText = match.team2;
-
-        // Ergebnisfeld
-        const scoreInput = document.createElement("input");
-        scoreInput.type = "text";
-        scoreInput.value = match.score || "";
-        row.insertCell(2).appendChild(scoreInput);
-
-        // Speichern-Button
-        const saveButton = document.createElement("button");
-        saveButton.innerText = "Speichern";
-        saveButton.onclick = () => {
-            update(ref(database, "matches/" + matchKey), { score: scoreInput.value });
-        };
-        row.insertCell(3).appendChild(saveButton);
-
-        // Löschen-Button für Spiel
-        const deleteButton = document.createElement("button");
-        deleteButton.innerText = "Löschen";
-        deleteButton.onclick = () => remove(ref(database, "matches/" + matchKey));
-        row.insertCell(3).appendChild(deleteButton);
+        const game = childSnapshot.val();
+        gamesTable.innerHTML += `<tr>
+            <td>${game.team1}</td>
+            <td>${game.team2}</td>
+            <td><input type="text" id="score1-${childSnapshot.key}" value="${game.score1}"> : 
+                <input type="text" id="score2-${childSnapshot.key}" value="${game.score2}">
+            </td>
+            <td><button onclick="saveResult('${childSnapshot.key}')">Speichern</button></td>
+        </tr>`;
     });
 });
 
-// Neues Spiel hinzufügen
-document.getElementById("addMatchForm").addEventListener("submit", (e) => {
-    e.preventDefault();
-    const team1 = document.getElementById("matchTeam1").value.trim();
-    const team2 = document.getElementById("matchTeam2").value.trim();
+// Ergebnis speichern Funktion
+function saveResult(gameId) {
+    const score1 = document.getElementById(`score1-${gameId}`).value;
+    const score2 = document.getElementById(`score2-${gameId}`).value;
 
-    if (team1 && team2 && team1 !== team2) {
-        push(matchesRef, { team1, team2, score: "" });
-        document.getElementById("addMatchForm").reset();
-    } else {
-        alert("Ungültige Eingabe! Teams müssen unterschiedlich sein.");
+    if (score1 !== "" && score2 !== "") {
+        update(ref(database, "games/" + gameId), {
+            score1: parseInt(score1),
+            score2: parseInt(score2)
+        });
     }
-});
+}

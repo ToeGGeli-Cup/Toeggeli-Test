@@ -72,6 +72,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 }
             });
             update(matchesRef, updates);
+            updateRankings(); // Aktualisiere Rangliste nach Löschung
         }, { onlyOnce: true });
     }
 

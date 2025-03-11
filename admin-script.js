@@ -4,8 +4,9 @@ document.addEventListener("DOMContentLoaded", () => {
     const teamsRef = ref(db, "teams");
     const matchesRef = ref(db, "matches");
     const rankingRef = ref(db, "ranking");
+    const newsRef = ref(db, "news");
 
-    // Teams anzeigen
+    // Teams anzeigen und verwalten
     onValue(teamsRef, (snapshot) => {
         const teamsTable = document.getElementById("teamsTable");
         teamsTable.innerHTML = "";
@@ -26,47 +27,105 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 
-    // Teams löschen + zugehörige Spiele entfernen
-    window.deleteTeam = (teamId) => {
-        const teamRef = ref(db, `teams/${teamId}`);
+    window.addTeam = () => {
+        const teamName = document.getElementById("teamName").value.trim();
+        const player1 = document.getElementById("player1").value.trim();
+        const player2 = document.getElementById("player2").value.trim();
 
-        // Team entfernen
-        remove(teamRef).then(() => {
-            console.log("Team gelöscht:", teamId);
+        if (!teamName || !player1 || !player2) {
+            alert("Bitte alle Felder ausfüllen.");
+            return;
+        }
 
-            // Alle Spiele löschen, an denen das Team beteiligt war
-            onValue(matchesRef, (snapshot) => {
-                snapshot.forEach((childSnapshot) => {
-                    const match = childSnapshot.val();
-                    const matchId = childSnapshot.key;
-                    if (match.team1 === teamId || match.team2 === teamId) {
-                        remove(ref(db, `matches/${matchId}`));
-                        console.log("Spiel gelöscht:", matchId);
-                    }
-                });
-            }, { onlyOnce: true });
+        const newTeamRef = push(teamsRef);
+        set(newTeamRef, { name: teamName, player1: player1, player2: player2 });
 
-            updateRankings(); // Rangliste aktualisieren
-        });
+        document.getElementById("teamName").value = "";
+        document.getElementById("player1").value = "";
+        document.getElementById("player2").value = "";
     };
 
-    // Spiele generieren (Round-Robin)
-    function generateMatches(teams) {
-        const matches = {};
-        for (let i = 0; i < teams.length; i++) {
-            for (let j = i + 1; j < teams.length; j++) {
-                const matchId = `${teams[i]}_vs_${teams[j]}`;
-                matches[matchId] = {
-                    team1: teams[i],
-                    team2: teams[j],
-                    score: "-"
-                };
+    window.deleteTeam = (teamId) => {
+        onValue(ref(db, `teams/${teamId}`), (snapshot) => {
+            if (snapshot.exists()) {
+                const teamName = snapshot.val().name;
+
+                remove(ref(db, `teams/${teamId}`));
+
+                onValue(matchesRef, (matchesSnap) => {
+                    matchesSnap.forEach((matchSnapshot) => {
+                        const match = matchSnapshot.val();
+                        if (match.team1 === teamName || match.team2 === teamName) {
+                            remove(ref(db, `matches/${matchSnapshot.key}`));
+                        }
+                    });
+                });
+
+                updateRankings();
             }
-        }
-        set(matchesRef, matches);
+        }, { onlyOnce: true });
+    };
+
+    function generateMatches(teams) {
+        onValue(matchesRef, (snapshot) => {
+            const existingMatches = {};
+            snapshot.forEach((childSnapshot) => {
+                existingMatches[childSnapshot.key] = childSnapshot.val();
+            });
+
+            const newMatches = {};
+            for (let i = 0; i < teams.length; i++) {
+                for (let j = i + 1; j < teams.length; j++) {
+                    const matchId = `${teams[i]}_vs_${teams[j]}`;
+                    if (!existingMatches[matchId]) {
+                        newMatches[matchId] = {
+                            team1: teams[i],
+                            team2: teams[j],
+                            score: "-"
+                        };
+                    }
+                }
+            }
+
+            set(matchesRef, { ...existingMatches, ...newMatches });
+        }, { onlyOnce: true });
     }
 
-    // Rangliste aktualisieren
+    // Ergebnis speichern
+    window.saveResult = (matchId) => {
+        const scoreInput = document.getElementById(`score_${matchId}`).value;
+        if (!scoreInput.match(/^\d+:\d+$/)) {
+            alert("Ungültiges Format! Bitte im Format X:Y eingeben.");
+            return;
+        }
+        update(ref(db, `matches/${matchId}`), { score: scoreInput });
+        updateRankings();
+    };
+
+    // News verwalten
+    onValue(newsRef, (snapshot) => {
+        const newsList = document.getElementById("newsList");
+        newsList.innerHTML = "";
+        snapshot.forEach((childSnapshot) => {
+            const newsItem = childSnapshot.val();
+            newsList.innerHTML += `<li>${newsItem} <button onclick="deleteNews('${childSnapshot.key}')">🗑️</button></li>`;
+        });
+    });
+
+    window.addNews = () => {
+        const newsText = document.getElementById("newsInput").value.trim();
+        if (!newsText) return;
+
+        const newNewsRef = push(newsRef);
+        set(newNewsRef, newsText);
+
+        document.getElementById("newsInput").value = "";
+    };
+
+    window.deleteNews = (newsId) => {
+        remove(ref(db, `news/${newsId}`));
+    };
+
     function updateRankings() {
         onValue(matchesRef, (snapshot) => {
             const rankings = {};

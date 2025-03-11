@@ -4,25 +4,8 @@ document.addEventListener("DOMContentLoaded", () => {
     const teamsRef = ref(db, "teams");
     const matchesRef = ref(db, "matches");
     const rankingRef = ref(db, "ranking");
-    const newsRef = ref(db, "news");
 
-    let lastTeams = [];
-
-    // **Teams verwalten**
-    document.getElementById("addTeam").addEventListener("click", () => {
-        const teamName = document.getElementById("teamName").value;
-        const player1 = document.getElementById("player1").value;
-        const player2 = document.getElementById("player2").value;
-
-        if (teamName && player1 && player2) {
-            const newTeamRef = push(teamsRef);
-            set(newTeamRef, { name: teamName, player1: player1, player2: player2 });
-            document.getElementById("teamName").value = "";
-            document.getElementById("player1").value = "";
-            document.getElementById("player2").value = "";
-        }
-    });
-
+    // Teams anzeigen
     onValue(teamsRef, (snapshot) => {
         const teamsTable = document.getElementById("teamsTable");
         teamsTable.innerHTML = "";
@@ -38,47 +21,38 @@ document.addEventListener("DOMContentLoaded", () => {
             </tr>`;
         });
 
-        if (JSON.stringify(teams) !== JSON.stringify(lastTeams)) {
-            lastTeams = teams;
-            updateMatches(teams);
+        if (teams.length > 1) {
+            generateMatches(teams);
         }
     });
 
+    // Teams löschen
     window.deleteTeam = (teamId) => {
         remove(ref(db, `teams/${teamId}`));
     };
 
-    // **Spiele generieren & verwalten (Loop vermeiden)**
-    function updateMatches(teams) {
-        onValue(matchesRef, (snapshot) => {
-            const existingMatches = {};
-            snapshot.forEach((childSnapshot) => {
-                existingMatches[childSnapshot.key] = childSnapshot.val();
-            });
+    // Spiele generieren (Round-Robin) mit sicheren Match-IDs
+    function generateMatches(teams) {
+        const matches = {};
+        for (let i = 0; i < teams.length; i++) {
+            for (let j = i + 1; j < teams.length; j++) {
+                const team1Safe = teams[i].replace(/[^a-zA-Z0-9]/g, "_");
+                const team2Safe = teams[j].replace(/[^a-zA-Z0-9]/g, "_");
+                const matchId = `${team1Safe}_vs_${team2Safe}`;
 
-            const newMatches = { ...existingMatches };
-
-            for (let i = 0; i < teams.length; i++) {
-                for (let j = i + 1; j < teams.length; j++) {
-                    const matchId = `${teams[i]}_vs_${teams[j]}`;
-                    if (!existingMatches[matchId]) {
-                        newMatches[matchId] = { team1: teams[i], team2: teams[j], score: "-" };
-                    }
+                if (!matches[matchId]) { // Falls Spiel noch nicht existiert
+                    matches[matchId] = {
+                        team1: teams[i],
+                        team2: teams[j],
+                        score: "-"
+                    };
                 }
             }
-
-            for (let matchId in existingMatches) {
-                const { team1, team2 } = existingMatches[matchId];
-                if (!teams.includes(team1) || !teams.includes(team2)) {
-                    delete newMatches[matchId];
-                }
-            }
-
-            set(matchesRef, newMatches);
-        }, { onlyOnce: true }); // Loop verhindern
+        }
+        set(matchesRef, matches);
     }
 
-    // **Spiele anzeigen & Ergebnisse verwalten**
+    // Spiele anzeigen
     onValue(matchesRef, (snapshot) => {
         const upcomingMatches = document.getElementById("upcomingMatches");
         const resultsTable = document.getElementById("resultsTable");
@@ -108,6 +82,7 @@ document.addEventListener("DOMContentLoaded", () => {
         updateRankings();
     });
 
+    // Ergebnis speichern
     window.saveResult = (matchId) => {
         const scoreInput = document.getElementById(`score_${matchId}`).value;
         if (!scoreInput.match(/^\d+:\d+$/)) {
@@ -118,6 +93,7 @@ document.addEventListener("DOMContentLoaded", () => {
         updateRankings();
     };
 
+    // Ergebnis bearbeiten
     window.editResult = (matchId, oldScore) => {
         const newScore = prompt("Neues Ergebnis eingeben:", oldScore);
         if (newScore && newScore.match(/^\d+:\d+$/)) {
@@ -126,7 +102,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     };
 
-    // **Rangliste berechnen**
+    // Rangliste berechnen
     function updateRankings() {
         onValue(matchesRef, (snapshot) => {
             const rankings = {};
@@ -161,32 +137,40 @@ document.addEventListener("DOMContentLoaded", () => {
                     }
                 });
 
-                set(rankingRef, rankings);
+                // Sichere Ranglisten-Keys
+                const safeRankings = {};
+                Object.keys(rankings).forEach((team) => {
+                    const safeKey = team.replace(/[^a-zA-Z0-9]/g, "_");
+                    safeRankings[safeKey] = rankings[team];
+                });
+
+                set(rankingRef, safeRankings);
             });
         });
     }
 
-    // **News verwalten**
-    document.getElementById("addNews").addEventListener("click", () => {
-        const newsText = document.getElementById("newsText").value;
-        if (newsText) {
-            const newNewsRef = push(newsRef);
-            set(newNewsRef, { text: newsText, date: new Date().toLocaleString() });
-            document.getElementById("newsText").value = "";
-        }
-    });
+    // Rangliste anzeigen
+    onValue(rankingRef, (snapshot) => {
+        const rankingTable = document.getElementById("rankingTable");
+        rankingTable.innerHTML = "";
+        if (!snapshot.exists()) return;
+        const sortedTeams = Object.keys(snapshot.val()).sort((a, b) =>
+            snapshot.val()[b].points - snapshot.val()[a].points ||
+            snapshot.val()[b].diff - snapshot.val()[a].diff ||
+            snapshot.val()[b].goals - snapshot.val()[a].goals
+        );
 
-    onValue(newsRef, (snapshot) => {
-        const newsContainer = document.getElementById("newsContainer");
-        newsContainer.innerHTML = "";
-        snapshot.forEach((childSnapshot) => {
-            const newsItem = childSnapshot.val();
-            newsContainer.innerHTML += `<p>${newsItem.date}: ${newsItem.text} 
-                <button onclick="deleteNews('${childSnapshot.key}')">🗑️</button></p>`;
+        sortedTeams.forEach((team, index) => {
+            const teamData = snapshot.val()[team];
+            rankingTable.innerHTML += `<tr>
+                <td>${index + 1}</td>
+                <td>${team}</td>
+                <td>${teamData.games}</td>
+                <td>${teamData.points}</td>
+                <td>${teamData.goals}</td>
+                <td>${teamData.conceded}</td>
+                <td>${teamData.diff}</td>
+            </tr>`;
         });
     });
-
-    window.deleteNews = (newsId) => {
-        remove(ref(db, `news/${newsId}`));
-    };
 });

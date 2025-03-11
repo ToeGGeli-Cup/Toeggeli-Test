@@ -8,7 +8,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Funktion zur Bereinigung von Schlüsseln für Firebase
     function sanitizeKey(key) {
-        return key.replace(/[^a-zA-Z0-9]/g, "_"); // Ersetzt alle Sonderzeichen durch "_"
+        return key.replace(/[^a-zA-Z0-9]/g, "_"); // Ersetzt Sonderzeichen durch "_"
     }
 
     // NEWS VERWALTEN
@@ -57,8 +57,9 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     window.deleteTeam = (teamId, teamName) => {
-        remove(ref(db, `teams/${teamId}`));
-        removeTeamMatches(teamName);
+        remove(ref(db, `teams/${teamId}`)).then(() => {
+            removeTeamMatches(teamName);
+        });
     };
 
     function removeTeamMatches(teamName) {

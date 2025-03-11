@@ -71,8 +71,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     updates[childSnapshot.key] = null; // Lösche das Spiel
                 }
             });
-            update(matchesRef, updates);
-            updateRankings(); // Aktualisiere Rangliste nach Löschung
+            update(matchesRef, updates).then(updateRankings);
         }, { onlyOnce: true });
     }
 

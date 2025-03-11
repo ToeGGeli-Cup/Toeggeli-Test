@@ -22,7 +22,7 @@ document.addEventListener("DOMContentLoaded", () => {
         });
 
         if (teams.length > 1) {
-            updateMatches(teams);
+            updateMatches(teams); // Spiele aktualisieren, ohne Ergebnisse zu löschen
         }
     });
 
@@ -31,22 +31,23 @@ document.addEventListener("DOMContentLoaded", () => {
         remove(ref(db, `teams/${teamId}`));
     };
 
-    // Spiele aktualisieren (Paarungen generieren oder entfernen)
+    // **FIX: Spiele korrekt generieren & verwalten (ohne bestehende Ergebnisse zu überschreiben)**
     function updateMatches(teams) {
         onValue(matchesRef, (snapshot) => {
             const existingMatches = {};
             snapshot.forEach((childSnapshot) => {
+                const matchId = childSnapshot.key;
                 const match = childSnapshot.val();
-                existingMatches[childSnapshot.key] = match;
+                existingMatches[matchId] = match; // Bestehende Spiele speichern
             });
 
-            const newMatches = {};
+            const newMatches = { ...existingMatches }; // Kopiere existierende Spiele
+
+            // **Neue Spiele hinzufügen, falls sie noch nicht existieren**
             for (let i = 0; i < teams.length; i++) {
                 for (let j = i + 1; j < teams.length; j++) {
                     const matchId = `${teams[i]}_vs_${teams[j]}`;
-                    if (existingMatches[matchId]) {
-                        newMatches[matchId] = existingMatches[matchId]; // Behalte bestehendes Match mit Ergebnis
-                    } else {
+                    if (!existingMatches[matchId]) {
                         newMatches[matchId] = {
                             team1: teams[i],
                             team2: teams[j],
@@ -56,7 +57,15 @@ document.addEventListener("DOMContentLoaded", () => {
                 }
             }
 
-            // Aktualisierte Matches in die Datenbank schreiben
+            // **Nicht mehr benötigte Spiele entfernen, falls ein Team gelöscht wurde**
+            for (let matchId in existingMatches) {
+                const { team1, team2 } = existingMatches[matchId];
+                if (!teams.includes(team1) || !teams.includes(team2)) {
+                    delete newMatches[matchId]; // Entferne das Spiel
+                }
+            }
+
+            // **Aktualisierte Matches in die Datenbank schreiben**
             set(matchesRef, newMatches);
         });
     }

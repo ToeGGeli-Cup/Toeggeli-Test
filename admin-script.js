@@ -4,6 +4,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const teamsRef = ref(db, "teams");
     const newsRef = ref(db, "news");
     const matchesRef = ref(db, "matches");
+    const rankingRef = ref(db, "ranking");
 
     // **TEAMS VERWALTEN**
     onValue(teamsRef, (snapshot) => {
@@ -21,7 +22,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     document.getElementById("addTeam").addEventListener("click", () => {
-        const teamName = document.getElementById("teamName").value;
+        const teamName = document.getElementById("teamName").value.replace(/[^a-zA-Z0-9_-]/g, "");
         const player1 = document.getElementById("player1").value;
         const player2 = document.getElementById("player2").value;
 
@@ -58,7 +59,17 @@ document.addEventListener("DOMContentLoaded", () => {
         remove(ref(db, `news/${newsId}`));
     };
 
-    // **SPIELE VERWALTEN**
+    // **SPIELE MANUELL VERWALTEN**
+    document.getElementById("addMatch").addEventListener("click", () => {
+        const team1 = document.getElementById("matchTeam1").value;
+        const team2 = document.getElementById("matchTeam2").value;
+
+        if (team1 && team2 && team1 !== team2) {
+            const newMatchRef = push(matchesRef);
+            set(newMatchRef, { team1, team2, score: "-" });
+        }
+    });
+
     onValue(matchesRef, (snapshot) => {
         const upcomingTable = document.getElementById("upcomingMatches");
         const resultsTable = document.getElementById("resultsTable");
@@ -75,6 +86,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     <td>${match.team2}</td>
                     <td><input type="text" id="score_${matchId}" value="${match.score}" style="width: 50px;">
                         <button onclick="updateScore('${matchId}')">Speichern</button>
+                        <button onclick="deleteMatch('${matchId}')">🗑️</button>
                     </td>
                 </tr>`;
             } else {
@@ -83,73 +95,90 @@ document.addEventListener("DOMContentLoaded", () => {
                     <td>${match.team2}</td>
                     <td><input type="text" id="score_${matchId}" placeholder="Ergebnis">
                         <button onclick="updateScore('${matchId}')">Speichern</button>
+                        <button onclick="deleteMatch('${matchId}')">🗑️</button>
                     </td>
                 </tr>`;
             }
         });
     });
 
-    window.updateScore = (matchId) => {
-        const scoreInput = document.getElementById(`score_${matchId}`);
-        const newScore = scoreInput.value.trim();
+    window.deleteMatch = (matchId) => {
+        remove(ref(db, `matches/${matchId}`));
+    };
 
-        if (newScore === "") {
-            update(ref(db, `matches/${matchId}`), { score: "-" });
-        } else {
-            update(ref(db, `matches/${matchId}`), { score: newScore });
+    window.updateScore = (matchId) => {
+        const score = document.getElementById(`score_${matchId}`).value;
+        if (!score.match(/^\d+:\d+$/)) {
+            alert("Ungültiges Format! Bitte im Format X:Y eingeben.");
+            return;
         }
+        update(ref(db, `matches/${matchId}`), { score });
+        updateRankings();
     };
 
     // **RANGLISTE BERECHNEN**
-    function updateRankings(snapshot) {
-        const rankings = {};
+    function updateRankings() {
+        onValue(matchesRef, (snapshot) => {
+            const rankings = {};
 
-        onValue(teamsRef, (teamsSnapshot) => {
-            teamsSnapshot.forEach((childSnapshot) => {
-                const team = childSnapshot.val().name;
-                rankings[team] = { games: 0, points: 0, goals: 0, conceded: 0, diff: 0 };
-            });
+            onValue(teamsRef, (teamsSnapshot) => {
+                teamsSnapshot.forEach((childSnapshot) => {
+                    const team = childSnapshot.val().name;
+                    rankings[team] = { games: 0, points: 0, goals: 0, conceded: 0, diff: 0 };
+                });
 
-            snapshot.forEach((childSnapshot) => {
-                const match = childSnapshot.val();
-                if (match.score && match.score !== "-") {
-                    const [g1, g2] = match.score.split(":").map(Number);
+                snapshot.forEach((childSnapshot) => {
+                    const match = childSnapshot.val();
+                    if (match.score !== "-") {
+                        const [g1, g2] = match.score.split(":").map(Number);
+                        if (rankings[match.team1] && rankings[match.team2]) {
+                            rankings[match.team1].games++;
+                            rankings[match.team2].games++;
+                            rankings[match.team1].goals += g1;
+                            rankings[match.team2].goals += g2;
+                            rankings[match.team1].conceded += g2;
+                            rankings[match.team2].conceded += g1;
+                            rankings[match.team1].diff = rankings[match.team1].goals - rankings[match.team1].conceded;
+                            rankings[match.team2].diff = rankings[match.team2].goals - rankings[match.team2].conceded;
 
-                    rankings[match.team1].games += 1;
-                    rankings[match.team2].games += 1;
-                    rankings[match.team1].goals += g1;
-                    rankings[match.team2].goals += g2;
-                    rankings[match.team1].conceded += g2;
-                    rankings[match.team2].conceded += g1;
-                    rankings[match.team1].diff = rankings[match.team1].goals - rankings[match.team1].conceded;
-                    rankings[match.team2].diff = rankings[match.team2].goals - rankings[match.team2].conceded;
+                            if (g1 > g2) rankings[match.team1].points += 3;
+                            else if (g2 > g1) rankings[match.team2].points += 3;
+                            else {
+                                rankings[match.team1].points += 1;
+                                rankings[match.team2].points += 1;
+                            }
+                        }
+                    }
+                });
 
-                    if (g1 > g2) rankings[match.team1].points += 1;
-                    else if (g2 > g1) rankings[match.team2].points += 1;
-                }
-            });
-
-            const rankingTable = document.getElementById("rankingTable");
-            rankingTable.innerHTML = "";
-            const sortedTeams = Object.keys(rankings).sort((a, b) =>
-                rankings[b].points - rankings[a].points ||
-                rankings[b].diff - rankings[a].diff ||
-                rankings[b].goals - rankings[a].goals
-            );
-
-            sortedTeams.forEach((team, index) => {
-                rankingTable.innerHTML += `<tr>
-                    <td>${index + 1}</td>
-                    <td>${team}</td>
-                    <td>${rankings[team].games}</td>
-                    <td>${rankings[team].points}</td>
-                    <td>${rankings[team].goals}</td>
-                    <td>${rankings[team].conceded}</td>
-                    <td>${rankings[team].diff}</td>
-                </tr>`;
+                set(rankingRef, rankings);
             });
         });
     }
+
+    onValue(rankingRef, (snapshot) => {
+        const rankingTable = document.getElementById("rankingTable");
+        rankingTable.innerHTML = "";
+        if (!snapshot.exists()) return;
+        const sortedTeams = Object.keys(snapshot.val()).sort((a, b) =>
+            snapshot.val()[b].points - snapshot.val()[a].points ||
+            snapshot.val()[b].diff - snapshot.val()[a].diff ||
+            snapshot.val()[b].goals - snapshot.val()[a].goals
+        );
+
+        sortedTeams.forEach((team, index) => {
+            const teamData = snapshot.val()[team];
+            rankingTable.innerHTML += `<tr>
+                <td>${index + 1}</td>
+                <td>${team}</td>
+                <td>${teamData.games}</td>
+                <td>${teamData.points}</td>
+                <td>${teamData.goals}</td>
+                <td>${teamData.conceded}</td>
+                <td>${teamData.diff}</td>
+            </tr>`;
+        });
+    });
 
     onValue(matchesRef, updateRankings);
 });

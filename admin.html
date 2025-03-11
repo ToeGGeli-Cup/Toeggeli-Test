@@ -3,54 +3,89 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Bereich</title>
-    <link rel="stylesheet" href="styles.css">
+    <title>Admin-Bereich</title>
+    <script type="module" src="./firebase.js"></script>
+    <script type="module" src="./admin-script.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #5B3A2E;
+            color: white;
+            text-align: center;
+            margin: 20px;
+        }
+        h1, h2 {
+            font-weight: bold;
+        }
+        .news-container {
+            width: 80%;
+            margin: 20px auto;
+            padding: 15px;
+            background-color: #D81B60;
+            color: white;
+            border-radius: 10px;
+        }
+        table {
+            width: 80%;
+            margin: 10px auto;
+            border-collapse: collapse;
+        }
+        th, td {
+            padding: 10px;
+            border: 1px solid black;
+            background-color: white;
+            color: black;
+        }
+        th {
+            background-color: #0059B2;
+            color: white;
+        }
+    </style>
 </head>
 <body>
     <h1>Admin-Bereich</h1>
 
-    <!-- News -->
-    <h2>News</h2>
-    <input type="text" id="newsText">
-    <button id="addNewsBtn">Hinzufügen</button>
+    <h2>News verwalten</h2>
+    <div class="news-container">
+        <textarea id="newsText"></textarea>
+        <button id="addNews">News hinzufügen</button>
+        <div id="newsContainer"></div>
+    </div>
 
-    <!-- Teams verwalten -->
-    <h2>Teams</h2>
+    <h2>Teams verwalten</h2>
     <input type="text" id="teamName" placeholder="Teamname">
-    <input type="text" id="player1" placeholder="Spieler 1">
-    <input type="text" id="player2" placeholder="Spieler 2">
-    <button id="addTeamBtn">Team hinzufügen</button>
-    
-    <table id="teamsTable">
-        <tr>
-            <th>Name</th>
-            <th>Spieler 1</th>
-            <th>Spieler 2</th>
-        </tr>
+    <input type="text" id="player1" placeholder="Spieler:in 1">
+    <input type="text" id="player2" placeholder="Spieler:in 2">
+    <button id="addTeam">Team hinzufügen</button>
+    <table>
+        <thead>
+            <tr><th>Team</th><th>Spieler:in 1</th><th>Spieler:in 2</th><th>Aktion</th></tr>
+        </thead>
+        <tbody id="teamsTable"></tbody>
     </table>
 
-    <!-- Spiele verwalten -->
-    <h2>Spiele & Ergebnisse</h2>
-    <input type="text" id="gameTeam1" placeholder="Team 1">
-    <input type="text" id="gameTeam2" placeholder="Team 2">
-    <button id="addGameBtn">Spiel hinzufügen</button>
-
-    <table id="gamesTable">
-        <tr>
-            <th>Team 1</th>
-            <th>Team 2</th>
-            <th>Ergebnis</th>
-            <th>Aktion</th>
-        </tr>
+    <h2>Offene Spiele</h2>
+    <table>
+        <thead>
+            <tr><th>Team 1</th><th>Team 2</th><th>Ergebnis</th></tr>
+        </thead>
+        <tbody id="upcomingMatches"></tbody>
     </table>
 
-    <!-- Ergebnis speichern -->
-    <h3>Ergebnis speichern</h3>
-    <input type="text" id="gameId" placeholder="Spiel-ID">
-    <input type="text" id="score1" placeholder="Team 1 Tore">
-    <input type="text" id="score2" placeholder="Team 2 Tore">
-    <button id="saveResultsBtn">Ergebnis speichern</button>
+    <h2>Resultate</h2>
+    <table>
+        <thead>
+            <tr><th>Team 1</th><th>Team 2</th><th>Ergebnis</th></tr>
+        </thead>
+        <tbody id="resultsTable"></tbody>
+    </table>
 
-    <script type="module" src="admin-script.js"></script>
+    <h2>Rangliste</h2>
+    <table>
+        <thead>
+            <tr><th>Rang</th><th>Team</th><th>Spiele</th><th>Punkte</th><th>Tore</th><th>Gegentore</th><th>Tordifferenz</th></tr>
+        </thead>
+        <tbody id="rankingTable"></tbody>
+    </table>
 </body>
 </html>

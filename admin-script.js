@@ -1,127 +1,122 @@
-import { db, ref, push, remove, set, onValue } from "./firebase.js";
+import { db, ref, onValue, set, push, remove, update } from "./firebase.js";
 
-// NEWS VERWALTEN
-document.getElementById("addNews").addEventListener("click", () => {
-    const newsText = document.getElementById("newsText").value.trim();
-    if (newsText) {
-        push(ref(db, "news"), {
-            text: newsText,
-            date: new Date().toLocaleDateString()
+// NEWS LADEN
+function loadNews() {
+    const newsRef = ref(db, "news");
+    onValue(newsRef, (snapshot) => {
+        const table = document.getElementById("newsTable");
+        table.innerHTML = "";
+        snapshot.forEach((childSnapshot) => {
+            const news = childSnapshot.val();
+            table.innerHTML += `<tr>
+                <td>${news.date}</td>
+                <td>${news.text}</td>
+                <td><button onclick="deleteNews('${childSnapshot.key}')">Löschen</button></td>
+            </tr>`;
         });
-        document.getElementById("newsText").value = "";
-    }
-});
-
-// NEWS ANZEIGEN UND LÖSCHEN
-onValue(ref(db, "news"), (snapshot) => {
-    const newsContainer = document.getElementById("newsContainer");
-    newsContainer.innerHTML = "";
-    snapshot.forEach((childSnapshot) => {
-        const newsItem = childSnapshot.val();
-        const key = childSnapshot.key;
-        newsContainer.innerHTML += `<p>${newsItem.date}: ${newsItem.text}
-            <button onclick="deleteNews('${key}')">Löschen</button></p>`;
     });
-});
+}
 
-window.deleteNews = (key) => {
-    remove(ref(db, `news/${key}`));
+// NEWS HINZUFÜGEN
+window.addNews = function() {
+    const newsText = document.getElementById("newsText").value;
+    if (!newsText) return;
+    const newNewsRef = push(ref(db, "news"));
+    set(newNewsRef, { date: new Date().toLocaleDateString(), text: newsText });
+    document.getElementById("newsText").value = "";
 };
 
-// TEAMS VERWALTEN
-document.getElementById("addTeam").addEventListener("click", () => {
-    const teamName = document.getElementById("teamName").value.trim();
-    const player1 = document.getElementById("player1").value.trim();
-    const player2 = document.getElementById("player2").value.trim();
-    
-    if (teamName && player1 && player2) {
-        push(ref(db, "teams"), {
-            name: teamName,
-            player1: player1,
-            player2: player2
+// NEWS LÖSCHEN
+window.deleteNews = function(id) {
+    remove(ref(db, `news/${id}`));
+};
+
+// TEAMS LADEN
+function loadTeams() {
+    const teamsRef = ref(db, "teams");
+    onValue(teamsRef, (snapshot) => {
+        const table = document.getElementById("teamsTable");
+        table.innerHTML = "";
+        snapshot.forEach((childSnapshot) => {
+            const team = childSnapshot.val();
+            table.innerHTML += `<tr>
+                <td>${team.name}</td>
+                <td>${team.player1}</td>
+                <td>${team.player2}</td>
+                <td><button onclick="deleteTeam('${childSnapshot.key}')">Löschen</button></td>
+            </tr>`;
         });
-        document.getElementById("teamName").value = "";
-        document.getElementById("player1").value = "";
-        document.getElementById("player2").value = "";
-    }
-});
-
-// TEAMS ANZEIGEN UND LÖSCHEN
-onValue(ref(db, "teams"), (snapshot) => {
-    const teamsTable = document.getElementById("teamsTable");
-    const teamA = document.getElementById("teamA");
-    const teamB = document.getElementById("teamB");
-
-    teamsTable.innerHTML = "";
-    teamA.innerHTML = "";
-    teamB.innerHTML = "";
-
-    snapshot.forEach((childSnapshot) => {
-        const team = childSnapshot.val();
-        const key = childSnapshot.key;
-
-        teamsTable.innerHTML += `<tr>
-            <td>${team.name}</td>
-            <td>${team.player1}</td>
-            <td>${team.player2}</td>
-            <td><button onclick="deleteTeam('${key}')">Löschen</button></td>
-        </tr>`;
-
-        teamA.innerHTML += `<option value="${team.name}">${team.name}</option>`;
-        teamB.innerHTML += `<option value="${team.name}">${team.name}</option>`;
     });
-});
+}
 
-window.deleteTeam = (key) => {
-    remove(ref(db, `teams/${key}`));
+// TEAM HINZUFÜGEN
+window.addTeam = function() {
+    const teamName = document.getElementById("teamName").value;
+    const player1 = document.getElementById("player1").value;
+    const player2 = document.getElementById("player2").value;
+    if (!teamName || !player1 || !player2) return;
+    const newTeamRef = push(ref(db, "teams"));
+    set(newTeamRef, { name: teamName, player1: player1, player2: player2 });
+    document.getElementById("teamName").value = "";
+    document.getElementById("player1").value = "";
+    document.getElementById("player2").value = "";
 };
 
-// SPIELE VERWALTEN
-document.getElementById("addMatch").addEventListener("click", () => {
-    const teamA = document.getElementById("teamA").value;
-    const teamB = document.getElementById("teamB").value;
-    const matchDate = document.getElementById("matchDate").value;
+// TEAM LÖSCHEN
+window.deleteTeam = function(id) {
+    remove(ref(db, `teams/${id}`));
+};
 
-    if (teamA && teamB && matchDate && teamA !== teamB) {
-        push(ref(db, "matches"), {
-            teamA: teamA,
-            teamB: teamB,
-            date: matchDate,
-            goalsA: 0,
-            goalsB: 0
+// OFFENE SPIELE LADEN
+function loadGames() {
+    const gamesRef = ref(db, "matches");
+    onValue(gamesRef, (snapshot) => {
+        const openTable = document.getElementById("openGamesTable");
+        const resultsTable = document.getElementById("resultsTable");
+        openTable.innerHTML = "";
+        resultsTable.innerHTML = "";
+        snapshot.forEach((childSnapshot) => {
+            const match = childSnapshot.val();
+            if (match.score) {
+                resultsTable.innerHTML += `<tr>
+                    <td>${match.date}</td>
+                    <td>${match.team1}</td>
+                    <td>${match.team2}</td>
+                    <td>${match.score}</td>
+                </tr>`;
+            } else {
+                openTable.innerHTML += `<tr>
+                    <td>${match.team1}</td>
+                    <td>${match.team2}</td>
+                    <td>
+                        <input id="score_${childSnapshot.key}" placeholder="Ergebnis">
+                        <button onclick="setScore('${childSnapshot.key}')">Speichern</button>
+                    </td>
+                </tr>`;
+            }
         });
-    }
-});
-
-// SPIELE ANZEIGEN UND LÖSCHEN
-onValue(ref(db, "matches"), (snapshot) => {
-    const matchesTable = document.getElementById("matchesTable");
-    matchesTable.innerHTML = "";
-    
-    snapshot.forEach((childSnapshot) => {
-        const match = childSnapshot.val();
-        const key = childSnapshot.key;
-
-        matchesTable.innerHTML += `<tr>
-            <td>${match.teamA}</td>
-            <td>${match.teamB}</td>
-            <td>${match.date}</td>
-            <td>
-                <input type="number" value="${match.goalsA}" onchange="updateResult('${key}', this.value, '${match.goalsB}')">
-                :
-                <input type="number" value="${match.goalsB}" onchange="updateResult('${key}', '${match.goalsA}', this.value)">
-            </td>
-            <td><button onclick="deleteMatch('${key}')">Löschen</button></td>
-        </tr>`;
     });
+}
+
+// SPIEL HINZUFÜGEN
+window.addGame = function() {
+    const team1 = document.getElementById("team1").value;
+    const team2 = document.getElementById("team2").value;
+    if (!team1 || !team2) return;
+    const newGameRef = push(ref(db, "matches"));
+    set(newGameRef, { team1: team1, team2: team2, score: null });
+};
+
+// ERGEBNIS SPEICHERN
+window.setScore = function(id) {
+    const score = document.getElementById(`score_${id}`).value;
+    if (!score) return;
+    update(ref(db, `matches/${id}`), { score: score, date: new Date().toLocaleDateString() });
+};
+
+// LADEN BEIM START
+document.addEventListener("DOMContentLoaded", () => {
+    loadNews();
+    loadTeams();
+    loadGames();
 });
-
-// LÖSCHFUNKTIONEN FÜR SPIELE UND NEWS
-window.deleteMatch = (key) => {
-    remove(ref(db, `matches/${key}`));
-};
-
-window.updateResult = (key, goalsA, goalsB) => {
-    set(ref(db, `matches/${key}/goalsA`), parseInt(goalsA, 10));
-    set(ref(db, `matches/${key}/goalsB`), parseInt(goalsB, 10));
-};

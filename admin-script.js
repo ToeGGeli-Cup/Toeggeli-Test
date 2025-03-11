@@ -5,6 +5,11 @@ document.addEventListener("DOMContentLoaded", () => {
     const matchesRef = ref(db, "matches");
     const rankingRef = ref(db, "ranking");
 
+    // Funktion zur Bereinigung von Schlüsseln für Firebase
+    function sanitizeKey(key) {
+        return key.replace(/[^a-zA-Z0-9]/g, "_");
+    }
+
     // Teams anzeigen
     onValue(teamsRef, (snapshot) => {
         const teamsTable = document.getElementById("teamsTable");
@@ -33,23 +38,26 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Spiele generieren (Round-Robin) mit sicheren Match-IDs
     function generateMatches(teams) {
-        const matches = {};
-        for (let i = 0; i < teams.length; i++) {
-            for (let j = i + 1; j < teams.length; j++) {
-                const team1Safe = teams[i].replace(/[^a-zA-Z0-9]/g, "_");
-                const team2Safe = teams[j].replace(/[^a-zA-Z0-9]/g, "_");
-                const matchId = `${team1Safe}_vs_${team2Safe}`;
+        onValue(matchesRef, (snapshot) => {
+            const existingMatches = snapshot.val() || {};
+            const matches = { ...existingMatches };
 
-                if (!matches[matchId]) { // Falls Spiel noch nicht existiert
-                    matches[matchId] = {
-                        team1: teams[i],
-                        team2: teams[j],
-                        score: "-"
-                    };
+            for (let i = 0; i < teams.length; i++) {
+                for (let j = i + 1; j < teams.length; j++) {
+                    const matchId = `${sanitizeKey(teams[i])}_vs_${sanitizeKey(teams[j])}`;
+
+                    if (!matches[matchId]) { // Falls Spiel noch nicht existiert
+                        matches[matchId] = {
+                            team1: teams[i],
+                            team2: teams[j],
+                            score: "-"
+                        };
+                    }
                 }
             }
-        }
-        set(matchesRef, matches);
+
+            set(matchesRef, matches);
+        }, { onlyOnce: true });
     }
 
     // Spiele anzeigen
@@ -140,7 +148,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 // Sichere Ranglisten-Keys
                 const safeRankings = {};
                 Object.keys(rankings).forEach((team) => {
-                    const safeKey = team.replace(/[^a-zA-Z0-9]/g, "_");
+                    const safeKey = sanitizeKey(team);
                     safeRankings[safeKey] = rankings[team];
                 });
 

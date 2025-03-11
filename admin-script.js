@@ -11,7 +11,9 @@ function loadNews() {
             table.innerHTML += `<tr>
                 <td>${news.date}</td>
                 <td>${news.text}</td>
-                <td><button onclick="deleteNews('${childSnapshot.key}')">Löschen</button></td>
+                <td>
+                    <button onclick="deleteNews('${childSnapshot.key}')">Löschen</button>
+                </td>
             </tr>`;
         });
     });
@@ -43,7 +45,9 @@ function loadTeams() {
                 <td>${team.name}</td>
                 <td>${team.player1}</td>
                 <td>${team.player2}</td>
-                <td><button onclick="deleteTeam('${childSnapshot.key}')">Löschen</button></td>
+                <td>
+                    <button onclick="deleteTeam('${childSnapshot.key}')">Löschen</button>
+                </td>
             </tr>`;
         });
     });
@@ -67,33 +71,22 @@ window.deleteTeam = function(id) {
     remove(ref(db, `teams/${id}`));
 };
 
-// OFFENE SPIELE LADEN
+// SPIELE LADEN
 function loadGames() {
     const gamesRef = ref(db, "matches");
     onValue(gamesRef, (snapshot) => {
-        const openTable = document.getElementById("openGamesTable");
-        const resultsTable = document.getElementById("resultsTable");
-        openTable.innerHTML = "";
-        resultsTable.innerHTML = "";
+        const table = document.getElementById("gamesTable");
+        table.innerHTML = "";
         snapshot.forEach((childSnapshot) => {
             const match = childSnapshot.val();
-            if (match.score) {
-                resultsTable.innerHTML += `<tr>
-                    <td>${match.date}</td>
-                    <td>${match.team1}</td>
-                    <td>${match.team2}</td>
-                    <td>${match.score}</td>
-                </tr>`;
-            } else {
-                openTable.innerHTML += `<tr>
-                    <td>${match.team1}</td>
-                    <td>${match.team2}</td>
-                    <td>
-                        <input id="score_${childSnapshot.key}" placeholder="Ergebnis">
-                        <button onclick="setScore('${childSnapshot.key}')">Speichern</button>
-                    </td>
-                </tr>`;
-            }
+            table.innerHTML += `<tr>
+                <td>${match.team1}</td>
+                <td>${match.team2}</td>
+                <td>${match.score || "-"}</td>
+                <td>
+                    <button onclick="deleteGame('${childSnapshot.key}')">Löschen</button>
+                </td>
+            </tr>`;
         });
     });
 }
@@ -102,19 +95,21 @@ function loadGames() {
 window.addGame = function() {
     const team1 = document.getElementById("team1").value;
     const team2 = document.getElementById("team2").value;
+    const score = document.getElementById("score").value || "-";
     if (!team1 || !team2) return;
     const newGameRef = push(ref(db, "matches"));
-    set(newGameRef, { team1: team1, team2: team2, score: null });
+    set(newGameRef, { team1: team1, team2: team2, score: score });
+    document.getElementById("team1").value = "";
+    document.getElementById("team2").value = "";
+    document.getElementById("score").value = "";
 };
 
-// ERGEBNIS SPEICHERN
-window.setScore = function(id) {
-    const score = document.getElementById(`score_${id}`).value;
-    if (!score) return;
-    update(ref(db, `matches/${id}`), { score: score, date: new Date().toLocaleDateString() });
+// SPIEL LÖSCHEN
+window.deleteGame = function(id) {
+    remove(ref(db, `matches/${id}`));
 };
 
-// LADEN BEIM START
+// LADEN DER DATEN BEIM START
 document.addEventListener("DOMContentLoaded", () => {
     loadNews();
     loadTeams();

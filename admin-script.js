@@ -5,8 +5,7 @@ import { database, ref, push, set, onValue, remove } from "./firebase.js";
 document.getElementById("addNewsBtn").addEventListener("click", function () {
     const newsText = document.getElementById("newsInput").value;
     if (newsText.trim() !== "") {
-        const newsRef = ref(database, "news");
-        push(newsRef, newsText);
+        push(ref(database, "news"), newsText);
         document.getElementById("newsInput").value = "";
     }
 });
@@ -26,7 +25,7 @@ onValue(newsRef, (snapshot) => {
         // Löschen-Button für News
         const deleteBtn = document.createElement("button");
         deleteBtn.textContent = "Löschen";
-        deleteBtn.onclick = () => remove(ref(database, "news/" + key));
+        deleteBtn.onclick = () => remove(ref(database, `news/${key}`));
 
         li.appendChild(deleteBtn);
         newsList.appendChild(li);
@@ -38,8 +37,7 @@ onValue(newsRef, (snapshot) => {
 document.getElementById("addTeamBtn").addEventListener("click", function () {
     const teamName = document.getElementById("teamInput").value;
     if (teamName.trim() !== "") {
-        const teamsRef = ref(database, "teams");
-        push(teamsRef, teamName);
+        push(ref(database, "teams"), teamName);
         document.getElementById("teamInput").value = "";
     }
 });
@@ -59,7 +57,7 @@ onValue(teamsRef, (snapshot) => {
         // Löschen-Button für Teams
         const deleteBtn = document.createElement("button");
         deleteBtn.textContent = "Löschen";
-        deleteBtn.onclick = () => remove(ref(database, "teams/" + key));
+        deleteBtn.onclick = () => remove(ref(database, `teams/${key}`));
 
         li.appendChild(deleteBtn);
         teamList.appendChild(li);
@@ -72,8 +70,7 @@ document.getElementById("addMatchBtn").addEventListener("click", function () {
     const team1 = document.getElementById("team1").value;
     const team2 = document.getElementById("team2").value;
     if (team1 && team2 && team1 !== team2) {
-        const matchesRef = ref(database, "matches");
-        push(matchesRef, { team1, team2, score1: null, score2: null });
+        push(ref(database, "matches"), { team1, team2, score1: null, score2: null });
     }
 });
 
@@ -106,13 +103,13 @@ onValue(matchesRef, (snapshot) => {
         saveBtn.onclick = () => {
             const score1 = input1.value !== "" ? parseInt(input1.value) : null;
             const score2 = input2.value !== "" ? parseInt(input2.value) : null;
-            set(ref(database, "matches/" + key), { ...match, score1, score2 });
+            set(ref(database, `matches/${key}`), { ...match, score1, score2 });
         };
 
         // Löschen-Button für Spiele
         const deleteBtn = document.createElement("button");
         deleteBtn.textContent = "Löschen";
-        deleteBtn.onclick = () => remove(ref(database, "matches/" + key));
+        deleteBtn.onclick = () => remove(ref(database, `matches/${key}`));
 
         li.appendChild(input1);
         li.appendChild(input2);

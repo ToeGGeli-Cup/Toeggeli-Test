@@ -6,6 +6,8 @@ document.addEventListener("DOMContentLoaded", () => {
     const rankingRef = ref(db, "ranking");
     const newsRef = ref(db, "news");
 
+    let lastTeams = [];
+
     // **Teams verwalten**
     document.getElementById("addTeam").addEventListener("click", () => {
         const teamName = document.getElementById("teamName").value;
@@ -36,8 +38,9 @@ document.addEventListener("DOMContentLoaded", () => {
             </tr>`;
         });
 
-        if (teams.length > 1) {
-            updateMatches(teams); // Fix: Spiele werden korrekt generiert & alte Ergebnisse bleiben
+        if (JSON.stringify(teams) !== JSON.stringify(lastTeams)) {
+            lastTeams = teams;
+            updateMatches(teams);
         }
     });
 
@@ -45,7 +48,7 @@ document.addEventListener("DOMContentLoaded", () => {
         remove(ref(db, `teams/${teamId}`));
     };
 
-    // **Spiele generieren & verwalten**
+    // **Spiele generieren & verwalten (Loop vermeiden)**
     function updateMatches(teams) {
         onValue(matchesRef, (snapshot) => {
             const existingMatches = {};
@@ -72,7 +75,7 @@ document.addEventListener("DOMContentLoaded", () => {
             }
 
             set(matchesRef, newMatches);
-        });
+        }, { onlyOnce: true }); // Loop verhindern
     }
 
     // **Spiele anzeigen & Ergebnisse verwalten**

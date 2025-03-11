@@ -4,35 +4,36 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin-Bereich</title>
-    <script type="module" src="./admin-script.js"></script>
+    <script type="module" src="admin-script.js"></script>
 </head>
 <body>
     <h1>Admin-Bereich</h1>
 
-    <!-- NEWS VERWALTEN -->
+    <!-- NEWS -->
     <h2>News</h2>
     <input type="text" id="newsInput" placeholder="Nachricht eingeben">
     <button id="addNewsBtn">Hinzufügen</button>
     <ul id="newsList"></ul>
 
-    <!-- TEAMS VERWALTEN -->
+    <!-- TEAMS -->
     <h2>Teams</h2>
     <input type="text" id="teamInput" placeholder="Teamname">
     <button id="addTeamBtn">Hinzufügen</button>
     <ul id="teamList"></ul>
 
-    <!-- SPIELE VERWALTEN -->
+    <!-- SPIELE -->
     <h2>Spiele</h2>
-    <label>Team 1:</label>
-    <input type="text" id="team1">
-    <label>Team 2:</label>
-    <input type="text" id="team2">
+    <input type="text" id="team1" placeholder="Team 1">
+    <input type="text" id="team2" placeholder="Team 2">
     <button id="addMatchBtn">Hinzufügen</button>
+    <h3>Offene Spiele</h3>
     <ul id="matchList"></ul>
+    <h3>Ergebnisse</h3>
+    <ul id="resultsList"></ul>
 
     <!-- RANGLISTE -->
     <h2>Rangliste</h2>
-    <table>
+    <table border="1">
         <thead>
             <tr>
                 <th>Rang</th>

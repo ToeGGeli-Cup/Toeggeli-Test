@@ -3,89 +3,87 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin-Bereich</title>
-    <script type="module" src="./firebase.js"></script>
+    <title>Admin Panel - Töggele Cup</title>
     <script type="module" src="./admin-script.js"></script>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #5B3A2E;
-            color: white;
-            text-align: center;
-            margin: 20px;
-        }
-        h1, h2 {
-            font-weight: bold;
-        }
-        .news-container {
-            width: 80%;
-            margin: 20px auto;
-            padding: 15px;
-            background-color: #D81B60;
-            color: white;
-            border-radius: 10px;
-        }
-        table {
-            width: 80%;
-            margin: 10px auto;
-            border-collapse: collapse;
-        }
-        th, td {
-            padding: 10px;
-            border: 1px solid black;
-            background-color: white;
-            color: black;
-        }
-        th {
-            background-color: #0059B2;
-            color: white;
-        }
-    </style>
+    <script type="module" src="./firebase.js"></script>
 </head>
 <body>
-    <h1>Admin-Bereich</h1>
+    <h1>Admin Panel</h1>
 
-    <h2>News verwalten</h2>
-    <div class="news-container">
-        <textarea id="newsText"></textarea>
-        <button id="addNews">News hinzufügen</button>
-        <div id="newsContainer"></div>
-    </div>
-
+    <!-- TEAMS VERWALTEN -->
     <h2>Teams verwalten</h2>
     <input type="text" id="teamName" placeholder="Teamname">
-    <input type="text" id="player1" placeholder="Spieler:in 1">
-    <input type="text" id="player2" placeholder="Spieler:in 2">
+    <input type="text" id="player1" placeholder="Spieler 1">
+    <input type="text" id="player2" placeholder="Spieler 2">
     <button id="addTeam">Team hinzufügen</button>
-    <table>
+    <table border="1">
         <thead>
-            <tr><th>Team</th><th>Spieler:in 1</th><th>Spieler:in 2</th><th>Aktion</th></tr>
+            <tr>
+                <th>Teamname</th>
+                <th>Spieler 1</th>
+                <th>Spieler 2</th>
+                <th>Aktion</th>
+            </tr>
         </thead>
         <tbody id="teamsTable"></tbody>
     </table>
 
-    <h2>Offene Spiele</h2>
-    <table>
+    <!-- NEWS VERWALTEN -->
+    <h2>News verwalten</h2>
+    <input type="text" id="newsText" placeholder="Neue Nachricht">
+    <button id="addNews">News hinzufügen</button>
+    <div id="newsContainer"></div>
+
+    <!-- SPIELE VERWALTEN -->
+    <h2>Spiele verwalten</h2>
+    <label for="matchTeam1">Team 1:</label>
+    <input type="text" id="matchTeam1" placeholder="Team 1">
+    <label for="matchTeam2">Team 2:</label>
+    <input type="text" id="matchTeam2" placeholder="Team 2">
+    <button id="addMatch">Spiel hinzufügen</button>
+
+    <h3>Offene Spiele</h3>
+    <table border="1">
         <thead>
-            <tr><th>Team 1</th><th>Team 2</th><th>Ergebnis</th></tr>
+            <tr>
+                <th>Team 1</th>
+                <th>Team 2</th>
+                <th>Ergebnis</th>
+                <th>Aktion</th>
+            </tr>
         </thead>
         <tbody id="upcomingMatches"></tbody>
     </table>
 
-    <h2>Resultate</h2>
-    <table>
+    <h3>Ergebnisse</h3>
+    <table border="1">
         <thead>
-            <tr><th>Team 1</th><th>Team 2</th><th>Ergebnis</th></tr>
+            <tr>
+                <th>Team 1</th>
+                <th>Team 2</th>
+                <th>Ergebnis</th>
+                <th>Aktion</th>
+            </tr>
         </thead>
         <tbody id="resultsTable"></tbody>
     </table>
 
+    <!-- RANGLISTE -->
     <h2>Rangliste</h2>
-    <table>
+    <table border="1">
         <thead>
-            <tr><th>Rang</th><th>Team</th><th>Spiele</th><th>Punkte</th><th>Tore</th><th>Gegentore</th><th>Tordifferenz</th></tr>
+            <tr>
+                <th>Platz</th>
+                <th>Team</th>
+                <th>Spiele</th>
+                <th>Punkte</th>
+                <th>Tore</th>
+                <th>Gegentore</th>
+                <th>Differenz</th>
+            </tr>
         </thead>
         <tbody id="rankingTable"></tbody>
     </table>
+
 </body>
 </html>

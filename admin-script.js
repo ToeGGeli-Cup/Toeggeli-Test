@@ -1,88 +1,91 @@
-import { database } from "./firebase.js";
-import { ref, onValue, update } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
+import { database, ref, set, push, remove, update, onValue } from "./firebase.js";
 
-// News anzeigen
-function updateNews() {
-    const newsRef = ref(database, "news");
-    onValue(newsRef, (snapshot) => {
-        const newsTable = document.getElementById("newsTable");
-        newsTable.innerHTML = "";
-        snapshot.forEach((childSnapshot) => {
-            const newsItem = childSnapshot.val();
-            const row = document.createElement("tr");
-            row.innerHTML = `<td>${newsItem}</td>`;
-            newsTable.appendChild(row);
-        });
+// Teams-Referenz in der Datenbank
+const teamsRef = ref(database, "teams");
+const matchesRef = ref(database, "matches");
+
+// Teams aus Firebase laden und anzeigen
+onValue(teamsRef, (snapshot) => {
+    const teamsTable = document.getElementById("teamsTable");
+    teamsTable.innerHTML = "<tr><th>Name</th><th>Spieler 1</th><th>Spieler 2</th><th>Aktion</th></tr>";
+
+    snapshot.forEach((childSnapshot) => {
+        const team = childSnapshot.val();
+        const teamKey = childSnapshot.key;
+        const row = teamsTable.insertRow();
+
+        row.insertCell(0).innerText = team.name;
+        row.insertCell(1).innerText = team.player1;
+        row.insertCell(2).innerText = team.player2;
+
+        // Team löschen Button
+        const deleteButton = document.createElement("button");
+        deleteButton.innerText = "Löschen";
+        deleteButton.onclick = () => remove(ref(database, "teams/" + teamKey));
+        row.insertCell(3).appendChild(deleteButton);
     });
-}
+});
 
-// Teams anzeigen
-function updateTeams() {
-    const teamsRef = ref(database, "teams");
-    onValue(teamsRef, (snapshot) => {
-        const teamsTable = document.getElementById("teamsTable");
-        teamsTable.innerHTML = "";
-        snapshot.forEach((childSnapshot) => {
-            const team = childSnapshot.val();
-            const row = document.createElement("tr");
-            row.innerHTML = `<td>${team.name}</td><td>${team.player1}</td><td>${team.player2}</td>`;
-            teamsTable.appendChild(row);
-        });
-    });
-}
+// Neues Team hinzufügen
+document.getElementById("addTeamForm").addEventListener("submit", (e) => {
+    e.preventDefault();
+    const name = document.getElementById("teamName").value.trim();
+    const player1 = document.getElementById("player1").value.trim();
+    const player2 = document.getElementById("player2").value.trim();
 
-// Spiele anzeigen & Ergebnisse eintragen
-function updateMatches() {
-    const matchesRef = ref(database, "matches");
-    onValue(matchesRef, (snapshot) => {
-        const matchesTable = document.getElementById("matchesTable");
-        matchesTable.innerHTML = "";
-        if (!snapshot.exists()) {
-            console.warn("⚠️ Keine Spiele gefunden!");
-            return;
-        }
-        snapshot.forEach((childSnapshot) => {
-            const matchKey = childSnapshot.key;
-            const match = childSnapshot.val();
-            const row = document.createElement("tr");
-
-            row.innerHTML = `
-                <td>${match.team1}</td>
-                <td>${match.team2}</td>
-                <td>
-                    <input type="text" id="result-${matchKey}" value="${match.result || ""}" placeholder="x:x">
-                </td>
-                <td>
-                    <button onclick="saveResult('${matchKey}')">Speichern</button>
-                </td>
-            `;
-            matchesTable.appendChild(row);
-        });
-    });
-}
-
-// Ergebnis speichern
-window.saveResult = function (matchKey) {
-    const resultInput = document.getElementById(`result-${matchKey}`);
-    const newResult = resultInput.value.trim();
-
-    if (!/^\d+:\d+$/.test(newResult)) {
-        alert("❌ Ungültiges Format! Bitte im Format x:x eingeben.");
-        return;
+    if (name && player1 && player2) {
+        push(teamsRef, { name, player1, player2 });
+        document.getElementById("addTeamForm").reset();
+    } else {
+        alert("Bitte alle Felder ausfüllen!");
     }
+});
 
-    const matchRef = ref(database, `matches/${matchKey}`);
-    update(matchRef, { result: newResult })
-        .then(() => {
-            console.log(`✅ Ergebnis gespeichert: ${newResult}`);
-            alert("✅ Ergebnis erfolgreich gespeichert!");
-        })
-        .catch((error) => {
-            console.error("❌ Fehler beim Speichern:", error);
-        });
-};
+// Spiele aus Firebase laden und anzeigen
+onValue(matchesRef, (snapshot) => {
+    const matchesTable = document.getElementById("matchesTable");
+    matchesTable.innerHTML = "<tr><th>Team 1</th><th>Team 2</th><th>Ergebnis</th><th>Aktion</th></tr>";
 
-// Initialisierung
-updateNews();
-updateTeams();
-updateMatches();
+    snapshot.forEach((childSnapshot) => {
+        const match = childSnapshot.val();
+        const matchKey = childSnapshot.key;
+        const row = matchesTable.insertRow();
+
+        row.insertCell(0).innerText = match.team1;
+        row.insertCell(1).innerText = match.team2;
+
+        // Ergebnisfeld
+        const scoreInput = document.createElement("input");
+        scoreInput.type = "text";
+        scoreInput.value = match.score || "";
+        row.insertCell(2).appendChild(scoreInput);
+
+        // Speichern-Button
+        const saveButton = document.createElement("button");
+        saveButton.innerText = "Speichern";
+        saveButton.onclick = () => {
+            update(ref(database, "matches/" + matchKey), { score: scoreInput.value });
+        };
+        row.insertCell(3).appendChild(saveButton);
+
+        // Löschen-Button für Spiel
+        const deleteButton = document.createElement("button");
+        deleteButton.innerText = "Löschen";
+        deleteButton.onclick = () => remove(ref(database, "matches/" + matchKey));
+        row.insertCell(3).appendChild(deleteButton);
+    });
+});
+
+// Neues Spiel hinzufügen
+document.getElementById("addMatchForm").addEventListener("submit", (e) => {
+    e.preventDefault();
+    const team1 = document.getElementById("matchTeam1").value.trim();
+    const team2 = document.getElementById("matchTeam2").value.trim();
+
+    if (team1 && team2 && team1 !== team2) {
+        push(matchesRef, { team1, team2, score: "" });
+        document.getElementById("addMatchForm").reset();
+    } else {
+        alert("Ungültige Eingabe! Teams müssen unterschiedlich sein.");
+    }
+});

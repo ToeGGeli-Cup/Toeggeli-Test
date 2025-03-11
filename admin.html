@@ -4,53 +4,62 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin-Bereich</title>
+    <script type="module" src="./firebase.js"></script>
     <script type="module" src="./admin-script.js"></script>
     <style>
         body {
-            background-color: #4B2C1A;
-            color: white;
             font-family: Arial, sans-serif;
+            background-color: #5B3A2E;
+            color: white;
             text-align: center;
+            margin: 20px;
+        }
+        h1, h2 {
+            font-weight: bold;
+        }
+        .news-container {
+            width: 80%;
+            margin: 20px auto;
+            padding: 15px;
+            background-color: #D81B60;
+            color: white;
+            border-radius: 10px;
         }
         table {
             width: 80%;
-            margin: auto;
+            margin: 10px auto;
             border-collapse: collapse;
-            background-color: #004080;
         }
         th, td {
             padding: 10px;
-            border: 1px solid white;
+            border: 1px solid black;
+            background-color: white;
+            color: black;
         }
-        input, button {
-            padding: 5px;
-            margin: 5px;
+        th {
+            background-color: #0059B2;
+            color: white;
         }
     </style>
 </head>
 <body>
-
     <h1>Admin-Bereich</h1>
 
     <h2>News verwalten</h2>
-    <input type="text" id="newsInput" placeholder="Neuer News-Eintrag">
-    <button id="addNewsBtn">News hinzufügen</button>
-    <ul id="newsList"></ul>
+    <div class="news-container">
+        <textarea id="newsText"></textarea>
+        <button id="addNews">News hinzufügen</button>
+        <div id="newsContainer"></div>
+    </div>
 
     <h2>Teams verwalten</h2>
     <input type="text" id="teamName" placeholder="Teamname">
     <input type="text" id="player1" placeholder="Spieler:in 1">
     <input type="text" id="player2" placeholder="Spieler:in 2">
-    <button id="addTeamBtn">Team hinzufügen</button>
-
+    <button id="addTeam">Team hinzufügen</button>
     <table>
         <thead>
-            <tr>
-                <th>Team</th>
-                <th>Spieler:in 1</th>
-                <th>Spieler:in 2</th>
-                <th>Aktion</th>
-            </tr>
+            <tr><th>Team</th><th>Spieler:in 1</th><th>Spieler:in 2</th><th>Aktion</th></tr>
         </thead>
         <tbody id="teamsTable"></tbody>
     </table>
@@ -58,7 +67,7 @@
     <h2>Offene Spiele</h2>
     <table>
         <thead>
-            <tr><th>Team 1</th><th>Team 2</th><th>Ergebnis</th><th>Aktion</th></tr>
+            <tr><th>Team 1</th><th>Team 2</th><th>Ergebnis</th></tr>
         </thead>
         <tbody id="upcomingMatches"></tbody>
     </table>
@@ -78,6 +87,5 @@
         </thead>
         <tbody id="rankingTable"></tbody>
     </table>
-
 </body>
 </html>

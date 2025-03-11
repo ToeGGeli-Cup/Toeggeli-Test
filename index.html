@@ -3,34 +3,55 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TÖGGeli-Cup 2025</title>
+    <title>TöGGeli-Cup 2025</title>
+    <script type="module" src="./firebase.js"></script>
     <script type="module" src="./index-script.js"></script>
     <style>
-        body {
-            background-color: #4B2C1A;
+        body { 
+            font-family: Arial, sans-serif; 
+            background-color: #5B3A2E; 
             color: white;
-            font-family: Arial, sans-serif;
             text-align: center;
+            margin: 20px;
+            padding-bottom: 50px;
+        }
+        h1, h2 {
+            font-weight: bold;
+        }
+        .news-container {
+            width: 80%;
+            margin: 20px auto;
+            padding: 15px;
+            background-color: #D81B60;
+            color: white;
+            border-radius: 10px;
+            text-align: left;
         }
         table {
             width: 80%;
-            margin: auto;
+            margin: 10px auto;
             border-collapse: collapse;
-            background-color: #004080;
         }
         th, td {
             padding: 10px;
-            border: 1px solid white;
+            border: 1px solid black;
+            background-color: white;
+            color: black;
+        }
+        th {
+            background-color: #0059B2;
+            color: white;
         }
     </style>
 </head>
 <body>
+    <h1>TöGGeli-Cup 2025</h1>
 
-    <h1>TÖGGeli-Cup 2025</h1>
-
+    <!-- NEWS -->
     <h2>News</h2>
-    <ul id="newsList"></ul>
+    <div class="news-container" id="newsContainer"></div>
 
+    <!-- TEAMS -->
     <h2>Teams</h2>
     <table>
         <thead>
@@ -39,6 +60,7 @@
         <tbody id="teamsTable"></tbody>
     </table>
 
+    <!-- OFFENE SPIELE -->
     <h2>Offene Spiele</h2>
     <table>
         <thead>
@@ -47,6 +69,7 @@
         <tbody id="upcomingMatches"></tbody>
     </table>
 
+    <!-- RESULTATE -->
     <h2>Resultate</h2>
     <table>
         <thead>
@@ -55,13 +78,21 @@
         <tbody id="resultsTable"></tbody>
     </table>
 
+    <!-- RANGLISTE -->
     <h2>Rangliste</h2>
     <table>
         <thead>
-            <tr><th>Rang</th><th>Team</th><th>Spiele</th><th>Punkte</th><th>Tore</th><th>Gegentore</th><th>Tordifferenz</th></tr>
+            <tr>
+                <th>Rang</th>
+                <th>Team</th>
+                <th>Spiele</th>
+                <th>Punkte</th>
+                <th>Tore</th>
+                <th>Gegentore</th>
+                <th>Tordifferenz</th>
+            </tr>
         </thead>
         <tbody id="rankingTable"></tbody>
     </table>
-
 </body>
 </html>

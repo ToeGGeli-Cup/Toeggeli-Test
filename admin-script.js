@@ -1,19 +1,20 @@
-import { database, ref, push, set, onValue, remove } from "./firebase.js";
+import { getDatabase, ref, push, set, onValue, remove } from "./firebase.js";
+
+const database = getDatabase();
 
 // === NEWS VERWALTEN ===
-// News hinzufügen
+const newsRef = ref(database, "news");
+const newsList = document.getElementById("newsList");
+
 document.getElementById("addNewsBtn").addEventListener("click", function () {
     const newsText = document.getElementById("newsInput").value;
     if (newsText.trim() !== "") {
-        push(ref(database, "news"), newsText);
+        push(newsRef, newsText);
         document.getElementById("newsInput").value = "";
     }
 });
 
-// News anzeigen
-const newsRef = ref(database, "news");
 onValue(newsRef, (snapshot) => {
-    const newsList = document.getElementById("newsList");
     newsList.innerHTML = "";
     snapshot.forEach((childSnapshot) => {
         const key = childSnapshot.key;
@@ -22,7 +23,6 @@ onValue(newsRef, (snapshot) => {
         const li = document.createElement("li");
         li.textContent = text;
 
-        // Löschen-Button für News
         const deleteBtn = document.createElement("button");
         deleteBtn.textContent = "Löschen";
         deleteBtn.onclick = () => remove(ref(database, `news/${key}`));
@@ -33,19 +33,18 @@ onValue(newsRef, (snapshot) => {
 });
 
 // === TEAMS VERWALTEN ===
-// Teams hinzufügen
+const teamsRef = ref(database, "teams");
+const teamList = document.getElementById("teamList");
+
 document.getElementById("addTeamBtn").addEventListener("click", function () {
     const teamName = document.getElementById("teamInput").value;
     if (teamName.trim() !== "") {
-        push(ref(database, "teams"), teamName);
+        push(teamsRef, teamName);
         document.getElementById("teamInput").value = "";
     }
 });
 
-// Teams anzeigen
-const teamsRef = ref(database, "teams");
 onValue(teamsRef, (snapshot) => {
-    const teamList = document.getElementById("teamList");
     teamList.innerHTML = "";
     snapshot.forEach((childSnapshot) => {
         const key = childSnapshot.key;
@@ -54,7 +53,6 @@ onValue(teamsRef, (snapshot) => {
         const li = document.createElement("li");
         li.textContent = name;
 
-        // Löschen-Button für Teams
         const deleteBtn = document.createElement("button");
         deleteBtn.textContent = "Löschen";
         deleteBtn.onclick = () => remove(ref(database, `teams/${key}`));
@@ -65,20 +63,22 @@ onValue(teamsRef, (snapshot) => {
 });
 
 // === SPIELE VERWALTEN ===
-// Spiel hinzufügen
+const matchesRef = ref(database, "matches");
+const matchList = document.getElementById("matchList");
+const resultsList = document.getElementById("resultsList");
+
 document.getElementById("addMatchBtn").addEventListener("click", function () {
     const team1 = document.getElementById("team1").value;
     const team2 = document.getElementById("team2").value;
     if (team1 && team2 && team1 !== team2) {
-        push(ref(database, "matches"), { team1, team2, score1: null, score2: null });
+        push(matchesRef, { team1, team2, score1: null, score2: null });
     }
 });
 
-// Spiele anzeigen
-const matchesRef = ref(database, "matches");
 onValue(matchesRef, (snapshot) => {
-    const matchList = document.getElementById("matchList");
     matchList.innerHTML = "";
+    resultsList.innerHTML = "";
+
     snapshot.forEach((childSnapshot) => {
         const key = childSnapshot.key;
         const match = childSnapshot.val();
@@ -86,7 +86,6 @@ onValue(matchesRef, (snapshot) => {
         const li = document.createElement("li");
         li.textContent = `${match.team1} vs. ${match.team2}`;
 
-        // Ergebnis-Felder
         const input1 = document.createElement("input");
         input1.type = "number";
         input1.value = match.score1 !== null ? match.score1 : "";
@@ -97,7 +96,6 @@ onValue(matchesRef, (snapshot) => {
         input2.value = match.score2 !== null ? match.score2 : "";
         input2.placeholder = "Team 2 Tore";
 
-        // Speichern-Button für Ergebnisse
         const saveBtn = document.createElement("button");
         saveBtn.textContent = "Speichern";
         saveBtn.onclick = () => {
@@ -106,7 +104,6 @@ onValue(matchesRef, (snapshot) => {
             set(ref(database, `matches/${key}`), { ...match, score1, score2 });
         };
 
-        // Löschen-Button für Spiele
         const deleteBtn = document.createElement("button");
         deleteBtn.textContent = "Löschen";
         deleteBtn.onclick = () => remove(ref(database, `matches/${key}`));
@@ -115,14 +112,20 @@ onValue(matchesRef, (snapshot) => {
         li.appendChild(input2);
         li.appendChild(saveBtn);
         li.appendChild(deleteBtn);
-        matchList.appendChild(li);
+
+        if (match.score1 === null || match.score2 === null) {
+            matchList.appendChild(li);
+        } else {
+            resultsList.appendChild(li);
+        }
     });
 });
 
 // === RANGLISTE ANZEIGEN ===
 const rankingRef = ref(database, "ranking");
+const rankingTable = document.getElementById("rankingTable");
+
 onValue(rankingRef, (snapshot) => {
-    const rankingTable = document.getElementById("rankingTable");
     rankingTable.innerHTML = "";
     let rank = 1;
     snapshot.forEach((childSnapshot) => {

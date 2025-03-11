@@ -6,9 +6,8 @@ document.addEventListener("DOMContentLoaded", () => {
     const rankingRef = ref(db, "ranking");
     const newsRef = ref(db, "news");
 
-    // Funktion zur Bereinigung von Schlüsseln für Firebase
     function sanitizeKey(key) {
-        return key.replace(/[^a-zA-Z0-9]/g, "_"); // Ersetzt Sonderzeichen durch "_"
+        return key.replace(/[^a-zA-Z0-9]/g, "_"); // Entfernt unerlaubte Zeichen für Firebase-Keys
     }
 
     // NEWS VERWALTEN
@@ -68,10 +67,15 @@ document.addEventListener("DOMContentLoaded", () => {
             snapshot.forEach((childSnapshot) => {
                 const match = childSnapshot.val();
                 if (match.team1 === teamName || match.team2 === teamName) {
-                    updates[childSnapshot.key] = null; // Lösche das Spiel
+                    updates[childSnapshot.key] = null;
                 }
             });
-            update(matchesRef, updates).then(updateRankings);
+
+            if (Object.keys(updates).length > 0) {
+                update(matchesRef, updates).then(() => {
+                    updateRankings(); // Rangliste aktualisieren nach Löschung
+                });
+            }
         }, { onlyOnce: true });
     }
 
@@ -107,7 +111,6 @@ document.addEventListener("DOMContentLoaded", () => {
         }, { onlyOnce: true });
     }
 
-    // SPIELE ANZEIGEN
     onValue(matchesRef, (snapshot) => {
         const upcomingMatches = document.getElementById("upcomingMatches");
         const resultsTable = document.getElementById("resultsTable");

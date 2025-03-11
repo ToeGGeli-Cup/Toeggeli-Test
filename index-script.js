@@ -6,31 +6,28 @@ document.addEventListener("DOMContentLoaded", () => {
     const matchesRef = ref(db, "matches");
     const rankingRef = ref(db, "ranking");
 
-    /*** NEWS ANZEIGEN ***/
+    // News anzeigen
     onValue(newsRef, (snapshot) => {
-        const newsContainer = document.getElementById("newsContainer");
-        newsContainer.innerHTML = "";
+        const newsList = document.getElementById("newsList");
+        newsList.innerHTML = "";
         snapshot.forEach((childSnapshot) => {
-            const newsItem = childSnapshot.val();
-            newsContainer.innerHTML += `<p>${newsItem.text}</p>`;
+            const li = document.createElement("li");
+            li.textContent = childSnapshot.val();
+            newsList.appendChild(li);
         });
     });
 
-    /*** TEAMS ANZEIGEN ***/
+    // Teams anzeigen
     onValue(teamsRef, (snapshot) => {
         const teamsTable = document.getElementById("teamsTable");
         teamsTable.innerHTML = "";
         snapshot.forEach((childSnapshot) => {
             const team = childSnapshot.val();
-            teamsTable.innerHTML += `<tr>
-                <td>${team.name}</td>
-                <td>${team.player1}</td>
-                <td>${team.player2}</td>
-            </tr>`;
+            teamsTable.innerHTML += `<tr><td>${team.name}</td><td>${team.player1}</td><td>${team.player2}</td></tr>`;
         });
     });
 
-    /*** SPIELE ANZEIGEN ***/
+    // Offene Spiele anzeigen
     onValue(matchesRef, (snapshot) => {
         const upcomingMatches = document.getElementById("upcomingMatches");
         const resultsTable = document.getElementById("resultsTable");
@@ -40,25 +37,20 @@ document.addEventListener("DOMContentLoaded", () => {
         snapshot.forEach((childSnapshot) => {
             const match = childSnapshot.val();
             if (match.score === "-") {
-                upcomingMatches.innerHTML += `<tr>
-                    <td>${match.team1}</td>
-                    <td>${match.team2}</td>
-                </tr>`;
+                upcomingMatches.innerHTML += `<tr><td>${match.team1}</td><td>${match.team2}</td></tr>`;
             } else {
-                resultsTable.innerHTML += `<tr>
-                    <td>${match.team1}</td>
-                    <td>${match.team2}</td>
-                    <td>${match.score}</td>
-                </tr>`;
+                resultsTable.innerHTML += `<tr><td>${match.team1}</td><td>${match.team2}</td><td>${match.score}</td></tr>`;
             }
         });
     });
 
-    /*** RANGLISTE ANZEIGEN ***/
+    // Rangliste berechnen und anzeigen
     onValue(rankingRef, (snapshot) => {
         const rankingTable = document.getElementById("rankingTable");
         rankingTable.innerHTML = "";
+
         if (!snapshot.exists()) return;
+
         const sortedTeams = Object.keys(snapshot.val()).sort((a, b) =>
             snapshot.val()[b].points - snapshot.val()[a].points ||
             snapshot.val()[b].diff - snapshot.val()[a].diff ||

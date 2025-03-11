@@ -3,23 +3,40 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Panel - Töggele Cup</title>
+    <title>Turnierverwaltung</title>
     <script type="module" src="./admin-script.js"></script>
     <script type="module" src="./firebase.js"></script>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 800px; margin: auto; background-color: #f4f4f4; padding: 20px; }
+        h1, h2 { color: #333; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; background: white; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        th { background-color: #007bff; color: white; }
+        button { background-color: #28a745; color: white; border: none; padding: 5px 10px; cursor: pointer; }
+        button:hover { background-color: #218838; }
+        .delete-btn { background-color: #dc3545; }
+        .delete-btn:hover { background-color: #c82333; }
+    </style>
 </head>
 <body>
-    <h1>Admin Panel</h1>
+    <h1>Turnierverwaltung</h1>
+
+    <!-- NEWS VERWALTEN -->
+    <h2>News</h2>
+    <input type="text" id="newsInput" placeholder="News eingeben">
+    <button onclick="addNews()">Hinzufügen</button>
+    <ul id="newsList"></ul>
 
     <!-- TEAMS VERWALTEN -->
-    <h2>Teams verwalten</h2>
+    <h2>Teams</h2>
     <input type="text" id="teamName" placeholder="Teamname">
     <input type="text" id="player1" placeholder="Spieler 1">
     <input type="text" id="player2" placeholder="Spieler 2">
-    <button id="addTeam">Team hinzufügen</button>
-    <table border="1">
+    <button onclick="addTeam()">Hinzufügen</button>
+    <table>
         <thead>
             <tr>
-                <th>Teamname</th>
+                <th>Team</th>
                 <th>Spieler 1</th>
                 <th>Spieler 2</th>
                 <th>Aktion</th>
@@ -28,22 +45,9 @@
         <tbody id="teamsTable"></tbody>
     </table>
 
-    <!-- NEWS VERWALTEN -->
-    <h2>News verwalten</h2>
-    <input type="text" id="newsText" placeholder="Neue Nachricht">
-    <button id="addNews">News hinzufügen</button>
-    <div id="newsContainer"></div>
-
     <!-- SPIELE VERWALTEN -->
-    <h2>Spiele verwalten</h2>
-    <label for="matchTeam1">Team 1:</label>
-    <input type="text" id="matchTeam1" placeholder="Team 1">
-    <label for="matchTeam2">Team 2:</label>
-    <input type="text" id="matchTeam2" placeholder="Team 2">
-    <button id="addMatch">Spiel hinzufügen</button>
-
-    <h3>Offene Spiele</h3>
-    <table border="1">
+    <h2>Spiele</h2>
+    <table>
         <thead>
             <tr>
                 <th>Team 1</th>
@@ -52,25 +56,12 @@
                 <th>Aktion</th>
             </tr>
         </thead>
-        <tbody id="upcomingMatches"></tbody>
-    </table>
-
-    <h3>Ergebnisse</h3>
-    <table border="1">
-        <thead>
-            <tr>
-                <th>Team 1</th>
-                <th>Team 2</th>
-                <th>Ergebnis</th>
-                <th>Aktion</th>
-            </tr>
-        </thead>
-        <tbody id="resultsTable"></tbody>
+        <tbody id="matchesTable"></tbody>
     </table>
 
     <!-- RANGLISTE -->
     <h2>Rangliste</h2>
-    <table border="1">
+    <table>
         <thead>
             <tr>
                 <th>Platz</th>
@@ -84,6 +75,5 @@
         </thead>
         <tbody id="rankingTable"></tbody>
     </table>
-
 </body>
 </html>

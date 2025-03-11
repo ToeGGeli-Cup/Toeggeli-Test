@@ -47,7 +47,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 <td>${team.name}</td>
                 <td>${team.player1}</td>
                 <td>${team.player2}</td>
-                <td><button onclick="deleteTeam('${childSnapshot.key}')">🗑️</button></td>
+                <td><button onclick="deleteTeam('${childSnapshot.key}', '${team.name}')">🗑️</button></td>
             </tr>`;
         });
 
@@ -56,9 +56,23 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 
-    window.deleteTeam = (teamId) => {
+    window.deleteTeam = (teamId, teamName) => {
         remove(ref(db, `teams/${teamId}`));
+        removeTeamMatches(teamName);
     };
+
+    function removeTeamMatches(teamName) {
+        onValue(matchesRef, (snapshot) => {
+            const updates = {};
+            snapshot.forEach((childSnapshot) => {
+                const match = childSnapshot.val();
+                if (match.team1 === teamName || match.team2 === teamName) {
+                    updates[childSnapshot.key] = null; // Lösche das Spiel
+                }
+            });
+            update(matchesRef, updates);
+        }, { onlyOnce: true });
+    }
 
     document.getElementById("addTeam").addEventListener("click", () => {
         const teamName = document.getElementById("teamName").value;
@@ -74,7 +88,6 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 
-    // SPIELE GENERIEREN (SAFE MATCH-IDS)
     function generateMatches(teams) {
         onValue(matchesRef, (snapshot) => {
             const existingMatches = snapshot.val() || {};
@@ -83,13 +96,8 @@ document.addEventListener("DOMContentLoaded", () => {
             for (let i = 0; i < teams.length; i++) {
                 for (let j = i + 1; j < teams.length; j++) {
                     const matchId = `${sanitizeKey(teams[i])}_vs_${sanitizeKey(teams[j])}`;
-
-                    if (!matches[matchId]) { // Falls Spiel noch nicht existiert
-                        matches[matchId] = {
-                            team1: teams[i],
-                            team2: teams[j],
-                            score: "-"
-                        };
+                    if (!matches[matchId]) {
+                        matches[matchId] = { team1: teams[i], team2: teams[j], score: "-" };
                     }
                 }
             }
@@ -128,7 +136,6 @@ document.addEventListener("DOMContentLoaded", () => {
         updateRankings();
     });
 
-    // ERGEBNIS SPEICHERN
     window.saveResult = (matchId) => {
         const scoreInput = document.getElementById(`score_${matchId}`).value;
         if (!scoreInput.match(/^\d+:\d+$/)) {
@@ -139,7 +146,6 @@ document.addEventListener("DOMContentLoaded", () => {
         updateRankings();
     };
 
-    // ERGEBNIS BEARBEITEN
     window.editResult = (matchId, oldScore) => {
         const newScore = prompt("Neues Ergebnis eingeben:", oldScore);
         if (newScore && newScore.match(/^\d+:\d+$/)) {
@@ -148,7 +154,6 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     };
 
-    // RANGLISTE BERECHNEN
     function updateRankings() {
         onValue(matchesRef, (snapshot) => {
             const rankings = {};

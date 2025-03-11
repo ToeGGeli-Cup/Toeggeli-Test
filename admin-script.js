@@ -6,35 +6,31 @@ document.addEventListener("DOMContentLoaded", () => {
     const rankingRef = ref(db, "ranking");
     const newsRef = ref(db, "news");
 
-    function sanitizeKey(key) {
-        return key.replace(/[^a-zA-Z0-9]/g, "_"); // Entfernt unerlaubte Zeichen für Firebase-Keys
-    }
-
-    // NEWS VERWALTEN
+    // 📰 NEWS VERWALTEN
     onValue(newsRef, (snapshot) => {
-        const newsContainer = document.getElementById("newsContainer");
-        newsContainer.innerHTML = "";
+        const newsTable = document.getElementById("newsTable");
+        newsTable.innerHTML = "";
         snapshot.forEach((childSnapshot) => {
             const newsItem = childSnapshot.val();
-            newsContainer.innerHTML += `<p>${newsItem.date}: ${newsItem.text}
-                <button onclick="deleteNews('${childSnapshot.key}')">🗑️</button></p>`;
+            newsTable.innerHTML += `<tr>
+                <td>${newsItem.text}</td>
+                <td><button onclick="deleteNews('${childSnapshot.key}')">🗑️</button></td>
+            </tr>`;
         });
     });
+
+    window.addNews = () => {
+        const newsText = document.getElementById("newsInput").value.trim();
+        if (newsText === "") return;
+        push(newsRef, { text: newsText });
+        document.getElementById("newsInput").value = "";
+    };
 
     window.deleteNews = (newsId) => {
         remove(ref(db, `news/${newsId}`));
     };
 
-    document.getElementById("addNews").addEventListener("click", () => {
-        const newsText = document.getElementById("newsText").value;
-        if (newsText) {
-            const newNewsRef = push(newsRef);
-            set(newNewsRef, { text: newsText, date: new Date().toLocaleString() });
-            document.getElementById("newsText").value = "";
-        }
-    });
-
-    // TEAMS VERWALTEN
+    // 🏆 TEAMS VERWALTEN
     onValue(teamsRef, (snapshot) => {
         const teamsTable = document.getElementById("teamsTable");
         teamsTable.innerHTML = "";
@@ -55,62 +51,62 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 
+    window.addTeam = () => {
+        const teamName = document.getElementById("teamName").value.trim();
+        const player1 = document.getElementById("player1").value.trim();
+        const player2 = document.getElementById("player2").value.trim();
+        if (teamName === "" || player1 === "" || player2 === "") return;
+        push(teamsRef, { name: teamName, player1, player2 });
+        document.getElementById("teamName").value = "";
+        document.getElementById("player1").value = "";
+        document.getElementById("player2").value = "";
+    };
+
     window.deleteTeam = (teamId, teamName) => {
         remove(ref(db, `teams/${teamId}`)).then(() => {
             removeTeamMatches(teamName);
+            remove(ref(db, `ranking/${sanitizeKey(teamName)}`)); // Entfernt das Team aus der Rangliste
         });
     };
 
     function removeTeamMatches(teamName) {
         onValue(matchesRef, (snapshot) => {
-            const updates = {};
             snapshot.forEach((childSnapshot) => {
                 const match = childSnapshot.val();
                 if (match.team1 === teamName || match.team2 === teamName) {
-                    updates[childSnapshot.key] = null;
+                    remove(ref(db, `matches/${childSnapshot.key}`));
                 }
             });
-
-            if (Object.keys(updates).length > 0) {
-                update(matchesRef, updates).then(() => {
-                    updateRankings(); // Rangliste aktualisieren nach Löschung
-                });
-            }
         }, { onlyOnce: true });
     }
-
-    document.getElementById("addTeam").addEventListener("click", () => {
-        const teamName = document.getElementById("teamName").value;
-        const player1 = document.getElementById("player1").value;
-        const player2 = document.getElementById("player2").value;
-
-        if (teamName && player1 && player2) {
-            const newTeamRef = push(teamsRef);
-            set(newTeamRef, { name: teamName, player1: player1, player2: player2 });
-            document.getElementById("teamName").value = "";
-            document.getElementById("player1").value = "";
-            document.getElementById("player2").value = "";
-        }
-    });
 
     function generateMatches(teams) {
         onValue(matchesRef, (snapshot) => {
             const existingMatches = snapshot.val() || {};
-            const matches = { ...existingMatches };
+            const newMatches = { ...existingMatches };
 
             for (let i = 0; i < teams.length; i++) {
                 for (let j = i + 1; j < teams.length; j++) {
-                    const matchId = `${sanitizeKey(teams[i])}_vs_${sanitizeKey(teams[j])}`;
-                    if (!matches[matchId]) {
-                        matches[matchId] = { team1: teams[i], team2: teams[j], score: "-" };
+                    const matchId = sanitizeKey(`${teams[i]}_vs_${teams[j]}`);
+                    if (!existingMatches[matchId]) {
+                        newMatches[matchId] = {
+                            team1: teams[i],
+                            team2: teams[j],
+                            score: "-"
+                        };
                     }
                 }
             }
 
-            set(matchesRef, matches);
+            set(matchesRef, newMatches);
         }, { onlyOnce: true });
     }
 
+    function sanitizeKey(key) {
+        return key.replace(/[.#$\/[\]]/g, "_");
+    }
+
+    // 📋 SPIELE VERWALTEN
     onValue(matchesRef, (snapshot) => {
         const upcomingMatches = document.getElementById("upcomingMatches");
         const resultsTable = document.getElementById("resultsTable");
@@ -164,8 +160,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
             onValue(teamsRef, (teamsSnapshot) => {
                 teamsSnapshot.forEach((childSnapshot) => {
-                    const team = sanitizeKey(childSnapshot.val().name);
-                    rankings[team] = { games: 0, points: 0, goals: 0, conceded: 0, diff: 0 };
+                    const team = childSnapshot.val().name;
+                    rankings[sanitizeKey(team)] = { games: 0, points: 0, goals: 0, conceded: 0, diff: 0 };
                 });
 
                 snapshot.forEach((childSnapshot) => {

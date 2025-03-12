@@ -33,14 +33,15 @@ export function loadTeams() {
     const teamsRef = ref(db, "teams");
     onValue(teamsRef, (snapshot) => {
         const teamList = document.getElementById("teamList");
-        const teamASelect = document.getElementById("teamA");
-        const teamBSelect = document.getElementById("teamB");
-        if (!teamList || !teamASelect || !teamBSelect) return;
-        
+        const teamSelectA = document.getElementById("teamA");
+        const teamSelectB = document.getElementById("teamB");
+
+        if (!teamList || !teamSelectA || !teamSelectB) return;
+
         teamList.innerHTML = "";
-        teamASelect.innerHTML = "";
-        teamBSelect.innerHTML = "";
-        
+        teamSelectA.innerHTML = "";
+        teamSelectB.innerHTML = "";
+
         snapshot.forEach((child) => {
             const data = child.val();
             const li = document.createElement("li");
@@ -52,17 +53,12 @@ export function loadTeams() {
             teamList.appendChild(li);
 
             const optionA = document.createElement("option");
-            optionA.value = data.name;
-            optionA.textContent = data.name;
-            teamASelect.appendChild(optionA);
-
             const optionB = document.createElement("option");
-            optionB.value = data.name;
-            optionB.textContent = data.name;
-            teamBSelect.appendChild(optionB);
+            optionA.value = optionB.value = data.name;
+            optionA.textContent = optionB.textContent = data.name;
+            teamSelectA.appendChild(optionA);
+            teamSelectB.appendChild(optionB);
         });
-
-        generateRanking(); // Beim Laden der Teams auch die Rangliste updaten
     });
 }
 
@@ -72,7 +68,7 @@ export function addTeam() {
     const player1 = document.getElementById("player1").value;
     const player2 = document.getElementById("player2").value;
     if (teamName && player1 && player2) {
-        push(ref(db, "teams"), { name: teamName, player1, player2 });
+        push(ref(db, "teams"), { name: teamName, player1, player2, games: 0, points: 0, goals: 0, conceded: 0, diff: 0 });
         document.getElementById("teamName").value = "";
         document.getElementById("player1").value = "";
         document.getElementById("player2").value = "";
@@ -94,11 +90,19 @@ export function loadMatches() {
             const data = child.val();
             const li = document.createElement("li");
             li.textContent = `${data.teamA} vs ${data.teamB} - ${data.score || "-:-"}`;
+
             const scoreInput = document.createElement("input");
             scoreInput.placeholder = "Ergebnis (10:5)";
+            scoreInput.value = data.score === "-:-" ? "" : data.score;
+
             const saveBtn = document.createElement("button");
             saveBtn.textContent = "✓";
-            saveBtn.onclick = () => saveResult(child.key, scoreInput.value);
+            saveBtn.onclick = () => {
+                update(ref(db, "matches/" + child.key), { score: scoreInput.value }).then(() => {
+                    updateRanking();
+                });
+            };
+
             const delBtn = document.createElement("button");
             delBtn.textContent = "🗑️";
             delBtn.onclick = () => remove(ref(db, "matches/" + child.key));
@@ -106,15 +110,13 @@ export function loadMatches() {
             li.appendChild(scoreInput);
             li.appendChild(saveBtn);
             li.appendChild(delBtn);
-            
+
             if (data.score && data.score !== "-:-") {
                 resultList.appendChild(li);
             } else {
                 matchList.appendChild(li);
             }
         });
-
-        generateRanking();
     });
 }
 
@@ -127,81 +129,67 @@ export function addMatch() {
     }
 }
 
-// ERGEBNIS SPEICHERN & RANGLISTE AKTUALISIEREN
-function saveResult(matchId, score) {
-    if (!score.includes(":")) return;
-    const [scoreA, scoreB] = score.split(":").map(Number);
-    if (isNaN(scoreA) || isNaN(scoreB)) return;
-
-    const matchRef = ref(db, `matches/${matchId}`);
-    onValue(matchRef, (snapshot) => {
-        const data = snapshot.val();
-        if (!data) return;
-        const { teamA, teamB } = data;
-
-        update(ref(db, `matches/${matchId}`), { score });
-        generateRanking();
-    }, { onlyOnce: true });
-}
-
-// NEUE RANGLISTE BERECHNEN
-function generateRanking() {
+// RANGLISTE AKTUALISIEREN
+export function updateRanking() {
     const rankingRef = ref(db, "ranking");
+    const matchesRef = ref(db, "matches");
     const teamsRef = ref(db, "teams");
-    const matchRef = ref(db, "matches");
 
-    onValue(teamsRef, (teamsSnapshot) => {
-        let rankings = {};
+    onValue(matchesRef, (snapshot) => {
+        const teamStats = {};
 
-        // Initialisiere alle Teams mit 0 Punkten
-        teamsSnapshot.forEach((team) => {
-            rankings[team.val().name] = {
-                name: team.val().name,
-                games: 0,
-                points: 0,
-                goals: 0,
-                conceded: 0,
-                diff: 0
-            };
+        snapshot.forEach((child) => {
+            const match = child.val();
+            if (!match.score || match.score === "-:-") return;
+
+            const [scoreA, scoreB] = match.score.split(":").map(Number);
+
+            if (!teamStats[match.teamA]) teamStats[match.teamA] = { games: 0, points: 0, goals: 0, conceded: 0, diff: 0 };
+            if (!teamStats[match.teamB]) teamStats[match.teamB] = { games: 0, points: 0, goals: 0, conceded: 0, diff: 0 };
+
+            teamStats[match.teamA].games += 1;
+            teamStats[match.teamB].games += 1;
+
+            teamStats[match.teamA].goals += scoreA;
+            teamStats[match.teamB].goals += scoreB;
+
+            teamStats[match.teamA].conceded += scoreB;
+            teamStats[match.teamB].conceded += scoreA;
+
+            teamStats[match.teamA].diff += scoreA - scoreB;
+            teamStats[match.teamB].diff += scoreB - scoreA;
+
+            if (scoreA > scoreB) {
+                teamStats[match.teamA].points += 10;
+            } else {
+                teamStats[match.teamB].points += 10;
+            }
         });
 
-        onValue(matchRef, (snapshot) => {
-            snapshot.forEach((child) => {
-                const data = child.val();
-                if (!data.score || data.score === "-:-") return;
-
-                const [scoreA, scoreB] = data.score.split(":").map(Number);
-                if (isNaN(scoreA) || isNaN(scoreB)) return;
-
-                rankings[data.teamA].games += 1;
-                rankings[data.teamB].games += 1;
-
-                rankings[data.teamA].goals += scoreA;
-                rankings[data.teamB].goals += scoreB;
-
-                rankings[data.teamA].conceded += scoreB;
-                rankings[data.teamB].conceded += scoreA;
-
-                rankings[data.teamA].diff = rankings[data.teamA].goals - rankings[data.teamA].conceded;
-                rankings[data.teamB].diff = rankings[data.teamB].goals - rankings[data.teamB].conceded;
-
-                if (scoreA > scoreB) rankings[data.teamA].points += 10;
-                else rankings[data.teamB].points += 10;
+        onValue(teamsRef, (teamsSnapshot) => {
+            teamsSnapshot.forEach((child) => {
+                const team = child.val();
+                if (!teamStats[team.name]) {
+                    teamStats[team.name] = { games: 0, points: 0, goals: 0, conceded: 0, diff: 0 };
+                }
             });
 
-            const sortedRankings = Object.values(rankings).sort((a, b) => b.points - a.points);
-            sortedRankings.forEach((team, index) => {
-                team.rank = index + 1;
+            const sortedTeams = Object.entries(teamStats).sort((a, b) => b[1].points - a[1].points || b[1].diff - a[1].diff || b[1].goals - a[1].goals);
+
+            const newRanking = {};
+            sortedTeams.forEach(([team, stats], index) => {
+                newRanking[index + 1] = { ...stats, name: team, rank: index + 1 };
             });
 
-            set(rankingRef, sortedRankings);
-        }, { onlyOnce: true });
+            set(rankingRef, newRanking);
+        });
     });
 }
 
-// LADEN BEI SEITENAUFRUF
+// ALLES LADEN
 window.onload = function () {
     loadNews();
     loadTeams();
     loadMatches();
+    updateRanking();
 };

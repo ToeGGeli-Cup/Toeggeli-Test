@@ -28,6 +28,38 @@ export function addNews() {
     }
 }
 
+// TEAMS LADEN
+export function loadTeams() {
+    const teamsRef = ref(db, "teams");
+    onValue(teamsRef, (snapshot) => {
+        const teamList = document.getElementById("teamList");
+        if (!teamList) return;
+        teamList.innerHTML = "";
+        snapshot.forEach((child) => {
+            const data = child.val();
+            const li = document.createElement("li");
+            li.textContent = `${data.name} (${data.player1} & ${data.player2})`;
+            teamList.appendChild(li);
+        });
+    });
+}
+
+// SPIELE LADEN
+export function loadMatches() {
+    const matchRef = ref(db, "matches");
+    onValue(matchRef, (snapshot) => {
+        const matchList = document.getElementById("matchList");
+        if (!matchList) return;
+        matchList.innerHTML = "";
+        snapshot.forEach((child) => {
+            const data = child.val();
+            const li = document.createElement("li");
+            li.textContent = `${data.teamA} vs ${data.teamB} - ${data.score || "-:-"}`;
+            matchList.appendChild(li);
+        });
+    });
+}
+
 // TEAMS HINZUFÜGEN
 export function addTeam() {
     const teamName = document.getElementById("teamName").value;
@@ -69,8 +101,6 @@ export function loadResults() {
             `;
             resultsTable.appendChild(row);
         });
-
-        loadRanking(snapshot);
     });
 }
 
@@ -84,5 +114,7 @@ export function resetMatch(matchId, teamA, teamB) {
 // ALLES LADEN
 window.onload = function () {
     loadNews();
+    loadTeams();
+    loadMatches();
     loadResults();
 };

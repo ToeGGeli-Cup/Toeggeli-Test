@@ -1,147 +1,126 @@
-// Stelle sicher, dass Firebase bereits in firebase.js initialisiert wurde
-import { db, ref, push, set, onValue, remove } from "./firebase.js";
+import { db, ref, push, remove, onValue } from './firebase.js';
 
-// NEWS VERWALTEN
+// News hinzufügen
 function addNews() {
-    const newsText = document.getElementById("newsInput").value;
-    if (newsText.trim() === "") return;
-    
-    const newsRef = ref(db, "news");
-    const newNewsRef = push(newsRef);
-    set(newNewsRef, newsText);
-
+    const newsInput = document.getElementById("newsInput").value;
+    if (newsInput.trim() === "") return;
+    push(ref(db, "news"), { text: newsInput });
     document.getElementById("newsInput").value = "";
 }
 
+// News aus Firebase anzeigen
 function loadNews() {
-    const newsList = document.getElementById("newsList");
-    const newsRef = ref(db, "news");
-
-    onValue(newsRef, (snapshot) => {
+    onValue(ref(db, "news"), (snapshot) => {
+        const newsList = document.getElementById("newsList");
         newsList.innerHTML = "";
         snapshot.forEach((childSnapshot) => {
-            const li = document.createElement("li");
-            li.textContent = childSnapshot.val();
-            const deleteBtn = document.createElement("button");
-            deleteBtn.textContent = "Löschen";
-            deleteBtn.onclick = () => remove(ref(db, `news/${childSnapshot.key}`));
-            li.appendChild(deleteBtn);
-            newsList.appendChild(li);
+            const key = childSnapshot.key;
+            const news = childSnapshot.val().text;
+            displayListItem("newsList", news, () => deleteNews(key));
         });
     });
 }
 
-// TEAMS VERWALTEN
-function addTeam() {
-    const teamName = document.getElementById("teamInput").value;
-    if (teamName.trim() === "") return;
-    
-    const teamRef = ref(db, "teams");
-    const newTeamRef = push(teamRef);
-    set(newTeamRef, teamName);
+// News löschen
+function deleteNews(key) {
+    remove(ref(db, "news/" + key));
+}
 
+// Team hinzufügen
+function addTeam() {
+    const teamInput = document.getElementById("teamInput").value;
+    if (teamInput.trim() === "") return;
+    push(ref(db, "teams"), { name: teamInput });
     document.getElementById("teamInput").value = "";
 }
 
+// Teams aus Firebase anzeigen
 function loadTeams() {
-    const teamList = document.getElementById("teamList");
-    const teamRef = ref(db, "teams");
-
-    onValue(teamRef, (snapshot) => {
+    onValue(ref(db, "teams"), (snapshot) => {
+        const teamList = document.getElementById("teamList");
         teamList.innerHTML = "";
         snapshot.forEach((childSnapshot) => {
-            const li = document.createElement("li");
-            li.textContent = childSnapshot.val();
-            const deleteBtn = document.createElement("button");
-            deleteBtn.textContent = "Löschen";
-            deleteBtn.onclick = () => remove(ref(db, `teams/${childSnapshot.key}`));
-            li.appendChild(deleteBtn);
-            teamList.appendChild(li);
+            const key = childSnapshot.key;
+            const team = childSnapshot.val().name;
+            displayListItem("teamList", team, () => deleteTeam(key));
         });
     });
 }
 
-// SPIELE VERWALTEN
+// Team löschen
+function deleteTeam(key) {
+    remove(ref(db, "teams/" + key));
+}
+
+// Spiel hinzufügen
 function addMatch() {
     const team1 = document.getElementById("team1Input").value;
     const team2 = document.getElementById("team2Input").value;
     if (team1.trim() === "" || team2.trim() === "") return;
-
-    const matchRef = ref(db, "matches");
-    const newMatchRef = push(matchRef);
-    set(newMatchRef, { team1, team2, score1: null, score2: null });
-
+    push(ref(db, "matches"), { team1, team2, score1: null, score2: null });
     document.getElementById("team1Input").value = "";
     document.getElementById("team2Input").value = "";
 }
 
+// Spiele aus Firebase anzeigen
 function loadMatches() {
-    const matchList = document.getElementById("matchList");
-    const matchRef = ref(db, "matches");
-
-    onValue(matchRef, (snapshot) => {
+    onValue(ref(db, "matches"), (snapshot) => {
+        const matchList = document.getElementById("matchList");
         matchList.innerHTML = "";
         snapshot.forEach((childSnapshot) => {
-            const data = childSnapshot.val();
-            const li = document.createElement("li");
-            li.textContent = `${data.team1} vs ${data.team2}`;
-            const deleteBtn = document.createElement("button");
-            deleteBtn.textContent = "Löschen";
-            deleteBtn.onclick = () => remove(ref(db, `matches/${childSnapshot.key}`));
-            li.appendChild(deleteBtn);
-            matchList.appendChild(li);
-        });
-    });
-}
-
-// RANGLISTE LADEN
-function loadRanking() {
-    const rankingTable = document.getElementById("rankingTable");
-    const matchRef = ref(db, "matches");
-
-    onValue(matchRef, (snapshot) => {
-        const rankings = {};
-        snapshot.forEach((childSnapshot) => {
+            const key = childSnapshot.key;
             const match = childSnapshot.val();
-            if (match.score1 !== null && match.score2 !== null) {
-                [match.team1, match.team2].forEach((team) => {
-                    if (!rankings[team]) rankings[team] = { games: 0, points: 0, goals: 0, conceded: 0 };
-                });
-
-                rankings[match.team1].games++;
-                rankings[match.team2].games++;
-
-                rankings[match.team1].goals += match.score1;
-                rankings[match.team2].goals += match.score2;
-                rankings[match.team1].conceded += match.score2;
-                rankings[match.team2].conceded += match.score1;
-
-                if (match.score1 > match.score2) {
-                    rankings[match.team1].points += 3;
-                } else if (match.score1 < match.score2) {
-                    rankings[match.team2].points += 3;
-                } else {
-                    rankings[match.team1].points++;
-                    rankings[match.team2].points++;
-                }
-            }
+            const matchText = `${match.team1} vs ${match.team2}`;
+            displayListItem("matchList", matchText, () => deleteMatch(key));
         });
-
-        rankingTable.innerHTML = "";
-        Object.entries(rankings)
-            .sort(([, a], [, b]) => b.points - a.points || (b.goals - b.conceded) - (a.goals - a.conceded))
-            .forEach(([team, data], i) => {
-                const row = `<tr><td>${i + 1}</td><td>${team}</td><td>${data.games}</td><td>${data.points}</td>
-                             <td>${data.goals}</td><td>${data.conceded}</td><td>${data.goals - data.conceded}</td></tr>`;
-                rankingTable.innerHTML += row;
-            });
     });
 }
 
-// SEITENLADE-EVENTS
-window.onload = () => {
+// Spiel löschen
+function deleteMatch(key) {
+    remove(ref(db, "matches/" + key));
+}
+
+// Rangliste aus Firebase laden
+function loadRanking() {
+    onValue(ref(db, "ranking"), (snapshot) => {
+        const rankingTable = document.getElementById("rankingTable");
+        rankingTable.innerHTML = "";
+        let rank = 1;
+        snapshot.forEach((childSnapshot) => {
+            const team = childSnapshot.val();
+            const row = `
+                <tr>
+                    <td>${rank++}</td>
+                    <td>${team.name}</td>
+                    <td>${team.games || 0}</td>
+                    <td>${team.points || 0}</td>
+                    <td>${team.goals || 0}</td>
+                    <td>${team.conceded || 0}</td>
+                    <td>${(team.goals || 0) - (team.conceded || 0)}</td>
+                </tr>
+            `;
+            rankingTable.innerHTML += row;
+        });
+    });
+}
+
+// Hilfsfunktion zur Anzeige von Elementen mit Löschen-Button
+function displayListItem(parentId, text, deleteFunction) {
+    const list = document.getElementById(parentId);
+    const li = document.createElement("li");
+    li.textContent = text;
+    const deleteBtn = document.createElement("button");
+    deleteBtn.textContent = "🗑️";
+    deleteBtn.onclick = deleteFunction;
+    li.appendChild(deleteBtn);
+    list.appendChild(li);
+}
+
+// Daten aus Firebase beim Laden der Seite abrufen
+document.addEventListener("DOMContentLoaded", () => {
     loadNews();
     loadTeams();
     loadMatches();
     loadRanking();
-};
+});

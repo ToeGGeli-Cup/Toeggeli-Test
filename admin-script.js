@@ -80,7 +80,7 @@ export function updateMatch(matchId, score) {
     }, { onlyOnce: true });
 }
 
-// RESULTATE LADEN
+// RESULTATE LADEN UND ANZEIGEN
 export function loadResults() {
     const resultsRef = ref(db, "results");
     onValue(resultsRef, (snapshot) => {

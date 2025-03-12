@@ -28,7 +28,7 @@ export function addNews() {
     }
 }
 
-// TEAMS LADEN
+// TEAMS LADEN UND SPIELE AUTOMATISCH ERSTELLEN
 export function loadTeams() {
     const teamsRef = ref(db, "teams");
     onValue(teamsRef, (snapshot) => {
@@ -42,50 +42,54 @@ export function loadTeams() {
         teamASelect.innerHTML = "";
         teamBSelect.innerHTML = "";
 
+        let teams = [];
         snapshot.forEach((child) => {
             const data = child.val();
+            teams.push(data.name);
             const li = document.createElement("li");
             li.textContent = `${data.name} (${data.player1} & ${data.player2})`;
-
             const optionA = document.createElement("option");
             const optionB = document.createElement("option");
             optionA.value = optionB.value = data.name;
             optionA.textContent = optionB.textContent = data.name;
-
             teamASelect.appendChild(optionA);
             teamBSelect.appendChild(optionB);
-
             const delBtn = document.createElement("button");
             delBtn.textContent = "🗑️";
-            delBtn.onclick = () => remove(ref(db, "teams/" + child.key));
+            delBtn.onclick = () => remove(ref(db, "teams/" + child.key)).then(() => generateMatches());
             li.appendChild(delBtn);
             teamList.appendChild(li);
         });
+        generateMatches(teams);
     });
 }
 
-// TEAMS HINZUFÜGEN
+// TEAMS HINZUFÜGEN UND SPIELE AUTOMATISCH GENERIEREN
 export function addTeam() {
     const teamName = document.getElementById("teamName").value;
     const player1 = document.getElementById("player1").value;
     const player2 = document.getElementById("player2").value;
     if (teamName && player1 && player2) {
-        push(ref(db, "teams"), { name: teamName, player1, player2 });
+        push(ref(db, "teams"), { name: teamName, player1, player2 }).then(() => generateMatches());
         document.getElementById("teamName").value = "";
         document.getElementById("player1").value = "";
         document.getElementById("player2").value = "";
     }
 }
 
-// SPIELE HINZUFÜGEN (Fix: Stellen sicher, dass das Spiel gespeichert wird und Matches aktualisiert werden)
-export function addMatch() {
-    const teamA = document.getElementById("teamA").value;
-    const teamB = document.getElementById("teamB").value;
-    if (teamA && teamB && teamA !== teamB) {
-        push(ref(db, "matches"), { teamA, teamB, score: "-:-" }).then(() => {
-            loadMatches();
-        });
+// SPIELE AUTOMATISCH GENERIEREN (Round Robin System)
+export function generateMatches(teams = []) {
+    if (teams.length < 2) return; // Keine Spiele möglich mit weniger als 2 Teams
+
+    const matchesRef = ref(db, "matches");
+    set(matchesRef, {}); // Vorherige Spiele löschen
+
+    for (let i = 0; i < teams.length; i++) {
+        for (let j = i + 1; j < teams.length; j++) {
+            push(matchesRef, { teamA: teams[i], teamB: teams[j], score: "-:-" });
+        }
     }
+    loadMatches();
 }
 
 // SPIELE LADEN

@@ -1,146 +1,146 @@
-import { getDatabase, ref, push, set, onValue, remove } from "./firebase.js";
+import { db, ref, push, set, onValue, remove } from "./firebase.js";
 
-const database = getDatabase();
-
-// === NEWS VERWALTEN ===
-const newsRef = ref(database, "news");
-const newsList = document.getElementById("newsList");
-
-document.getElementById("addNewsBtn").addEventListener("click", function () {
+// NEWS VERWALTEN
+function addNews() {
     const newsText = document.getElementById("newsInput").value;
-    if (newsText.trim() !== "") {
-        push(newsRef, newsText);
-        document.getElementById("newsInput").value = "";
-    }
-});
+    if (newsText.trim() === "") return;
+    
+    const newsRef = ref(db, "news");
+    const newNewsRef = push(newsRef);
+    set(newNewsRef, newsText);
 
-onValue(newsRef, (snapshot) => {
-    newsList.innerHTML = "";
-    snapshot.forEach((childSnapshot) => {
-        const key = childSnapshot.key;
-        const text = childSnapshot.val();
+    document.getElementById("newsInput").value = "";
+}
 
-        const li = document.createElement("li");
-        li.textContent = text;
+function loadNews() {
+    const newsList = document.getElementById("newsList");
+    const newsRef = ref(db, "news");
 
-        const deleteBtn = document.createElement("button");
-        deleteBtn.textContent = "Löschen";
-        deleteBtn.onclick = () => remove(ref(database, `news/${key}`));
-
-        li.appendChild(deleteBtn);
-        newsList.appendChild(li);
+    onValue(newsRef, (snapshot) => {
+        newsList.innerHTML = "";
+        snapshot.forEach((childSnapshot) => {
+            const li = document.createElement("li");
+            li.textContent = childSnapshot.val();
+            const deleteBtn = document.createElement("button");
+            deleteBtn.textContent = "Löschen";
+            deleteBtn.onclick = () => remove(ref(db, `news/${childSnapshot.key}`));
+            li.appendChild(deleteBtn);
+            newsList.appendChild(li);
+        });
     });
-});
+}
 
-// === TEAMS VERWALTEN ===
-const teamsRef = ref(database, "teams");
-const teamList = document.getElementById("teamList");
-
-document.getElementById("addTeamBtn").addEventListener("click", function () {
+// TEAMS VERWALTEN
+function addTeam() {
     const teamName = document.getElementById("teamInput").value;
-    if (teamName.trim() !== "") {
-        push(teamsRef, teamName);
-        document.getElementById("teamInput").value = "";
-    }
-});
+    if (teamName.trim() === "") return;
+    
+    const teamRef = ref(db, "teams");
+    const newTeamRef = push(teamRef);
+    set(newTeamRef, teamName);
 
-onValue(teamsRef, (snapshot) => {
-    teamList.innerHTML = "";
-    snapshot.forEach((childSnapshot) => {
-        const key = childSnapshot.key;
-        const name = childSnapshot.val();
+    document.getElementById("teamInput").value = "";
+}
 
-        const li = document.createElement("li");
-        li.textContent = name;
+function loadTeams() {
+    const teamList = document.getElementById("teamList");
+    const teamRef = ref(db, "teams");
 
-        const deleteBtn = document.createElement("button");
-        deleteBtn.textContent = "Löschen";
-        deleteBtn.onclick = () => remove(ref(database, `teams/${key}`));
-
-        li.appendChild(deleteBtn);
-        teamList.appendChild(li);
+    onValue(teamRef, (snapshot) => {
+        teamList.innerHTML = "";
+        snapshot.forEach((childSnapshot) => {
+            const li = document.createElement("li");
+            li.textContent = childSnapshot.val();
+            const deleteBtn = document.createElement("button");
+            deleteBtn.textContent = "Löschen";
+            deleteBtn.onclick = () => remove(ref(db, `teams/${childSnapshot.key}`));
+            li.appendChild(deleteBtn);
+            teamList.appendChild(li);
+        });
     });
-});
+}
 
-// === SPIELE VERWALTEN ===
-const matchesRef = ref(database, "matches");
-const matchList = document.getElementById("matchList");
-const resultsList = document.getElementById("resultsList");
+// SPIELE VERWALTEN
+function addMatch() {
+    const team1 = document.getElementById("team1Input").value;
+    const team2 = document.getElementById("team2Input").value;
+    if (team1.trim() === "" || team2.trim() === "") return;
 
-document.getElementById("addMatchBtn").addEventListener("click", function () {
-    const team1 = document.getElementById("team1").value;
-    const team2 = document.getElementById("team2").value;
-    if (team1 && team2 && team1 !== team2) {
-        push(matchesRef, { team1, team2, score1: null, score2: null });
-    }
-});
+    const matchRef = ref(db, "matches");
+    const newMatchRef = push(matchRef);
+    set(newMatchRef, { team1, team2, score1: null, score2: null });
 
-onValue(matchesRef, (snapshot) => {
-    matchList.innerHTML = "";
-    resultsList.innerHTML = "";
+    document.getElementById("team1Input").value = "";
+    document.getElementById("team2Input").value = "";
+}
 
-    snapshot.forEach((childSnapshot) => {
-        const key = childSnapshot.key;
-        const match = childSnapshot.val();
+function loadMatches() {
+    const matchList = document.getElementById("matchList");
+    const matchRef = ref(db, "matches");
 
-        const li = document.createElement("li");
-        li.textContent = `${match.team1} vs. ${match.team2}`;
-
-        const input1 = document.createElement("input");
-        input1.type = "number";
-        input1.value = match.score1 !== null ? match.score1 : "";
-        input1.placeholder = "Team 1 Tore";
-
-        const input2 = document.createElement("input");
-        input2.type = "number";
-        input2.value = match.score2 !== null ? match.score2 : "";
-        input2.placeholder = "Team 2 Tore";
-
-        const saveBtn = document.createElement("button");
-        saveBtn.textContent = "Speichern";
-        saveBtn.onclick = () => {
-            const score1 = input1.value !== "" ? parseInt(input1.value) : null;
-            const score2 = input2.value !== "" ? parseInt(input2.value) : null;
-            set(ref(database, `matches/${key}`), { ...match, score1, score2 });
-        };
-
-        const deleteBtn = document.createElement("button");
-        deleteBtn.textContent = "Löschen";
-        deleteBtn.onclick = () => remove(ref(database, `matches/${key}`));
-
-        li.appendChild(input1);
-        li.appendChild(input2);
-        li.appendChild(saveBtn);
-        li.appendChild(deleteBtn);
-
-        if (match.score1 === null || match.score2 === null) {
+    onValue(matchRef, (snapshot) => {
+        matchList.innerHTML = "";
+        snapshot.forEach((childSnapshot) => {
+            const data = childSnapshot.val();
+            const li = document.createElement("li");
+            li.textContent = `${data.team1} vs ${data.team2}`;
+            const deleteBtn = document.createElement("button");
+            deleteBtn.textContent = "Löschen";
+            deleteBtn.onclick = () => remove(ref(db, `matches/${childSnapshot.key}`));
+            li.appendChild(deleteBtn);
             matchList.appendChild(li);
-        } else {
-            resultsList.appendChild(li);
-        }
+        });
     });
-});
+}
 
-// === RANGLISTE ANZEIGEN ===
-const rankingRef = ref(database, "ranking");
-const rankingTable = document.getElementById("rankingTable");
+// RANGLISTE LADEN
+function loadRanking() {
+    const rankingTable = document.getElementById("rankingTable");
+    const matchRef = ref(db, "matches");
 
-onValue(rankingRef, (snapshot) => {
-    rankingTable.innerHTML = "";
-    let rank = 1;
-    snapshot.forEach((childSnapshot) => {
-        const data = childSnapshot.val();
-        const row = document.createElement("tr");
-        row.innerHTML = `
-            <td>${rank}</td>
-            <td>${data.team}</td>
-            <td>${data.spiele}</td>
-            <td>${data.punkte}</td>
-            <td>${data.tore}</td>
-            <td>${data.gegentore}</td>
-            <td>${data.tordifferenz}</td>
-        `;
-        rankingTable.appendChild(row);
-        rank++;
+    onValue(matchRef, (snapshot) => {
+        const rankings = {};
+        snapshot.forEach((childSnapshot) => {
+            const match = childSnapshot.val();
+            if (match.score1 !== null && match.score2 !== null) {
+                [match.team1, match.team2].forEach((team) => {
+                    if (!rankings[team]) rankings[team] = { games: 0, points: 0, goals: 0, conceded: 0 };
+                });
+
+                rankings[match.team1].games++;
+                rankings[match.team2].games++;
+
+                rankings[match.team1].goals += match.score1;
+                rankings[match.team2].goals += match.score2;
+                rankings[match.team1].conceded += match.score2;
+                rankings[match.team2].conceded += match.score1;
+
+                if (match.score1 > match.score2) {
+                    rankings[match.team1].points += 3;
+                } else if (match.score1 < match.score2) {
+                    rankings[match.team2].points += 3;
+                } else {
+                    rankings[match.team1].points++;
+                    rankings[match.team2].points++;
+                }
+            }
+        });
+
+        rankingTable.innerHTML = "";
+        Object.entries(rankings)
+            .sort(([, a], [, b]) => b.points - a.points || (b.goals - b.conceded) - (a.goals - a.conceded))
+            .forEach(([team, data], i) => {
+                const row = `<tr><td>${i + 1}</td><td>${team}</td><td>${data.games}</td><td>${data.points}</td>
+                             <td>${data.goals}</td><td>${data.conceded}</td><td>${data.goals - data.conceded}</td></tr>`;
+                rankingTable.innerHTML += row;
+            });
     });
-});
+}
+
+// SEITENLADE-EVENTS
+window.onload = () => {
+    loadNews();
+    loadTeams();
+    loadMatches();
+    loadRanking();
+};

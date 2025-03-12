@@ -33,20 +33,20 @@ export function loadTeams() {
     const teamsRef = ref(db, "teams");
     onValue(teamsRef, (snapshot) => {
         const teamList = document.getElementById("teamList");
-        const teamADropdown = document.getElementById("teamA");
-        const teamBDropdown = document.getElementById("teamB");
+        const teamASelect = document.getElementById("teamA");
+        const teamBSelect = document.getElementById("teamB");
 
-        if (!teamList || !teamADropdown || !teamBDropdown) return;
+        if (!teamList || !teamASelect || !teamBSelect) return;
 
         teamList.innerHTML = "";
-        teamADropdown.innerHTML = "";
-        teamBDropdown.innerHTML = "";
+        teamASelect.innerHTML = "";
+        teamBSelect.innerHTML = "";
 
         snapshot.forEach((child) => {
             const data = child.val();
-            
             const li = document.createElement("li");
             li.textContent = `${data.name} (${data.player1} & ${data.player2})`;
+            
             const delBtn = document.createElement("button");
             delBtn.textContent = "🗑️";
             delBtn.onclick = () => remove(ref(db, "teams/" + child.key));
@@ -56,12 +56,12 @@ export function loadTeams() {
             const optionA = document.createElement("option");
             optionA.value = data.name;
             optionA.textContent = data.name;
-            teamADropdown.appendChild(optionA);
+            teamASelect.appendChild(optionA);
 
             const optionB = document.createElement("option");
             optionB.value = data.name;
             optionB.textContent = data.name;
-            teamBDropdown.appendChild(optionB);
+            teamBSelect.appendChild(optionB);
         });
     });
 }
@@ -72,8 +72,7 @@ export function addTeam() {
     const player1 = document.getElementById("player1").value;
     const player2 = document.getElementById("player2").value;
     if (teamName && player1 && player2) {
-        push(ref(db, "teams"), { name: teamName, player1, player2, games: 0, points: 0, goals: 0, conceded: 0 });
-        updateRanking();
+        push(ref(db, "teams"), { name: teamName, player1, player2, games: 0, points: 0 });
         document.getElementById("teamName").value = "";
         document.getElementById("player1").value = "";
         document.getElementById("player2").value = "";
@@ -83,13 +82,10 @@ export function addTeam() {
 // SPIELE LADEN
 export function loadMatches() {
     const matchRef = ref(db, "matches");
-    const resultRef = ref(db, "results");
-
     onValue(matchRef, (snapshot) => {
         const matchList = document.getElementById("matchList");
         if (!matchList) return;
         matchList.innerHTML = "";
-
         snapshot.forEach((child) => {
             const data = child.val();
             const li = document.createElement("li");
@@ -97,16 +93,18 @@ export function loadMatches() {
 
             const scoreInput = document.createElement("input");
             scoreInput.placeholder = "Ergebnis (10:5)";
+            scoreInput.value = data.score !== "-:-" ? data.score : "";
+            
             const saveBtn = document.createElement("button");
             saveBtn.textContent = "✓";
-
             saveBtn.onclick = () => {
-                if (scoreInput.value !== "-:-") {
-                    update(ref(db, "results/" + child.key), { ...data, score: scoreInput.value }).then(() => {
-                        remove(ref(db, "matches/" + child.key));
-                        updateRanking();
-                        loadResults();
+                if (scoreInput.value) {
+                    update(ref(db, "results/" + child.key), {
+                        teamA: data.teamA,
+                        teamB: data.teamB,
+                        score: scoreInput.value
                     });
+                    remove(ref(db, "matches/" + child.key));  // Spiel von "Offene Spiele" zu "Resultate" verschieben
                 }
             };
 
@@ -117,21 +115,7 @@ export function loadMatches() {
             li.appendChild(scoreInput);
             li.appendChild(saveBtn);
             li.appendChild(delBtn);
-
             matchList.appendChild(li);
-        });
-    });
-
-    onValue(resultRef, (snapshot) => {
-        const resultList = document.getElementById("resultList");
-        if (!resultList) return;
-        resultList.innerHTML = "";
-
-        snapshot.forEach((child) => {
-            const data = child.val();
-            const li = document.createElement("li");
-            li.textContent = `${data.teamA} vs ${data.teamB} - ${data.score}`;
-            resultList.appendChild(li);
         });
     });
 }
@@ -145,55 +129,42 @@ export function addMatch() {
     }
 }
 
-// RANGLISTE SPEICHERN & LADEN
-export function updateRanking() {
-    const teamsRef = ref(db, "teams");
-    onValue(teamsRef, (snapshot) => {
-        let rankings = [];
+// ERGEBNISSE LADEN
+export function loadResults() {
+    const resultList = document.getElementById("resultList");
+    if (!resultList) return;
+    resultList.innerHTML = "";
+    onValue(ref(db, "results"), (snapshot) => {
         snapshot.forEach((child) => {
-            const team = child.val();
-            rankings.push({
-                name: team.name,
-                games: team.games || 0,
-                points: team.points || 0,
-                goals: team.goals || 0,
-                conceded: team.conceded || 0,
-                diff: (team.goals || 0) - (team.conceded || 0)
-            });
+            const data = child.val();
+            if (data.score && data.score !== "-:-") {
+                const li = document.createElement("li");
+                li.textContent = `${data.teamA} vs ${data.teamB} - ${data.score}`;
+                resultList.appendChild(li);
+            }
         });
-
-        rankings.sort((a, b) => b.points - a.points || b.diff - a.diff);
-        set(ref(db, "ranking"), rankings);
     });
 }
 
-// RANGLISTE ANZEIGEN
+// RANGLISTE LADEN
 export function loadRanking() {
-    const rankingTable = document.getElementById("rankingTable");
-    if (!rankingTable) return;
-
     onValue(ref(db, "ranking"), (snapshot) => {
+        const rankingTable = document.getElementById("rankingTable");
+        if (!rankingTable) return;
         rankingTable.innerHTML = "";
-        snapshot.forEach((child, index) => {
+        snapshot.forEach((child) => {
             const data = child.val();
             const row = rankingTable.insertRow();
-            row.innerHTML = `
-                <td>${index + 1}</td>
-                <td>${data.name}</td>
-                <td>${data.games}</td>
-                <td>${data.points}</td>
-                <td>${data.goals}</td>
-                <td>${data.conceded}</td>
-                <td>${data.diff}</td>
-            `;
+            row.innerHTML = `<td>${data.rank}</td><td>${data.team}</td><td>${data.games}</td><td>${data.points}</td><td>${data.goals}</td><td>${data.conceded}</td><td>${data.diff}</td>`;
         });
     });
 }
 
-// ALLES LADEN
+// ALLES LADEN BEIM SEITENSTART
 window.onload = function () {
     loadNews();
     loadTeams();
     loadMatches();
-    loadRanking();
+    loadResults();  // ✅ FIX: Ergebnisse jetzt korrekt laden!
+    loadRanking();  // ✅ FIX: Ranking jetzt automatisch laden!
 };

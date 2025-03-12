@@ -28,15 +28,23 @@ export function addNews() {
     }
 }
 
-// TEAMS LADEN
+// TEAMS LADEN UND DROPDOWNS FÜLLEN
 export function loadTeams() {
     const teamsRef = ref(db, "teams");
     onValue(teamsRef, (snapshot) => {
         const teamList = document.getElementById("teamList");
-        if (!teamList) return;
+        const teamA = document.getElementById("teamA");
+        const teamB = document.getElementById("teamB");
+        
+        if (!teamList || !teamA || !teamB) return;
+        
         teamList.innerHTML = "";
+        teamA.innerHTML = "";
+        teamB.innerHTML = "";
+        
         snapshot.forEach((child) => {
             const data = child.val();
+            
             const li = document.createElement("li");
             li.textContent = `${data.name} (${data.player1} & ${data.player2})`;
             const delBtn = document.createElement("button");
@@ -44,6 +52,14 @@ export function loadTeams() {
             delBtn.onclick = () => remove(ref(db, "teams/" + child.key));
             li.appendChild(delBtn);
             teamList.appendChild(li);
+            
+            const optionA = document.createElement("option");
+            optionA.value = data.name;
+            optionA.textContent = data.name;
+            teamA.appendChild(optionA);
+            
+            const optionB = optionA.cloneNode(true);
+            teamB.appendChild(optionB);
         });
     });
 }
@@ -66,24 +82,23 @@ export function loadMatches() {
     const matchRef = ref(db, "matches");
     onValue(matchRef, (snapshot) => {
         const matchList = document.getElementById("matchList");
-        if (!matchList) return;
+        const resultList = document.getElementById("resultList");
+        
+        if (!matchList || !resultList) return;
+        
         matchList.innerHTML = "";
+        resultList.innerHTML = "";
+        
         snapshot.forEach((child) => {
             const data = child.val();
             const li = document.createElement("li");
-            li.textContent = `${data.teamA} vs ${data.teamB} - ${data.score || "-:-"}`;
-            const scoreInput = document.createElement("input");
-            scoreInput.placeholder = "Ergebnis (10:5)";
-            const saveBtn = document.createElement("button");
-            saveBtn.textContent = "✓";
-            saveBtn.onclick = () => update(ref(db, "matches/" + child.key), { score: scoreInput.value });
-            const delBtn = document.createElement("button");
-            delBtn.textContent = "🗑️";
-            delBtn.onclick = () => remove(ref(db, "matches/" + child.key));
-            li.appendChild(scoreInput);
-            li.appendChild(saveBtn);
-            li.appendChild(delBtn);
-            matchList.appendChild(li);
+            li.textContent = `${data.teamA} vs ${data.teamB} - ${data.score}`;
+            
+            if (data.score === "-:-") {
+                matchList.appendChild(li);
+            } else {
+                resultList.appendChild(li);
+            }
         });
     });
 }
@@ -92,7 +107,7 @@ export function loadMatches() {
 export function addMatch() {
     const teamA = document.getElementById("teamA").value;
     const teamB = document.getElementById("teamB").value;
-    if (teamA && teamB) {
+    if (teamA && teamB && teamA !== teamB) {
         push(ref(db, "matches"), { teamA, teamB, score: "-:-" });
     }
 }

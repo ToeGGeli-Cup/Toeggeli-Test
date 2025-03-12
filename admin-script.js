@@ -77,13 +77,60 @@ export function addTeam() {
     }
 }
 
-// SPIELE HINZUFÜGEN
+// SPIELE HINZUFÜGEN (Fix: Stellen sicher, dass das Spiel gespeichert wird und Matches aktualisiert werden)
 export function addMatch() {
     const teamA = document.getElementById("teamA").value;
     const teamB = document.getElementById("teamB").value;
     if (teamA && teamB && teamA !== teamB) {
-        push(ref(db, "matches"), { teamA, teamB, score: "-:-" });
+        push(ref(db, "matches"), { teamA, teamB, score: "-:-" }).then(() => {
+            loadMatches();
+        });
     }
+}
+
+// SPIELE LADEN
+export function loadMatches() {
+    const matchRef = ref(db, "matches");
+    onValue(matchRef, (snapshot) => {
+        const matchList = document.getElementById("matchList");
+        if (!matchList) return;
+        matchList.innerHTML = "";
+        snapshot.forEach((child) => {
+            const data = child.val();
+            const li = document.createElement("li");
+            li.textContent = `${data.teamA} vs ${data.teamB} - ${data.score || "-:-"}`;
+            const delBtn = document.createElement("button");
+            delBtn.textContent = "🗑️";
+            delBtn.onclick = () => remove(ref(db, "matches/" + child.key));
+            li.appendChild(delBtn);
+            matchList.appendChild(li);
+        });
+    });
+}
+
+// RANGLISTE LADEN (Fix: Alphabetische Sortierung, falls keine Punkte vorhanden sind)
+export function loadRanking() {
+    onValue(ref(db, "teams"), (snapshot) => {
+        const rankingTable = document.getElementById("rankingTable");
+        rankingTable.innerHTML = "";
+        let teams = [];
+        snapshot.forEach((child) => {
+            const data = child.val();
+            teams.push(data);
+        });
+        teams.sort((a, b) => b.points - a.points || a.name.localeCompare(b.name));
+        teams.forEach((team, index) => {
+            rankingTable.innerHTML += `<tr>
+                <td>${index + 1}</td>
+                <td>${team.name}</td>
+                <td>${team.games || 0}</td>
+                <td>${team.points || 0}</td>
+                <td>${team.goals || 0}</td>
+                <td>${team.conceded || 0}</td>
+                <td>${team.diff || 0}</td>
+            </tr>`;
+        });
+    });
 }
 
 // ALLES LADEN
@@ -91,4 +138,5 @@ window.onload = function () {
     loadNews();
     loadTeams();
     loadMatches();
+    loadRanking();
 };

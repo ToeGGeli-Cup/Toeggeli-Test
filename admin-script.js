@@ -58,6 +58,7 @@ export function loadResults() {
         const resultsTable = document.getElementById("resultsTable");
         if (!resultsTable) return;
         resultsTable.innerHTML = "";
+        console.log("Lade Resultate:", snapshot.val()); // Debugging
         snapshot.forEach((childSnapshot) => {
             const match = childSnapshot.val();
             const row = document.createElement("tr");
@@ -80,6 +81,7 @@ export function updateMatch(matchId, score) {
         if (data) {
             push(ref(db, "results"), { teamA: data.teamA, teamB: data.teamB, score }).then(() => {
                 remove(ref(db, `matches/${matchId}`));
+                console.log("Spielergebnis gespeichert für", data.teamA, "vs", data.teamB);
                 loadResults(); // Aktualisiert die Ansicht unter "Resultate"
                 loadRanking(); // Aktualisiert die Rangliste automatisch
             });

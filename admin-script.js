@@ -1,7 +1,7 @@
 import { db, ref, onValue, set, push, remove, update } from "./firebase.js";
 
 // News hinzufügen
-function addNews() {
+document.getElementById("addNewsBtn").addEventListener("click", () => {
     const newsText = document.getElementById("newsText").value;
     if (newsText.trim() === "") return;
     
@@ -12,7 +12,7 @@ function addNews() {
     });
 
     document.getElementById("newsText").value = "";
-}
+});
 
 // News anzeigen und löschen
 onValue(ref(db, "news"), (snapshot) => {
@@ -30,7 +30,7 @@ onValue(ref(db, "news"), (snapshot) => {
 });
 
 // Team hinzufügen
-function addTeam() {
+document.getElementById("addTeamBtn").addEventListener("click", () => {
     const teamName = document.getElementById("teamName").value;
     if (teamName.trim() === "") return;
 
@@ -38,7 +38,7 @@ function addTeam() {
     set(teamRef, teamName);
 
     document.getElementById("teamName").value = "";
-}
+});
 
 // Teams anzeigen und löschen
 onValue(ref(db, "teams"), (snapshot) => {
@@ -73,7 +73,7 @@ onValue(ref(db, "teams"), (snapshot) => {
 });
 
 // Spiel hinzufügen (ohne Ergebnis)
-function addMatch() {
+document.getElementById("addMatchBtn").addEventListener("click", () => {
     const team1 = document.getElementById("team1").value;
     const team2 = document.getElementById("team2").value;
     if (!team1 || !team2 || team1 === team2) return;
@@ -84,7 +84,7 @@ function addMatch() {
         team2: team2,
         score: "-:-"
     });
-}
+});
 
 // Offene Spiele anzeigen und Ergebnisse setzen
 onValue(ref(db, "matches"), (snapshot) => {

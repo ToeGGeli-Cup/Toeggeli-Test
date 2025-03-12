@@ -1,9 +1,58 @@
 import { db, ref, onValue, push, remove, update } from "./firebase.js";
 
-document.addEventListener("DOMContentLoaded", () => {
+// NEWS LADEN
+export function loadNews() {
+    const newsRef = ref(db, "news");
+    onValue(newsRef, (snapshot) => {
+        const newsList = document.getElementById("newsList");
+        if (!newsList) return;
+        newsList.innerHTML = "";
+        snapshot.forEach((child) => {
+            const li = document.createElement("li");
+            li.textContent = child.val().text;
+            const delBtn = document.createElement("button");
+            delBtn.textContent = "🗑️";
+            delBtn.onclick = () => remove(ref(db, "news/" + child.key));
+            li.appendChild(delBtn);
+            newsList.appendChild(li);
+        });
+    });
+}
+
+// NEWS HINZUFÜGEN
+export function addNews() {
+    const newsInput = document.getElementById("newsInput").value;
+    if (newsInput) {
+        push(ref(db, "news"), { text: newsInput, date: new Date().toLocaleDateString("de-DE") });
+        document.getElementById("newsInput").value = "";
+    }
+}
+
+// TEAMS HINZUFÜGEN
+export function addTeam() {
+    const teamName = document.getElementById("teamName").value;
+    const player1 = document.getElementById("player1").value;
+    const player2 = document.getElementById("player2").value;
+    if (teamName && player1 && player2) {
+        push(ref(db, "teams"), { name: teamName, player1, player2 });
+        document.getElementById("teamName").value = "";
+        document.getElementById("player1").value = "";
+        document.getElementById("player2").value = "";
+    }
+}
+
+// SPIELE HINZUFÜGEN
+export function addMatch() {
+    const teamA = document.getElementById("teamA").value;
+    const teamB = document.getElementById("teamB").value;
+    if (teamA && teamB && teamA !== teamB) {
+        push(ref(db, "matches"), { teamA, teamB, score: "-:-" });
+    }
+}
+
+// RESULTATE UND RANGLISTE LADEN
+export function loadResults() {
     const resultsRef = ref(db, "results");
-    
-    // RESULTATE UND RANGLISTE LADEN
     onValue(resultsRef, (snapshot) => {
         const resultsTable = document.getElementById("resultsTable");
         if (!resultsTable) return;
@@ -23,50 +72,17 @@ document.addEventListener("DOMContentLoaded", () => {
 
         loadRanking(snapshot);
     });
-
-    // RANGLISTE LADEN
-    function loadRanking(snapshot) {
-        let rankings = {};
-
-        snapshot.forEach((childSnapshot) => {
-            const match = childSnapshot.val();
-            const [scoreA, scoreB] = match.score.split(":" ).map(Number);
-
-            if (!rankings[match.teamA]) rankings[match.teamA] = { games: 0, points: 0, goals: 0, conceded: 0, diff: 0 };
-            if (!rankings[match.teamB]) rankings[match.teamB] = { games: 0, points: 0, goals: 0, conceded: 0, diff: 0 };
-
-            rankings[match.teamA].games += 1;
-            rankings[match.teamB].games += 1;
-            rankings[match.teamA].goals += scoreA;
-            rankings[match.teamB].goals += scoreB;
-            rankings[match.teamA].conceded += scoreB;
-            rankings[match.teamB].conceded += scoreA;
-
-            if (scoreA > scoreB) rankings[match.teamA].points += 1;
-            else if (scoreB > scoreA) rankings[match.teamB].points += 1;
-        });
-
-        // Sortieren und in HTML aktualisieren
-        const rankingTable = document.getElementById("rankingTable");
-        if (!rankingTable) return;
-        rankingTable.innerHTML = "";
-        Object.keys(rankings).sort((a, b) => rankings[b].points - rankings[a].points).forEach((team, index) => {
-            rankingTable.innerHTML += `<tr>
-                <td>${index + 1}</td>
-                <td>${team}</td>
-                <td>${rankings[team].games}</td>
-                <td>${rankings[team].points}</td>
-                <td>${rankings[team].goals}</td>
-                <td>${rankings[team].conceded}</td>
-                <td>${rankings[team].diff}</td>
-            </tr>`;
-        });
-    }
-});
+}
 
 // SPIEL ZURÜCKSETZEN (von Resultate zu Offene Spiele)
-function resetMatch(matchId, teamA, teamB) {
+export function resetMatch(matchId, teamA, teamB) {
     remove(ref(db, `results/${matchId}`)).then(() => {
         push(ref(db, "matches"), { teamA, teamB, score: "-:-" });
     });
 }
+
+// ALLES LADEN
+window.onload = function () {
+    loadNews();
+    loadResults();
+};

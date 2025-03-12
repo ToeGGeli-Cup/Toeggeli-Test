@@ -33,12 +33,22 @@ export function loadTeams() {
     const teamsRef = ref(db, "teams");
     onValue(teamsRef, (snapshot) => {
         const teamList = document.getElementById("teamList");
-        if (!teamList) return;
+        const teamASelect = document.getElementById("teamA");
+        const teamBSelect = document.getElementById("teamB");
+        if (!teamList || !teamASelect || !teamBSelect) return;
         teamList.innerHTML = "";
+        teamASelect.innerHTML = "<option value=''>-- Team wählen --</option>";
+        teamBSelect.innerHTML = "<option value=''>-- Team wählen --</option>";
         snapshot.forEach((child) => {
             const data = child.val();
             const li = document.createElement("li");
             li.textContent = `${data.name} (${data.player1} & ${data.player2})`;
+            const optionA = document.createElement("option");
+            const optionB = document.createElement("option");
+            optionA.value = optionB.value = data.name;
+            optionA.textContent = optionB.textContent = data.name;
+            teamASelect.appendChild(optionA);
+            teamBSelect.appendChild(optionB);
             const delBtn = document.createElement("button");
             delBtn.textContent = "🗑️";
             delBtn.onclick = () => remove(ref(db, "teams/" + child.key));

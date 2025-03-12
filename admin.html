@@ -4,61 +4,86 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Bereich</title>
-    <script type="module" src="admin-script.js"></script>
+    <script type="module" defer src="admin-script.js"></script>
     <style>
-        body { font-family: Arial, sans-serif; background-color: #5B3A2E; color: white; text-align: center; margin: 20px; }
-        h1, h2 { font-weight: bold; }
-        .container { width: 80%; margin: auto; padding: 15px; background-color: #D81B60; color: white; border-radius: 10px; text-align: left; }
-        table { width: 80%; margin: 10px auto; border-collapse: collapse; }
-        th, td { padding: 10px; border: 1px solid black; background-color: white; color: black; }
-        th { background-color: #0059B2; color: white; }
-        button { background-color: red; color: white; border: none; padding: 5px 10px; cursor: pointer; }
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #5B3A2E;
+            color: white;
+            text-align: center;
+            margin: 20px;
+            padding-bottom: 50px;
+        }
+        h1, h2 {
+            font-weight: bold;
+        }
+        .news-container {
+            width: 80%;
+            margin: 20px auto;
+            padding: 15px;
+            background-color: #D81B60;
+            color: white;
+            border-radius: 10px;
+            text-align: left;
+        }
+        table {
+            width: 80%;
+            margin: 10px auto;
+            border-collapse: collapse;
+        }
+        th, td {
+            padding: 10px;
+            border: 1px solid black;
+            background-color: white;
+            color: black;
+        }
+        th {
+            background-color: #0059B2;
+            color: white;
+        }
     </style>
 </head>
 <body>
 
-    <h1>Admin Bereich</h1>
+<h1>Admin Bereich</h1>
 
-    <h2>News</h2>
-    <div>
-        <input type="text" id="newsInput" placeholder="Neue News">
-        <button onclick="addNews()">Hinzufügen</button>
-    </div>
-    <ul id="newsList"></ul>
+<h2>News</h2>
+<input type="text" id="newsInput" placeholder="Neue News">
+<button onclick="addNews()">Hinzufügen</button>
+<ul id="newsList"></ul>
 
-    <h2>Teams</h2>
-    <div>
-        <input type="text" id="teamName" placeholder="Teamname">
-        <button onclick="addTeam()">Hinzufügen</button>
-    </div>
-    <ul id="teamList"></ul>
+<h2>Teams</h2>
+<input type="text" id="teamName" placeholder="Teamname">
+<input type="text" id="player1" placeholder="Spieler 1">
+<input type="text" id="player2" placeholder="Spieler 2">
+<button onclick="addTeam()">Hinzufügen</button>
+<ul id="teamList"></ul>
 
-    <h2>Spiele</h2>
-    <div>
-        <input type="text" id="teamA" placeholder="Team A">
-        <input type="text" id="teamB" placeholder="Team B">
-        <button onclick="addMatch()">Hinzufügen</button>
-    </div>
-    <ul id="matchList"></ul>
+<h2>Spiele</h2>
+<select id="teamA"></select> vs. 
+<select id="teamB"></select>
+<button onclick="addMatch()">Spiel hinzufügen</button>
+<h3>Offene Spiele</h3>
+<ul id="matchList"></ul>
 
-    <h2>Ergebnisse</h2>
-    <ul id="resultList"></ul>
+<h3>Resultate</h3>
+<ul id="resultList"></ul>
 
-    <h2>Rangliste</h2>
-    <table>
-        <thead>
-            <tr>
-                <th>Rang</th>
-                <th>Team</th>
-                <th>Spiele</th>
-                <th>Punkte</th>
-                <th>Tore</th>
-                <th>Gegentore</th>
-                <th>Tordifferenz</th>
-            </tr>
-        </thead>
-        <tbody id="rankingTable"></tbody>
-    </table>
+<h2>Rangliste</h2>
+<table>
+    <thead>
+        <tr>
+            <th>Rang</th>
+            <th>Team</th>
+            <th>Spiele</th>
+            <th>Punkte</th>
+            <th>Tore</th>
+            <th>Gegentore</th>
+            <th>Tordifferenz</th>
+        </tr>
+    </thead>
+    <tbody id="rankingTable"></tbody>
+</table>
 
 </body>
 </html>

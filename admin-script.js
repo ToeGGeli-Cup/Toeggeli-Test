@@ -83,14 +83,12 @@ export function addTeam() {
 // SPIELE LADEN
 export function loadMatches() {
     const matchRef = ref(db, "matches");
+    const resultRef = ref(db, "results");
+
     onValue(matchRef, (snapshot) => {
         const matchList = document.getElementById("matchList");
-        const resultList = document.getElementById("resultList");
-
-        if (!matchList || !resultList) return;
-
+        if (!matchList) return;
         matchList.innerHTML = "";
-        resultList.innerHTML = "";
 
         snapshot.forEach((child) => {
             const data = child.val();
@@ -104,8 +102,7 @@ export function loadMatches() {
 
             saveBtn.onclick = () => {
                 if (scoreInput.value !== "-:-") {
-                    update(ref(db, "matches/" + child.key), { score: scoreInput.value }).then(() => {
-                        set(ref(db, "results/" + child.key), data);
+                    update(ref(db, "results/" + child.key), { ...data, score: scoreInput.value }).then(() => {
                         remove(ref(db, "matches/" + child.key));
                         updateRanking();
                         loadResults();
@@ -121,11 +118,20 @@ export function loadMatches() {
             li.appendChild(saveBtn);
             li.appendChild(delBtn);
 
-            if (data.score === "-:-") {
-                matchList.appendChild(li);
-            } else {
-                resultList.appendChild(li);
-            }
+            matchList.appendChild(li);
+        });
+    });
+
+    onValue(resultRef, (snapshot) => {
+        const resultList = document.getElementById("resultList");
+        if (!resultList) return;
+        resultList.innerHTML = "";
+
+        snapshot.forEach((child) => {
+            const data = child.val();
+            const li = document.createElement("li");
+            li.textContent = `${data.teamA} vs ${data.teamB} - ${data.score}`;
+            resultList.appendChild(li);
         });
     });
 }

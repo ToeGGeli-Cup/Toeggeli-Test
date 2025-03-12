@@ -49,20 +49,20 @@
 
 <h2>News</h2>
 <input type="text" id="newsInput" placeholder="Neue News">
-<button onclick="addNews()">Hinzufügen</button>
+<button id="newsButton">Hinzufügen</button>
 <ul id="newsList"></ul>
 
 <h2>Teams</h2>
 <input type="text" id="teamName" placeholder="Teamname">
 <input type="text" id="player1" placeholder="Spieler 1">
 <input type="text" id="player2" placeholder="Spieler 2">
-<button onclick="addTeam()">Hinzufügen</button>
+<button id="teamButton">Hinzufügen</button>
 <ul id="teamList"></ul>
 
 <h2>Spiele</h2>
 <select id="teamA"></select> vs. 
 <select id="teamB"></select>
-<button onclick="addMatch()">Spiel hinzufügen</button>
+<button id="matchButton">Spiel hinzufügen</button>
 <h3>Offene Spiele</h3>
 <ul id="matchList"></ul>
 
@@ -84,6 +84,12 @@
     </thead>
     <tbody id="rankingTable"></tbody>
 </table>
+
+<script>
+    document.getElementById("newsButton").onclick = () => import("./admin-script.js").then(m => m.addNews());
+    document.getElementById("teamButton").onclick = () => import("./admin-script.js").then(m => m.addTeam());
+    document.getElementById("matchButton").onclick = () => import("./admin-script.js").then(m => m.addMatch());
+</script>
 
 </body>
 </html>

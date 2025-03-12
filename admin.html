@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Turnierverwaltung</title>
-    <script type="module" src="./admin-script.js"></script>
     <style>
         body { 
             font-family: Arial, sans-serif; 
@@ -42,7 +41,8 @@
             color: white;
         }
         button {
-            margin-left: 5px;
+            margin-left: 10px;
+            padding: 5px 10px;
             cursor: pointer;
         }
     </style>
@@ -51,24 +51,23 @@
     <h1>Turnierverwaltung</h1>
 
     <h2>News</h2>
-    <input type="text" id="newsText" placeholder="Neue News">
-    <button id="addNewsBtn">Hinzufügen</button>
+    <input type="text" id="newsInput" placeholder="Neue News">
+    <button onclick="addNews()">Hinzufügen</button>
     <ul id="newsList"></ul>
 
     <h2>Teams</h2>
-    <input type="text" id="teamName" placeholder="Teamname">
-    <button id="addTeamBtn">Hinzufügen</button>
-    <ul id="teamList"></ul>
+    <input type="text" id="teamInput" placeholder="Neues Team">
+    <button onclick="addTeam()">Hinzufügen</button>
+    <ul id="teamsList"></ul>
 
     <h2>Spiele</h2>
-    <select id="team1"></select> vs. <select id="team2"></select>
-    <button id="addMatchBtn">Spiel hinzufügen</button>
+    <select id="team1Select"></select> vs.
+    <select id="team2Select"></select>
+    <button onclick="addMatch()">Spiel hinzufügen</button>
+    <ul id="matchesList"></ul>
 
-    <h2>Offene Spiele</h2>
-    <ul id="openMatchesList"></ul>
-
-    <h2>Resultate</h2>
-    <ul id="resultList"></ul>
+    <h2>Ergebnisse</h2>
+    <ul id="resultsList"></ul>
 
     <h2>Rangliste</h2>
     <table>
@@ -85,5 +84,7 @@
         </thead>
         <tbody id="rankingTable"></tbody>
     </table>
+
+    <script type="module" src="./admin-script.js"></script>
 </body>
 </html>

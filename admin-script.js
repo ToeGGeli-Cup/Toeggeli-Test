@@ -1,3 +1,4 @@
+// Stelle sicher, dass Firebase bereits in firebase.js initialisiert wurde
 import { db, ref, push, set, onValue, remove } from "./firebase.js";
 
 // NEWS VERWALTEN

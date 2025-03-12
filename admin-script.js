@@ -1,7 +1,7 @@
 import { db, ref, onValue, push, set, remove, update } from "./firebase.js";
 
 // NEWS LADEN
-function loadNews() {
+export function loadNews() {
     const newsRef = ref(db, "news");
     onValue(newsRef, (snapshot) => {
         const newsList = document.getElementById("newsList");
@@ -20,7 +20,7 @@ function loadNews() {
 }
 
 // NEWS HINZUFÜGEN
-function addNews() {
+export function addNews() {
     const newsInput = document.getElementById("newsInput").value;
     if (newsInput) {
         push(ref(db, "news"), { text: newsInput, date: new Date().toLocaleDateString("de-DE") });
@@ -29,7 +29,7 @@ function addNews() {
 }
 
 // TEAMS LADEN
-function loadTeams() {
+export function loadTeams() {
     const teamsRef = ref(db, "teams");
     onValue(teamsRef, (snapshot) => {
         const teamList = document.getElementById("teamList");
@@ -49,7 +49,7 @@ function loadTeams() {
 }
 
 // TEAMS HINZUFÜGEN
-function addTeam() {
+export function addTeam() {
     const teamName = document.getElementById("teamName").value;
     const player1 = document.getElementById("player1").value;
     const player2 = document.getElementById("player2").value;
@@ -62,7 +62,7 @@ function addTeam() {
 }
 
 // SPIELE LADEN
-function loadMatches() {
+export function loadMatches() {
     const matchRef = ref(db, "matches");
     onValue(matchRef, (snapshot) => {
         const matchList = document.getElementById("matchList");
@@ -89,7 +89,7 @@ function loadMatches() {
 }
 
 // SPIELE HINZUFÜGEN
-function addMatch() {
+export function addMatch() {
     const teamA = document.getElementById("teamA").value;
     const teamB = document.getElementById("teamB").value;
     if (teamA && teamB) {
@@ -102,6 +102,4 @@ window.onload = function () {
     loadNews();
     loadTeams();
     loadMatches();
-    loadResults();
-    loadRanking();
 };

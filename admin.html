@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Turnierverwaltung</title>
+    <script type="module" src="admin-script.js"></script>
     <style>
         body { 
             font-family: Arial, sans-serif; 
@@ -16,7 +17,7 @@
         h1, h2 {
             font-weight: bold;
         }
-        .news-container, .teams-container, .matches-container {
+        .news-container {
             width: 80%;
             margin: 20px auto;
             padding: 15px;
@@ -41,9 +42,15 @@
             color: white;
         }
         button {
-            margin-left: 10px;
+            margin: 5px;
             padding: 5px 10px;
             cursor: pointer;
+            border: none;
+            border-radius: 5px;
+        }
+        .delete-btn {
+            background-color: red;
+            color: white;
         }
     </style>
 </head>
@@ -51,22 +58,22 @@
     <h1>Turnierverwaltung</h1>
 
     <h2>News</h2>
-    <input type="text" id="newsInput" placeholder="Neue News">
+    <input type="text" id="newsInput" placeholder="Neue Nachricht">
     <button onclick="addNews()">Hinzufügen</button>
     <ul id="newsList"></ul>
 
     <h2>Teams</h2>
     <input type="text" id="teamInput" placeholder="Neues Team">
     <button onclick="addTeam()">Hinzufügen</button>
-    <ul id="teamsList"></ul>
+    <ul id="teamList"></ul>
 
     <h2>Spiele</h2>
-    <select id="team1Select"></select> vs.
-    <select id="team2Select"></select>
-    <button onclick="addMatch()">Spiel hinzufügen</button>
-    <ul id="matchesList"></ul>
+    <input type="text" id="matchTeam1" placeholder="Team 1">
+    <input type="text" id="matchTeam2" placeholder="Team 2">
+    <button onclick="addMatch()">Spiel erstellen</button>
+    <ul id="matchList"></ul>
 
-    <h2>Ergebnisse</h2>
+    <h2>Resultate</h2>
     <ul id="resultsList"></ul>
 
     <h2>Rangliste</h2>
@@ -84,7 +91,5 @@
         </thead>
         <tbody id="rankingTable"></tbody>
     </table>
-
-    <script type="module" src="./admin-script.js"></script>
 </body>
 </html>

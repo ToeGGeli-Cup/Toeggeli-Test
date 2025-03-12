@@ -33,12 +33,8 @@ export function loadTeams() {
     const teamsRef = ref(db, "teams");
     onValue(teamsRef, (snapshot) => {
         const teamList = document.getElementById("teamList");
-        const teamASelect = document.getElementById("teamA");
-        const teamBSelect = document.getElementById("teamB");
-        if (!teamList || !teamASelect || !teamBSelect) return;
+        if (!teamList) return;
         teamList.innerHTML = "";
-        teamASelect.innerHTML = "";
-        teamBSelect.innerHTML = "";
         snapshot.forEach((child) => {
             const data = child.val();
             const li = document.createElement("li");
@@ -48,10 +44,6 @@ export function loadTeams() {
             delBtn.onclick = () => remove(ref(db, "teams/" + child.key));
             li.appendChild(delBtn);
             teamList.appendChild(li);
-            let optionA = new Option(data.name, data.name);
-            let optionB = new Option(data.name, data.name);
-            teamASelect.add(optionA);
-            teamBSelect.add(optionB);
         });
     });
 }
@@ -80,14 +72,22 @@ export function loadMatches() {
             const data = child.val();
             const li = document.createElement("li");
             li.textContent = `${data.teamA} vs ${data.teamB} - ${data.score || "-:-"}`;
+
             const scoreInput = document.createElement("input");
             scoreInput.placeholder = "Ergebnis (10:5)";
             const saveBtn = document.createElement("button");
             saveBtn.textContent = "✓";
-            saveBtn.onclick = () => update(ref(db, "matches/" + child.key), { score: scoreInput.value });
+            saveBtn.onclick = () => {
+                update(ref(db, "matches/" + child.key), { score: scoreInput.value });
+                if (scoreInput.value !== "-:-") {
+                    set(ref(db, "results/" + child.key), data);
+                    remove(ref(db, "matches/" + child.key));
+                }
+            };
             const delBtn = document.createElement("button");
             delBtn.textContent = "🗑️";
             delBtn.onclick = () => remove(ref(db, "matches/" + child.key));
+
             li.appendChild(scoreInput);
             li.appendChild(saveBtn);
             li.appendChild(delBtn);
@@ -100,7 +100,7 @@ export function loadMatches() {
 export function addMatch() {
     const teamA = document.getElementById("teamA").value;
     const teamB = document.getElementById("teamB").value;
-    if (teamA && teamB && teamA !== teamB) {
+    if (teamA && teamB) {
         push(ref(db, "matches"), { teamA, teamB, score: "-:-" });
     }
 }

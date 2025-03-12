@@ -1,17 +1,17 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
-import { getDatabase, ref, push, set, remove, onValue } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
+import { getDatabase, ref, set, push, remove, update, onValue } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js"; 
 
 const firebaseConfig = {
-    apiKey: "AIzaSyD2nmuFhdG0ZU5wO9H7CqsxPnRF04WZLzY",
-    authDomain: "toeggeli-cup-2025.firebaseapp.com",
-    databaseURL: "https://toeggeli-cup-2025-default-rtdb.europe-west1.firebasedatabase.app",
+    apiKey: "DEINE_API_KEY",
+    authDomain: "DEIN_AUTH_DOMAIN",
+    databaseURL: "https://toeggeli-cup-2025-default-rtdb.europe-west1.firebasedatabase.app/",
     projectId: "toeggeli-cup-2025",
-    storageBucket: "toeggeli-cup-2025.appspot.com",
-    messagingSenderId: "810841513587",
-    appId: "1:810841513587:web:fc9d2b0274cf92b3ae1406"
+    storageBucket: "DEINE_STORAGE_BUCKET",
+    messagingSenderId: "DEINE_MESSAGING_SENDER_ID",
+    appId: "DEINE_APP_ID"
 };
 
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 
-export { db, ref, push, set, remove, onValue };
+export { db, ref, set, push, remove, update, onValue };

@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Turnierverwaltung</title>
-    <script defer type="module" src="admin-script.js"></script>
+    <script type="module" src="./admin-script.js"></script>
     <style>
         body { 
             font-family: Arial, sans-serif; 
@@ -17,7 +17,7 @@
         h1, h2 {
             font-weight: bold;
         }
-        .news-container, .team-container, .match-container {
+        .news-container, .teams-container, .matches-container {
             width: 80%;
             margin: 20px auto;
             padding: 15px;
@@ -41,34 +41,34 @@
             background-color: #0059B2;
             color: white;
         }
+        button {
+            margin-left: 5px;
+            cursor: pointer;
+        }
     </style>
 </head>
 <body>
     <h1>Turnierverwaltung</h1>
 
     <h2>News</h2>
-    <input type="text" id="newsInput" placeholder="Neue News">
+    <input type="text" id="newsText" placeholder="Neue News">
     <button onclick="addNews()">Hinzufügen</button>
     <ul id="newsList"></ul>
 
     <h2>Teams</h2>
-    <input type="text" id="teamNameInput" placeholder="Teamname">
-    <input type="text" id="player1Input" placeholder="Spieler 1">
-    <input type="text" id="player2Input" placeholder="Spieler 2">
+    <input type="text" id="teamName" placeholder="Teamname">
     <button onclick="addTeam()">Hinzufügen</button>
     <ul id="teamList"></ul>
 
     <h2>Spiele</h2>
-    <select id="team1Select"></select>
-    vs.
-    <select id="team2Select"></select>
+    <select id="team1"></select> vs. <select id="team2"></select>
     <button onclick="addMatch()">Spiel hinzufügen</button>
 
     <h2>Offene Spiele</h2>
     <ul id="openMatchesList"></ul>
 
     <h2>Resultate</h2>
-    <ul id="resultsList"></ul>
+    <ul id="resultList"></ul>
 
     <h2>Rangliste</h2>
     <table>

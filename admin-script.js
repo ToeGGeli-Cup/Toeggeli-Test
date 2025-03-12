@@ -13,7 +13,7 @@ export function addTeam() {
     }
 }
 
-// RESULTATE LADEN UND ANZEIGEN
+// RESULTATE LADEN UND ANZEIGEN UNTER "RESULTATE"
 export function loadResults() {
     const resultsRef = ref(db, "results");
     onValue(resultsRef, (snapshot) => {
@@ -33,16 +33,17 @@ export function loadResults() {
     });
 }
 
-// ERGEBNIS SPEICHERN UND SPIEL VERSCHIEBEN
+// ERGEBNIS SPEICHERN UND SPIEL VERSCHIEBEN UNTER "RESULTATE"
 export function updateMatch(matchId, score) {
     if (!/^10:\d+$|^\d+:10$/.test(score)) return;
     const matchRef = ref(db, `matches/${matchId}`);
     onValue(matchRef, (snapshot) => {
         const data = snapshot.val();
         if (data) {
-            push(ref(db, "results"), { teamA: data.teamA, teamB: data.teamB, score });
-            remove(ref(db, `matches/${matchId}`));
-            loadResults();
+            push(ref(db, "results"), { teamA: data.teamA, teamB: data.teamB, score }).then(() => {
+                remove(ref(db, `matches/${matchId}`));
+                loadResults(); // Aktualisiert die Ansicht unter "Resultate"
+            });
         }
     }, { onlyOnce: true });
 }

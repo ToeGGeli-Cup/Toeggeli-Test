@@ -64,35 +64,7 @@ export function loadTeams() {
     });
 }
 
-// TEAMS HINZUFÜGEN UND SPIELE AUTOMATISCH GENERIEREN
-export function addTeam() {
-    const teamName = document.getElementById("teamName").value;
-    const player1 = document.getElementById("player1").value;
-    const player2 = document.getElementById("player2").value;
-    if (teamName && player1 && player2) {
-        push(ref(db, "teams"), { name: teamName, player1, player2 }).then(() => generateMatches());
-        document.getElementById("teamName").value = "";
-        document.getElementById("player1").value = "";
-        document.getElementById("player2").value = "";
-    }
-}
-
-// SPIELE AUTOMATISCH GENERIEREN (Round Robin System)
-export function generateMatches(teams = []) {
-    if (teams.length < 2) return; // Keine Spiele möglich mit weniger als 2 Teams
-
-    const matchesRef = ref(db, "matches");
-    set(matchesRef, {}); // Vorherige Spiele löschen
-
-    for (let i = 0; i < teams.length; i++) {
-        for (let j = i + 1; j < teams.length; j++) {
-            push(matchesRef, { teamA: teams[i], teamB: teams[j], score: "-:-" });
-        }
-    }
-    loadMatches();
-}
-
-// SPIELE LADEN
+// SPIELE LADEN UND ERGEBNISEINGABE ERMÖGLICHEN
 export function loadMatches() {
     const matchRef = ref(db, "matches");
     onValue(matchRef, (snapshot) => {
@@ -103,37 +75,39 @@ export function loadMatches() {
             const data = child.val();
             const li = document.createElement("li");
             li.textContent = `${data.teamA} vs ${data.teamB} - ${data.score || "-:-"}`;
+            
+            // Eingabefeld für das Ergebnis
+            const scoreInput = document.createElement("input");
+            scoreInput.type = "text";
+            scoreInput.placeholder = "z.B. 10:5";
+            scoreInput.value = data.score === "-:-" ? "" : data.score;
+            
+            // Speichern-Button
+            const saveBtn = document.createElement("button");
+            saveBtn.textContent = "✓";
+            saveBtn.onclick = () => updateMatch(child.key, scoreInput.value);
+            
+            // Löschen-Button
             const delBtn = document.createElement("button");
             delBtn.textContent = "🗑️";
             delBtn.onclick = () => remove(ref(db, "matches/" + child.key));
+            
+            li.appendChild(scoreInput);
+            li.appendChild(saveBtn);
             li.appendChild(delBtn);
             matchList.appendChild(li);
         });
     });
 }
 
-// RANGLISTE LADEN (Fix: Alphabetische Sortierung, falls keine Punkte vorhanden sind)
-export function loadRanking() {
-    onValue(ref(db, "teams"), (snapshot) => {
-        const rankingTable = document.getElementById("rankingTable");
-        rankingTable.innerHTML = "";
-        let teams = [];
-        snapshot.forEach((child) => {
-            const data = child.val();
-            teams.push(data);
-        });
-        teams.sort((a, b) => b.points - a.points || a.name.localeCompare(b.name));
-        teams.forEach((team, index) => {
-            rankingTable.innerHTML += `<tr>
-                <td>${index + 1}</td>
-                <td>${team.name}</td>
-                <td>${team.games || 0}</td>
-                <td>${team.points || 0}</td>
-                <td>${team.goals || 0}</td>
-                <td>${team.conceded || 0}</td>
-                <td>${team.diff || 0}</td>
-            </tr>`;
-        });
+// ERGEBNIS SPEICHERN UND MATCH AKTUALISIEREN (Fix: Ein Team muss genau 10 Tore haben)
+export function updateMatch(matchId, score) {
+    if (!/^10:\d+$|^\d+:10$/.test(score)) return; // Überprüfung: Genau eine 10 erlaubt
+    
+    const matchRef = ref(db, `matches/${matchId}`);
+    update(matchRef, { score }).then(() => {
+        loadMatches();
+        loadRanking();
     });
 }
 

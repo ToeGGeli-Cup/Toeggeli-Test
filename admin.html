@@ -5,32 +5,39 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin-Bereich</title>
     <script type="module" src="admin-script.js"></script>
+    <style>
+        body { font-family: Arial, sans-serif; }
+        h2 { margin-top: 20px; }
+        table { border-collapse: collapse; width: 100%; margin-top: 10px; }
+        th, td { border: 1px solid black; padding: 8px; text-align: left; }
+        button { margin-left: 10px; }
+    </style>
 </head>
 <body>
     <h1>Admin-Bereich</h1>
 
-    <!-- NEWS -->
+    <!-- News -->
     <h2>News</h2>
     <input type="text" id="newsInput" placeholder="Nachricht eingeben">
-    <button onclick="addNews()">➕ Hinzufügen</button>
+    <button onclick="addNews()">Hinzufügen</button>
     <ul id="newsList"></ul>
 
-    <!-- TEAMS -->
+    <!-- Teams -->
     <h2>Teams</h2>
     <input type="text" id="teamInput" placeholder="Teamname">
-    <button onclick="addTeam()">➕ Hinzufügen</button>
-    <ul id="teamList"></ul>
+    <button onclick="addTeam()">Hinzufügen</button>
+    <ul id="teamsList"></ul>
 
-    <!-- SPIELE -->
+    <!-- Spiele -->
     <h2>Spiele</h2>
     <input type="text" id="team1Input" placeholder="Team 1">
     <input type="text" id="team2Input" placeholder="Team 2">
-    <button onclick="addMatch()">➕ Hinzufügen</button>
-    <ul id="matchList"></ul>
+    <button onclick="addMatch()">Hinzufügen</button>
+    <ul id="matchesList"></ul>
 
-    <!-- RANGLISTE -->
+    <!-- Rangliste -->
     <h2>Rangliste</h2>
-    <table border="1">
+    <table>
         <thead>
             <tr>
                 <th>Rang</th>
@@ -44,18 +51,5 @@
         </thead>
         <tbody id="rankingTable"></tbody>
     </table>
-
-    <script>
-        function displayListItem(parentId, text, deleteFunction, key) {
-            const list = document.getElementById(parentId);
-            const li = document.createElement("li");
-            li.textContent = text;
-            const deleteBtn = document.createElement("button");
-            deleteBtn.textContent = "🗑️";
-            deleteBtn.onclick = () => deleteFunction(key);
-            li.appendChild(deleteBtn);
-            list.appendChild(li);
-        }
-    </script>
 </body>
 </html>

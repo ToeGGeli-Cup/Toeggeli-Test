@@ -137,36 +137,43 @@ function saveResult(matchId, score) {
 
         update(ref(db, `matches/${matchId}`), { score });
         
-        updateTeamRanking(teamA, teamB, scoreA, scoreB);
+        generateRanking();
     }, { onlyOnce: true });
 }
 
-// RANGLISTE AKTUALISIEREN
-function updateTeamRanking(teamA, teamB, scoreA, scoreB) {
+// NEUE RANGLISTE BERECHNEN
+function generateRanking() {
     const rankingRef = ref(db, "ranking");
-    onValue(rankingRef, (snapshot) => {
+    const matchRef = ref(db, "matches");
+
+    onValue(matchRef, (snapshot) => {
         let rankings = {};
+
         snapshot.forEach((child) => {
-            rankings[child.val().name] = child.val();
+            const data = child.val();
+            if (!data.score || data.score === "-:-") return;
+
+            const [scoreA, scoreB] = data.score.split(":").map(Number);
+            if (isNaN(scoreA) || isNaN(scoreB)) return;
+
+            if (!rankings[data.teamA]) rankings[data.teamA] = { name: data.teamA, games: 0, points: 0, goals: 0, conceded: 0, diff: 0 };
+            if (!rankings[data.teamB]) rankings[data.teamB] = { name: data.teamB, games: 0, points: 0, goals: 0, conceded: 0, diff: 0 };
+
+            rankings[data.teamA].games += 1;
+            rankings[data.teamB].games += 1;
+
+            rankings[data.teamA].goals += scoreA;
+            rankings[data.teamB].goals += scoreB;
+
+            rankings[data.teamA].conceded += scoreB;
+            rankings[data.teamB].conceded += scoreA;
+
+            rankings[data.teamA].diff = rankings[data.teamA].goals - rankings[data.teamA].conceded;
+            rankings[data.teamB].diff = rankings[data.teamB].goals - rankings[data.teamB].conceded;
+
+            if (scoreA > scoreB) rankings[data.teamA].points += 10;
+            else rankings[data.teamB].points += 10;
         });
-
-        if (!rankings[teamA]) rankings[teamA] = { name: teamA, games: 0, points: 0, goals: 0, conceded: 0, diff: 0 };
-        if (!rankings[teamB]) rankings[teamB] = { name: teamB, games: 0, points: 0, goals: 0, conceded: 0, diff: 0 };
-
-        rankings[teamA].games += 1;
-        rankings[teamB].games += 1;
-
-        rankings[teamA].goals += scoreA;
-        rankings[teamB].goals += scoreB;
-
-        rankings[teamA].conceded += scoreB;
-        rankings[teamB].conceded += scoreA;
-
-        rankings[teamA].diff = rankings[teamA].goals - rankings[teamA].conceded;
-        rankings[teamB].diff = rankings[teamB].goals - rankings[teamB].conceded;
-
-        if (scoreA > scoreB) rankings[teamA].points += 10;
-        else rankings[teamB].points += 10;
 
         const sortedRankings = Object.values(rankings).sort((a, b) => b.points - a.points);
         sortedRankings.forEach((team, index) => {

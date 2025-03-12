@@ -28,7 +28,7 @@ export function addNews() {
     }
 }
 
-// TEAMS LADEN & DROPDOWN-FIX
+// TEAMS LADEN
 export function loadTeams() {
     const teamsRef = ref(db, "teams");
     onValue(teamsRef, (snapshot) => {
@@ -45,7 +45,6 @@ export function loadTeams() {
         snapshot.forEach((child) => {
             const data = child.val();
             
-            // Liste in der Teamverwaltung
             const li = document.createElement("li");
             li.textContent = `${data.name} (${data.player1} & ${data.player2})`;
             const delBtn = document.createElement("button");
@@ -54,7 +53,6 @@ export function loadTeams() {
             li.appendChild(delBtn);
             teamList.appendChild(li);
 
-            // Teams in die Dropdowns einfügen
             const optionA = document.createElement("option");
             optionA.value = data.name;
             optionA.textContent = data.name;
@@ -74,7 +72,7 @@ export function addTeam() {
     const player1 = document.getElementById("player1").value;
     const player2 = document.getElementById("player2").value;
     if (teamName && player1 && player2) {
-        push(ref(db, "teams"), { name: teamName, player1, player2, games: 0, points: 0 });
+        push(ref(db, "teams"), { name: teamName, player1, player2, games: 0, points: 0, goals: 0, conceded: 0 });
         updateRanking();
         document.getElementById("teamName").value = "";
         document.getElementById("player1").value = "";
@@ -110,6 +108,7 @@ export function loadMatches() {
                         set(ref(db, "results/" + child.key), data);
                         remove(ref(db, "matches/" + child.key));
                         updateRanking();
+                        loadResults();
                     });
                 }
             };
@@ -123,9 +122,9 @@ export function loadMatches() {
             li.appendChild(delBtn);
 
             if (data.score === "-:-") {
-                matchList.appendChild(li); // In "Offene Spiele" anzeigen
+                matchList.appendChild(li);
             } else {
-                resultList.appendChild(li); // In "Resultate" anzeigen
+                resultList.appendChild(li);
             }
         });
     });

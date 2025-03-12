@@ -61,6 +61,8 @@ export function loadTeams() {
             optionB.textContent = data.name;
             teamBSelect.appendChild(optionB);
         });
+
+        generateRanking(); // Beim Laden der Teams auch die Rangliste updaten
     });
 }
 
@@ -70,7 +72,7 @@ export function addTeam() {
     const player1 = document.getElementById("player1").value;
     const player2 = document.getElementById("player2").value;
     if (teamName && player1 && player2) {
-        push(ref(db, "teams"), { name: teamName, player1, player2, games: 0, points: 0 });
+        push(ref(db, "teams"), { name: teamName, player1, player2 });
         document.getElementById("teamName").value = "";
         document.getElementById("player1").value = "";
         document.getElementById("player2").value = "";
@@ -111,6 +113,8 @@ export function loadMatches() {
                 matchList.appendChild(li);
             }
         });
+
+        generateRanking();
     });
 }
 
@@ -136,7 +140,6 @@ function saveResult(matchId, score) {
         const { teamA, teamB } = data;
 
         update(ref(db, `matches/${matchId}`), { score });
-        
         generateRanking();
     }, { onlyOnce: true });
 }
@@ -144,44 +147,56 @@ function saveResult(matchId, score) {
 // NEUE RANGLISTE BERECHNEN
 function generateRanking() {
     const rankingRef = ref(db, "ranking");
+    const teamsRef = ref(db, "teams");
     const matchRef = ref(db, "matches");
 
-    onValue(matchRef, (snapshot) => {
+    onValue(teamsRef, (teamsSnapshot) => {
         let rankings = {};
 
-        snapshot.forEach((child) => {
-            const data = child.val();
-            if (!data.score || data.score === "-:-") return;
-
-            const [scoreA, scoreB] = data.score.split(":").map(Number);
-            if (isNaN(scoreA) || isNaN(scoreB)) return;
-
-            if (!rankings[data.teamA]) rankings[data.teamA] = { name: data.teamA, games: 0, points: 0, goals: 0, conceded: 0, diff: 0 };
-            if (!rankings[data.teamB]) rankings[data.teamB] = { name: data.teamB, games: 0, points: 0, goals: 0, conceded: 0, diff: 0 };
-
-            rankings[data.teamA].games += 1;
-            rankings[data.teamB].games += 1;
-
-            rankings[data.teamA].goals += scoreA;
-            rankings[data.teamB].goals += scoreB;
-
-            rankings[data.teamA].conceded += scoreB;
-            rankings[data.teamB].conceded += scoreA;
-
-            rankings[data.teamA].diff = rankings[data.teamA].goals - rankings[data.teamA].conceded;
-            rankings[data.teamB].diff = rankings[data.teamB].goals - rankings[data.teamB].conceded;
-
-            if (scoreA > scoreB) rankings[data.teamA].points += 10;
-            else rankings[data.teamB].points += 10;
+        // Initialisiere alle Teams mit 0 Punkten
+        teamsSnapshot.forEach((team) => {
+            rankings[team.val().name] = {
+                name: team.val().name,
+                games: 0,
+                points: 0,
+                goals: 0,
+                conceded: 0,
+                diff: 0
+            };
         });
 
-        const sortedRankings = Object.values(rankings).sort((a, b) => b.points - a.points);
-        sortedRankings.forEach((team, index) => {
-            team.rank = index + 1;
-        });
+        onValue(matchRef, (snapshot) => {
+            snapshot.forEach((child) => {
+                const data = child.val();
+                if (!data.score || data.score === "-:-") return;
 
-        set(rankingRef, sortedRankings);
-    }, { onlyOnce: true });
+                const [scoreA, scoreB] = data.score.split(":").map(Number);
+                if (isNaN(scoreA) || isNaN(scoreB)) return;
+
+                rankings[data.teamA].games += 1;
+                rankings[data.teamB].games += 1;
+
+                rankings[data.teamA].goals += scoreA;
+                rankings[data.teamB].goals += scoreB;
+
+                rankings[data.teamA].conceded += scoreB;
+                rankings[data.teamB].conceded += scoreA;
+
+                rankings[data.teamA].diff = rankings[data.teamA].goals - rankings[data.teamA].conceded;
+                rankings[data.teamB].diff = rankings[data.teamB].goals - rankings[data.teamB].conceded;
+
+                if (scoreA > scoreB) rankings[data.teamA].points += 10;
+                else rankings[data.teamB].points += 10;
+            });
+
+            const sortedRankings = Object.values(rankings).sort((a, b) => b.points - a.points);
+            sortedRankings.forEach((team, index) => {
+                team.rank = index + 1;
+            });
+
+            set(rankingRef, sortedRankings);
+        }, { onlyOnce: true });
+    });
 }
 
 // LADEN BEI SEITENAUFRUF

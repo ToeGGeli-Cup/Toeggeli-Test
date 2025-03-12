@@ -1,113 +1,110 @@
-import { getDatabase, ref, set, push, update, remove, onValue } from "./firebase.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-app.js";
+import { getDatabase, ref, push, set, onValue, remove } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-database.js";
 
-const db = getDatabase();
+// Firebase-Konfiguration
+const firebaseConfig = {
+    apiKey: "DEINE_API_KEY",
+    authDomain: "DEIN_AUTH_DOMAIN",
+    databaseURL: "https://toeggeli-cup-2025-default-rtdb.europe-west1.firebasedatabase.app/",
+    projectId: "toeggeli-cup-2025",
+    storageBucket: "DEINE_STORAGE_BUCKET",
+    messagingSenderId: "DEINE_MESSAGING_SENDER_ID",
+    appId: "DEINE_APP_ID"
+};
 
-// 📰 News CRUD
+// Firebase initialisieren
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+
+// 🔹 NEWS VERWALTEN
 function addNews() {
-    const text = document.getElementById("newsText").value;
-    if (text) {
-        set(ref(db, "news/" + text.replace(/\s+/g, "_")), { text });
-        document.getElementById("newsText").value = "";
-    }
-}
-
-function deleteNews(newsId) {
-    remove(ref(db, "news/" + newsId));
+    const newsText = document.getElementById("newsText").value;
+    if (newsText.trim() === "") return;
+    push(ref(db, "news"), { text: newsText, date: new Date().toLocaleDateString() });
+    document.getElementById("newsText").value = "";
 }
 
 onValue(ref(db, "news"), (snapshot) => {
-    const list = document.getElementById("newsList");
-    list.innerHTML = "";
-    snapshot.forEach((child) => {
+    const newsList = document.getElementById("newsList");
+    newsList.innerHTML = "";
+    snapshot.forEach((childSnapshot) => {
+        const news = childSnapshot.val();
         const li = document.createElement("li");
-        li.innerHTML = `${child.val().text} <button onclick="deleteNews('${child.key}')">🗑</button>`;
-        list.appendChild(li);
+        li.innerHTML = `${news.date}: ${news.text} 
+            <button class="delete-btn" onclick="deleteNews('${childSnapshot.key}')">🗑</button>`;
+        newsList.appendChild(li);
     });
 });
 
-// 🏆 Teams CRUD
-function addTeam() {
-    const name = document.getElementById("teamName").value;
-    if (name) {
-        set(ref(db, "teams/" + name.replace(/\s+/g, "_")), { name });
-        document.getElementById("teamName").value = "";
-    }
+function deleteNews(newsId) {
+    remove(ref(db, `news/${newsId}`));
 }
 
-function deleteTeam(teamName) {
-    remove(ref(db, "teams/" + teamName));
+// 🔹 TEAMS VERWALTEN
+function addTeam() {
+    const teamName = document.getElementById("teamName").value;
+    if (teamName.trim() === "") return;
+    set(ref(db, `teams/${teamName}`), { name: teamName });
+    document.getElementById("teamName").value = "";
 }
 
 onValue(ref(db, "teams"), (snapshot) => {
-    const list = document.getElementById("teamsList");
-    const select1 = document.getElementById("team1");
-    const select2 = document.getElementById("team2");
-
-    list.innerHTML = "";
-    select1.innerHTML = "";
-    select2.innerHTML = "";
-
-    snapshot.forEach((child) => {
-        const name = child.val().name;
+    const teamsList = document.getElementById("teamsList");
+    teamsList.innerHTML = "";
+    snapshot.forEach((childSnapshot) => {
+        const team = childSnapshot.val();
         const li = document.createElement("li");
-        li.innerHTML = `${name} <button onclick="deleteTeam('${child.key}')">🗑</button>`;
-        list.appendChild(li);
-
-        const option1 = document.createElement("option");
-        option1.value = name;
-        option1.textContent = name;
-        select1.appendChild(option1);
-
-        const option2 = document.createElement("option");
-        option2.value = name;
-        option2.textContent = name;
-        select2.appendChild(option2);
+        li.innerHTML = `${team.name} 
+            <button class="delete-btn" onclick="deleteTeam('${childSnapshot.key}')">🗑</button>`;
+        teamsList.appendChild(li);
     });
 });
 
-// ⚽ Matches CRUD
+function deleteTeam(teamId) {
+    remove(ref(db, `teams/${teamId}`));
+}
+
+// 🔹 SPIELE VERWALTEN
 function addMatch() {
     const team1 = document.getElementById("team1").value;
     const team2 = document.getElementById("team2").value;
-    if (team1 && team2 && team1 !== team2) {
-        set(ref(db, "matches/" + team1 + "_vs_" + team2), { team1, team2 });
-    }
-}
-
-function deleteMatch(matchId) {
-    remove(ref(db, "matches/" + matchId));
+    if (team1 === team2) return;
+    set(ref(db, `matches/${team1}_vs_${team2}`), { team1, team2, score: "?" });
 }
 
 onValue(ref(db, "matches"), (snapshot) => {
-    const list = document.getElementById("matchesList");
-    list.innerHTML = "";
-    snapshot.forEach((child) => {
-        const match = child.val();
+    const matchesList = document.getElementById("matchesList");
+    matchesList.innerHTML = "";
+    snapshot.forEach((childSnapshot) => {
+        const match = childSnapshot.val();
         const li = document.createElement("li");
-        li.innerHTML = `${match.team1} vs. ${match.team2} 
-                        <button onclick="deleteMatch('${child.key}')">🗑</button>`;
-        list.appendChild(li);
+        li.innerHTML = `${match.team1} vs. ${match.team2} - ${match.score} 
+            <button class="delete-btn" onclick="deleteMatch('${childSnapshot.key}')">🗑</button>`;
+        matchesList.appendChild(li);
     });
 });
 
-// 📊 Ergebnisse und Rangliste
+function deleteMatch(matchId) {
+    remove(ref(db, `matches/${matchId}`));
+}
+
+// 🔹 RANGLISTE
 onValue(ref(db, "ranking"), (snapshot) => {
-    const table = document.getElementById("rankingTable");
-    table.innerHTML = "";
+    const rankingTable = document.getElementById("rankingTable");
+    rankingTable.innerHTML = "";
     let rank = 1;
-    snapshot.forEach((child) => {
-        const team = child.key;
-        const data = child.val();
+    snapshot.forEach((childSnapshot) => {
+        const team = childSnapshot.val();
         const row = document.createElement("tr");
-        row.innerHTML = `<td>${rank++}</td>
-                         <td>${team}</td>
-                         <td>${data.games || 0}</td>
-                         <td>${data.points || 0}</td>
-                         <td>${data.goals || 0}</td>
-                         <td>${data.conceded || 0}</td>
-                         <td>${data.diff || 0}</td>`;
-        table.appendChild(row);
+        row.innerHTML = `
+            <td>${rank++}</td>
+            <td>${childSnapshot.key}</td>
+            <td>${team.games}</td>
+            <td>${team.points}</td>
+            <td>${team.goals}</td>
+            <td>${team.conceded}</td>
+            <td>${team.diff}</td>
+        `;
+        rankingTable.appendChild(row);
     });
 });
-
-export { addNews, deleteNews, addTeam, deleteTeam, addMatch, deleteMatch };

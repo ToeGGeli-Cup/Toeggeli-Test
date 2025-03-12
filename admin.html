@@ -3,58 +3,72 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Bereich</title>
-    <script defer src="admin-script.js"></script>
+    <title>Turnierverwaltung</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            max-width: 800px;
-            margin: auto;
+        body { 
+            font-family: Arial, sans-serif; 
+            background-color: #5B3A2E; 
+            color: white;
+            text-align: center;
+            margin: 20px;
+            padding-bottom: 50px;
         }
-        h2 {
-            margin-top: 20px;
+        h1, h2 {
+            font-weight: bold;
+        }
+        .news-container {
+            width: 80%;
+            margin: 20px auto;
+            padding: 15px;
+            background-color: #D81B60;
+            color: white;
+            border-radius: 10px;
+            text-align: left;
         }
         table {
-            width: 100%;
+            width: 80%;
+            margin: 10px auto;
             border-collapse: collapse;
         }
         th, td {
+            padding: 10px;
             border: 1px solid black;
-            padding: 8px;
-            text-align: center;
+            background-color: white;
+            color: black;
         }
-        button {
-            cursor: pointer;
+        th {
+            background-color: #0059B2;
+            color: white;
         }
     </style>
 </head>
 <body>
+
     <h1>Turnierverwaltung</h1>
 
-    <!-- News Verwaltung -->
+    <!-- NEWS -->
     <h2>News</h2>
-    <input type="text" id="newsInput" placeholder="Neue News">
+    <input type="text" id="newsText" placeholder="Neue News">
     <button onclick="addNews()">Hinzufügen</button>
     <ul id="newsList"></ul>
 
-    <!-- Teams Verwaltung -->
+    <!-- TEAMS -->
     <h2>Teams</h2>
-    <input type="text" id="teamInput" placeholder="Neues Team">
+    <input type="text" id="teamName" placeholder="Neues Team">
     <button onclick="addTeam()">Hinzufügen</button>
-    <ul id="teamList"></ul>
+    <ul id="teamsList"></ul>
 
-    <!-- Spiele Verwaltung -->
+    <!-- SPIELE -->
     <h2>Spiele</h2>
-    <select id="team1"></select>
-    <select id="team2"></select>
-    <button onclick="addGame()">Spiel hinzufügen</button>
-    <ul id="gameList"></ul>
+    <select id="team1"></select> vs. <select id="team2"></select>
+    <button onclick="addMatch()">Spiel hinzufügen</button>
+    <ul id="matchesList"></ul>
 
-    <!-- Ergebnisse -->
+    <!-- ERGEBNISSE -->
     <h2>Ergebnisse</h2>
     <ul id="resultsList"></ul>
 
-    <!-- Rangliste -->
+    <!-- RANGLISTE -->
     <h2>Rangliste</h2>
     <table>
         <thead>
@@ -70,5 +84,7 @@
         </thead>
         <tbody id="rankingTable"></tbody>
     </table>
+
+    <script type="module" src="admin-script.js"></script>
 </body>
 </html>

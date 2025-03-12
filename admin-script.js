@@ -35,13 +35,12 @@ export function loadTeams() {
         const teamList = document.getElementById("teamList");
         const teamASelect = document.getElementById("teamA");
         const teamBSelect = document.getElementById("teamB");
-        
         if (!teamList || !teamASelect || !teamBSelect) return;
-
+        
         teamList.innerHTML = "";
         teamASelect.innerHTML = "";
         teamBSelect.innerHTML = "";
-
+        
         snapshot.forEach((child) => {
             const data = child.val();
             const li = document.createElement("li");
@@ -52,11 +51,15 @@ export function loadTeams() {
             li.appendChild(delBtn);
             teamList.appendChild(li);
 
-            // Teams in Dropdown-Menüs einfügen
-            let optionA = new Option(data.name, data.name);
-            let optionB = new Option(data.name, data.name);
-            teamASelect.add(optionA);
-            teamBSelect.add(optionB);
+            const optionA = document.createElement("option");
+            optionA.value = data.name;
+            optionA.textContent = data.name;
+            teamASelect.appendChild(optionA);
+
+            const optionB = document.createElement("option");
+            optionB.value = data.name;
+            optionB.textContent = data.name;
+            teamBSelect.appendChild(optionB);
         });
     });
 }
@@ -89,15 +92,11 @@ export function loadMatches() {
             const data = child.val();
             const li = document.createElement("li");
             li.textContent = `${data.teamA} vs ${data.teamB} - ${data.score || "-:-"}`;
-
-            // Ergebnisfeld für Resultate
             const scoreInput = document.createElement("input");
             scoreInput.placeholder = "Ergebnis (10:5)";
-
             const saveBtn = document.createElement("button");
             saveBtn.textContent = "✓";
             saveBtn.onclick = () => saveResult(child.key, scoreInput.value);
-
             const delBtn = document.createElement("button");
             delBtn.textContent = "🗑️";
             delBtn.onclick = () => remove(ref(db, "matches/" + child.key));
@@ -105,11 +104,11 @@ export function loadMatches() {
             li.appendChild(scoreInput);
             li.appendChild(saveBtn);
             li.appendChild(delBtn);
-
-            if (data.score === "-:-") {
-                matchList.appendChild(li);  // Offene Spiele
+            
+            if (data.score && data.score !== "-:-") {
+                resultList.appendChild(li);
             } else {
-                resultList.appendChild(li); // Resultate
+                matchList.appendChild(li);
             }
         });
     });
@@ -124,65 +123,61 @@ export function addMatch() {
     }
 }
 
-// ERGEBNISSE SPEICHERN UND RANGLISTE AKTUALISIEREN
-export function saveResult(matchId, score) {
+// ERGEBNIS SPEICHERN & RANGLISTE AKTUALISIEREN
+function saveResult(matchId, score) {
+    if (!score.includes(":")) return;
+    const [scoreA, scoreB] = score.split(":").map(Number);
+    if (isNaN(scoreA) || isNaN(scoreB)) return;
+
     const matchRef = ref(db, `matches/${matchId}`);
-    update(matchRef, { score }).then(() => {
-        updateRanking();  // ✅ Rangliste nach Ergebniseingabe aktualisieren
-    });
+    onValue(matchRef, (snapshot) => {
+        const data = snapshot.val();
+        if (!data) return;
+        const { teamA, teamB } = data;
+
+        update(ref(db, `matches/${matchId}`), { score });
+        
+        updateTeamRanking(teamA, teamB, scoreA, scoreB);
+    }, { onlyOnce: true });
 }
 
-// FUNKTION ZUM AKTUALISIEREN DER RANGLISTE
-export function updateRanking() {
+// RANGLISTE AKTUALISIEREN
+function updateTeamRanking(teamA, teamB, scoreA, scoreB) {
     const rankingRef = ref(db, "ranking");
-    const resultsRef = ref(db, "matches");
-
-    onValue(resultsRef, (snapshot) => {
+    onValue(rankingRef, (snapshot) => {
         let rankings = {};
-
         snapshot.forEach((child) => {
-            const data = child.val();
-            if (data.score === "-:-") return; // Offene Spiele ignorieren
-
-            const teamA = data.teamA;
-            const teamB = data.teamB;
-            const score = data.score.split(":").map(Number);
-            const goalsA = score[0];
-            const goalsB = score[1];
-
-            if (!rankings[teamA]) rankings[teamA] = { name: teamA, games: 0, points: 0, goals: 0, conceded: 0, diff: 0 };
-            if (!rankings[teamB]) rankings[teamB] = { name: teamB, games: 0, points: 0, goals: 0, conceded: 0, diff: 0 };
-
-            rankings[teamA].games += 1;
-            rankings[teamB].games += 1;
-
-            rankings[teamA].goals += goalsA;
-            rankings[teamB].goals += goalsB;
-
-            rankings[teamA].conceded += goalsB;
-            rankings[teamB].conceded += goalsA;
-
-            rankings[teamA].diff = rankings[teamA].goals - rankings[teamA].conceded;
-            rankings[teamB].diff = rankings[teamB].goals - rankings[teamB].conceded;
-
-            if (goalsA > goalsB) {
-                rankings[teamA].points += 10;
-            } else {
-                rankings[teamB].points += 10;
-            }
+            rankings[child.val().name] = child.val();
         });
 
-        let sortedRankings = Object.values(rankings).sort((a, b) => b.points - a.points);
-        let rankData = {};
+        if (!rankings[teamA]) rankings[teamA] = { name: teamA, games: 0, points: 0, goals: 0, conceded: 0, diff: 0 };
+        if (!rankings[teamB]) rankings[teamB] = { name: teamB, games: 0, points: 0, goals: 0, conceded: 0, diff: 0 };
+
+        rankings[teamA].games += 1;
+        rankings[teamB].games += 1;
+
+        rankings[teamA].goals += scoreA;
+        rankings[teamB].goals += scoreB;
+
+        rankings[teamA].conceded += scoreB;
+        rankings[teamB].conceded += scoreA;
+
+        rankings[teamA].diff = rankings[teamA].goals - rankings[teamA].conceded;
+        rankings[teamB].diff = rankings[teamB].goals - rankings[teamB].conceded;
+
+        if (scoreA > scoreB) rankings[teamA].points += 10;
+        else rankings[teamB].points += 10;
+
+        const sortedRankings = Object.values(rankings).sort((a, b) => b.points - a.points);
         sortedRankings.forEach((team, index) => {
-            rankData[index + 1] = { rank: index + 1, ...team };
+            team.rank = index + 1;
         });
 
-        set(rankingRef, rankData);
-    });
+        set(rankingRef, sortedRankings);
+    }, { onlyOnce: true });
 }
 
-// ALLES LADEN
+// LADEN BEI SEITENAUFRUF
 window.onload = function () {
     loadNews();
     loadTeams();

@@ -4,34 +4,27 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin-Bereich</title>
-    <script type="module" src="admin-script.js"></script>
+    <script type="module" src="./admin-script.js"></script>
 </head>
 <body>
     <h1>Admin-Bereich</h1>
 
-    <!-- NEWS -->
     <h2>News</h2>
     <input type="text" id="newsInput" placeholder="Nachricht eingeben">
-    <button id="addNewsBtn">Hinzufügen</button>
+    <button onclick="addNews()">Hinzufügen</button>
     <ul id="newsList"></ul>
 
-    <!-- TEAMS -->
     <h2>Teams</h2>
-    <input type="text" id="teamInput" placeholder="Teamname">
-    <button id="addTeamBtn">Hinzufügen</button>
+    <input type="text" id="teamInput" placeholder="Teamname eingeben">
+    <button onclick="addTeam()">Hinzufügen</button>
     <ul id="teamList"></ul>
 
-    <!-- SPIELE -->
     <h2>Spiele</h2>
-    <input type="text" id="team1" placeholder="Team 1">
-    <input type="text" id="team2" placeholder="Team 2">
-    <button id="addMatchBtn">Hinzufügen</button>
-    <h3>Offene Spiele</h3>
+    <input type="text" id="team1Input" placeholder="Team 1">
+    <input type="text" id="team2Input" placeholder="Team 2">
+    <button onclick="addMatch()">Hinzufügen</button>
     <ul id="matchList"></ul>
-    <h3>Ergebnisse</h3>
-    <ul id="resultsList"></ul>
 
-    <!-- RANGLISTE -->
     <h2>Rangliste</h2>
     <table border="1">
         <thead>

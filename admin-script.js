@@ -28,35 +28,35 @@ export function addNews() {
     }
 }
 
+// SPIELE AUTOMATISCH GENERIEREN (Round Robin System)
+export function generateMatches(teams = []) {
+    if (teams.length < 2) return;
+    const matchesRef = ref(db, "matches");
+    set(matchesRef, {});
+    for (let i = 0; i < teams.length; i++) {
+        for (let j = i + 1; j < teams.length; j++) {
+            push(matchesRef, { teamA: teams[i], teamB: teams[j], score: "-:-" });
+        }
+    }
+    loadMatches();
+}
+
 // TEAMS LADEN UND SPIELE AUTOMATISCH ERSTELLEN
 export function loadTeams() {
     const teamsRef = ref(db, "teams");
     onValue(teamsRef, (snapshot) => {
         const teamList = document.getElementById("teamList");
-        const teamASelect = document.getElementById("teamA");
-        const teamBSelect = document.getElementById("teamB");
-
-        if (!teamList || !teamASelect || !teamBSelect) return;
-
+        if (!teamList) return;
         teamList.innerHTML = "";
-        teamASelect.innerHTML = "";
-        teamBSelect.innerHTML = "";
-
         let teams = [];
         snapshot.forEach((child) => {
             const data = child.val();
             teams.push(data.name);
             const li = document.createElement("li");
             li.textContent = `${data.name} (${data.player1} & ${data.player2})`;
-            const optionA = document.createElement("option");
-            const optionB = document.createElement("option");
-            optionA.value = optionB.value = data.name;
-            optionA.textContent = optionB.textContent = data.name;
-            teamASelect.appendChild(optionA);
-            teamBSelect.appendChild(optionB);
             const delBtn = document.createElement("button");
             delBtn.textContent = "🗑️";
-            delBtn.onclick = () => remove(ref(db, "teams/" + child.key)).then(() => generateMatches());
+            delBtn.onclick = () => remove(ref(db, "teams/" + child.key)).then(() => generateMatches(teams));
             li.appendChild(delBtn);
             teamList.appendChild(li);
         });
@@ -75,23 +75,16 @@ export function loadMatches() {
             const data = child.val();
             const li = document.createElement("li");
             li.textContent = `${data.teamA} vs ${data.teamB} - ${data.score || "-:-"}`;
-            
-            // Eingabefeld für das Ergebnis
             const scoreInput = document.createElement("input");
             scoreInput.type = "text";
             scoreInput.placeholder = "z.B. 10:5";
             scoreInput.value = data.score === "-:-" ? "" : data.score;
-            
-            // Speichern-Button
             const saveBtn = document.createElement("button");
             saveBtn.textContent = "✓";
             saveBtn.onclick = () => updateMatch(child.key, scoreInput.value);
-            
-            // Löschen-Button
             const delBtn = document.createElement("button");
             delBtn.textContent = "🗑️";
             delBtn.onclick = () => remove(ref(db, "matches/" + child.key));
-            
             li.appendChild(scoreInput);
             li.appendChild(saveBtn);
             li.appendChild(delBtn);
@@ -100,14 +93,38 @@ export function loadMatches() {
     });
 }
 
-// ERGEBNIS SPEICHERN UND MATCH AKTUALISIEREN (Fix: Ein Team muss genau 10 Tore haben)
+// ERGEBNIS SPEICHERN UND MATCH AKTUALISIEREN
 export function updateMatch(matchId, score) {
-    if (!/^10:\d+$|^\d+:10$/.test(score)) return; // Überprüfung: Genau eine 10 erlaubt
-    
+    if (!/^10:\d+$|^\d+:10$/.test(score)) return;
     const matchRef = ref(db, `matches/${matchId}`);
     update(matchRef, { score }).then(() => {
         loadMatches();
         loadRanking();
+    });
+}
+
+// RANGLISTE LADEN
+export function loadRanking() {
+    onValue(ref(db, "teams"), (snapshot) => {
+        const rankingTable = document.getElementById("rankingTable");
+        if (!rankingTable) return;
+        rankingTable.innerHTML = "";
+        let teams = [];
+        snapshot.forEach((child) => {
+            teams.push(child.val());
+        });
+        teams.sort((a, b) => b.points - a.points || a.name.localeCompare(b.name));
+        teams.forEach((team, index) => {
+            rankingTable.innerHTML += `<tr>
+                <td>${index + 1}</td>
+                <td>${team.name}</td>
+                <td>${team.games || 0}</td>
+                <td>${team.points || 0}</td>
+                <td>${team.goals || 0}</td>
+                <td>${team.conceded || 0}</td>
+                <td>${team.diff || 0}</td>
+            </tr>`;
+        });
     });
 }
 

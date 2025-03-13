@@ -93,29 +93,6 @@ export function loadMatches() {
     });
 }
 
-// SPIELERGEBNIS SPEICHERN UND SPIEL VERSCHIEBEN
-export function updateMatch(matchId, score) {
-    if (!/^10:\d+$|^\d+:10$/.test(score)) return;
-    const matchRef = ref(db, `matches/${matchId}`);
-    onValue(matchRef, (snapshot) => {
-        const data = snapshot.val();
-        if (data) {
-            push(ref(db, "results"), { teamA: data.teamA, teamB: data.teamB, score });
-            remove(ref(db, `matches/${matchId}`));
-        }
-    }, { onlyOnce: true });
-}
-
-// SPIEL ZURÜCKSETZEN
-export function resetMatch(matchId, teamA, teamB) {
-    remove(ref(db, `results/${matchId}`)).then(() => {
-        push(ref(db, "matches"), { teamA, teamB, score: "-:-" }).then(() => {
-            loadMatches();
-            loadResults();
-        });
-    });
-}
-
 // ALLES LADEN
 window.onload = function () {
     loadNews();

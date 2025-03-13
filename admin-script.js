@@ -28,7 +28,17 @@ export function addNews() {
     }
 }
 
-// TEAMS LADEN (mit Dropdown-Fix)
+// TEAMS HINZUFÜGEN
+export function addTeam() {
+    const teamName = document.getElementById("teamName").value;
+    const player1 = document.getElementById("player1").value;
+    const player2 = document.getElementById("player2").value;
+    if (teamName && player1 && player2) {
+        push(ref(db, "teams"), { name: teamName, player1, player2 }).then(() => loadTeams());
+    }
+}
+
+// TEAMS LADEN
 export function loadTeams() {
     const teamsRef = ref(db, "teams");
     onValue(teamsRef, (snapshot) => {
@@ -58,6 +68,15 @@ export function loadTeams() {
     });
 }
 
+// SPIELE HINZUFÜGEN
+export function addMatch() {
+    const teamA = document.getElementById("teamA").value;
+    const teamB = document.getElementById("teamB").value;
+    if (teamA && teamB && teamA !== teamB) {
+        push(ref(db, "matches"), { teamA, teamB, score: "-:-" }).then(() => loadMatches());
+    }
+}
+
 // SPIELE LADEN
 export function loadMatches() {
     const matchRef = ref(db, "matches");
@@ -70,50 +89,6 @@ export function loadMatches() {
             const li = document.createElement("li");
             li.textContent = `${data.teamA} vs ${data.teamB} - ${data.score || "-:-"}`;
             matchList.appendChild(li);
-        });
-    });
-}
-
-// SPIELERGEBNIS SPEICHERN UND SPIEL VERSCHIEBEN
-export function updateMatch(matchId, score) {
-    if (!/^10:\d+$|^\d+:10$/.test(score)) return;
-    const matchRef = ref(db, `matches/${matchId}`);
-    onValue(matchRef, (snapshot) => {
-        const data = snapshot.val();
-        if (data) {
-            push(ref(db, "results"), { teamA: data.teamA, teamB: data.teamB, score });
-            remove(ref(db, `matches/${matchId}`));
-        }
-    }, { onlyOnce: true });
-}
-
-// SPIEL ZURÜCKSETZEN
-export function resetMatch(matchId, teamA, teamB) {
-    remove(ref(db, `results/${matchId}`)).then(() => {
-        push(ref(db, "matches"), { teamA, teamB, score: "-:-" }).then(() => {
-            loadMatches();
-            loadResults();
-        });
-    });
-}
-
-// RESULTATE LADEN
-export function loadResults() {
-    const resultsRef = ref(db, "results");
-    onValue(resultsRef, (snapshot) => {
-        const resultsTable = document.getElementById("resultsTable");
-        if (!resultsTable) return;
-        resultsTable.innerHTML = "";
-        snapshot.forEach((childSnapshot) => {
-            const match = childSnapshot.val();
-            const row = document.createElement("tr");
-            row.innerHTML = `
-                <td>${match.teamA}</td>
-                <td>${match.teamB}</td>
-                <td>${match.score}</td>
-                <td><button onclick="resetMatch('${childSnapshot.key}', '${match.teamA}', '${match.teamB}')">🔄 Zurücksetzen</button></td>
-            `;
-            resultsTable.appendChild(row);
         });
     });
 }
@@ -132,3 +107,7 @@ window.addTeam = addTeam;
 window.addMatch = addMatch;
 window.loadResults = loadResults;
 window.updateMatch = updateMatch;
+window.loadTeams = loadTeams;
+window.loadMatches = loadMatches;
+window.addNews = addNews;
+window.loadNews = loadNews;

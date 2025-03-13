@@ -28,7 +28,7 @@ export function addNews() {
     }
 }
 
-// TEAMS LADEN (mit Löschen-Button)
+// TEAMS LADEN (mit Dropdown-Fix)
 export function loadTeams() {
     const teamsRef = ref(db, "teams");
     onValue(teamsRef, (snapshot) => {
@@ -58,7 +58,7 @@ export function loadTeams() {
     });
 }
 
-// SPIELE LADEN (mit Ergebnis-Eingabe & Löschen)
+// SPIELE LADEN
 export function loadMatches() {
     const matchRef = ref(db, "matches");
     onValue(matchRef, (snapshot) => {
@@ -69,70 +69,28 @@ export function loadMatches() {
             const data = child.val();
             const li = document.createElement("li");
             li.textContent = `${data.teamA} vs ${data.teamB} - ${data.score || "-:-"}`;
-            
-            // Eingabe für Ergebnis
-            const scoreInput = document.createElement("input");
-            scoreInput.type = "text";
-            scoreInput.placeholder = "10:5";
-            scoreInput.value = data.score === "-:-" ? "" : data.score;
-            
-            // Speichern-Button
-            const saveBtn = document.createElement("button");
-            saveBtn.textContent = "✓";
-            saveBtn.onclick = () => updateMatch(child.key, scoreInput.value);
-            
-            // Löschen-Button
-            const delBtn = document.createElement("button");
-            delBtn.textContent = "🗑️";
-            delBtn.onclick = () => remove(ref(db, "matches/" + child.key));
-            
-            li.appendChild(scoreInput);
-            li.appendChild(saveBtn);
-            li.appendChild(delBtn);
             matchList.appendChild(li);
         });
     });
 }
 
-// ERGEBNIS SPEICHERN UND SPIEL VERSCHIEBEN
-export function updateMatch(matchId, score) {
-    if (!/^10:\d+$|^\d+:10$/.test(score)) return;
-    const matchRef = ref(db, `matches/${matchId}`);
-    onValue(matchRef, (snapshot) => {
-        const data = snapshot.val();
-        if (data) {
-            push(ref(db, "results"), { teamA: data.teamA, teamB: data.teamB, score });
-            remove(ref(db, `matches/${matchId}`));
-        }
-    }, { onlyOnce: true });
+// TEAM HINZUFÜGEN
+export function addTeam() {
+    const teamName = document.getElementById("teamName").value;
+    const player1 = document.getElementById("player1").value;
+    const player2 = document.getElementById("player2").value;
+    if (teamName && player1 && player2) {
+        push(ref(db, "teams"), { name: teamName, player1, player2 }).then(() => loadTeams());
+    }
 }
 
-// RESULTATE LADEN (mit Zurücksetzen-Button)
-export function loadResults() {
-    const resultsRef = ref(db, "results");
-    onValue(resultsRef, (snapshot) => {
-        const resultsTable = document.getElementById("resultsTable");
-        if (!resultsTable) return;
-        resultsTable.innerHTML = "";
-        snapshot.forEach((childSnapshot) => {
-            const match = childSnapshot.val();
-            const row = document.createElement("tr");
-            row.innerHTML = `
-                <td>${match.teamA}</td>
-                <td>${match.teamB}</td>
-                <td>${match.score}</td>
-                <td><button onclick="resetMatch('${childSnapshot.key}', '${match.teamA}', '${match.teamB}')">🔄 Zurücksetzen</button></td>
-            `;
-            resultsTable.appendChild(row);
-        });
-    });
-}
-
-// SPIEL ZURÜCKSETZEN (von Resultate zu Offene Spiele)
-export function resetMatch(matchId, teamA, teamB) {
-    remove(ref(db, `results/${matchId}`)).then(() => {
-        push(ref(db, "matches"), { teamA, teamB, score: "-:-" });
-    });
+// SPIEL HINZUFÜGEN
+export function addMatch() {
+    const teamA = document.getElementById("teamA").value;
+    const teamB = document.getElementById("teamB").value;
+    if (teamA && teamB && teamA !== teamB) {
+        push(ref(db, "matches"), { teamA, teamB, score: "-:-" }).then(() => loadMatches());
+    }
 }
 
 // ALLES LADEN
@@ -142,3 +100,8 @@ window.onload = function () {
     loadMatches();
     loadResults();
 };
+
+// Debugging: Sicherstellen, dass Funktionen global verfügbar sind
+window.resetMatch = resetMatch;
+window.addTeam = addTeam;
+window.addMatch = addMatch;

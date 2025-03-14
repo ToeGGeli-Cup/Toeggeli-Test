@@ -20,6 +20,21 @@
         #adminPanel {
             display: none;
         }
+        table {
+            width: 80%;
+            margin: 10px auto;
+            border-collapse: collapse;
+            background-color: white;
+            color: black;
+        }
+        th, td {
+            padding: 10px;
+            border: 1px solid black;
+        }
+        th {
+            background-color: #0059B2;
+            color: white;
+        }
     </style>
 </head>
 <body>
@@ -32,92 +47,98 @@
     </div>
 
     <div id="adminPanel">
-        <h2>Ergebnis eintragen</h2>
-        <form id="resultForm">
-            <label for="team1">Team 1:</label>
-            <select id="team1" required></select>
-
-            <label for="score1">Tore Team 1:</label>
-            <input type="number" id="score1" min="0" max="10" required>
-
-            <label for="team2">Team 2:</label>
-            <select id="team2" required></select>
-
-            <label for="score2">Tore Team 2:</label>
-            <input type="number" id="score2" min="0" max="10" required>
-
-            <button type="submit">Ergebnis speichern</button>
-        </form>
+        <h2>Spiele verwalten</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Team 1</th>
+                    <th>Tore Team 1</th>
+                    <th>Team 2</th>
+                    <th>Tore Team 2</th>
+                    <th>Aktionen</th>
+                </tr>
+            </thead>
+            <tbody id="games"></tbody>
+        </table>
     </div>
 
     <script>
         const ADMIN_PASSWORD = "admin";
-        const API_URL = "https://script.google.com/macros/s/AKfycbzNuNsSGx0ejODWgqvuHYIbhvHVwm6iDeWQDmZW72aueu6FmtU-1owkV7w52kftUg-fBw/exec";
+        const API_URL = "https://script.google.com/macros/s/AKfycbxTkCHXu8dkfwfNz9p5Qm5FD0NdHu7medSQ2aNg34IAE7tDWzkGFmmn9Nyz4P0wfR27/exec";
 
         function checkPassword() {
             const inputPassword = document.getElementById("password").value;
             if (inputPassword === ADMIN_PASSWORD) {
                 document.getElementById("login").style.display = "none";
                 document.getElementById("adminPanel").style.display = "block";
+                loadGames();
             } else {
                 alert("Falsches Passwort!");
             }
         }
 
-        document.addEventListener("DOMContentLoaded", () => {
-            const form = document.getElementById("resultForm");
-            const team1Select = document.getElementById("team1");
-            const team2Select = document.getElementById("team2");
+        async function loadGames() {
+            try {
+                const response = await fetch(`${API_URL}?action=getGames`);
+                const games = await response.json();
+                const tableBody = document.getElementById("games");
+                tableBody.innerHTML = "";
+                games.forEach(game => {
+                    const tr = document.createElement("tr");
+                    tr.innerHTML = `
+                        <td>${game.team1}</td>
+                        <td><input type="number" value="${game.score1}" min="0"></td>
+                        <td>${game.team2}</td>
+                        <td><input type="number" value="${game.score2}" min="0"></td>
+                        <td>
+                            <button onclick="saveResult('${game.team1}', '${game.team2}', this)">Speichern</button>
+                            <button onclick="deleteGame('${game.team1}', '${game.team2}')">Löschen</button>
+                        </td>
+                    `;
+                    tableBody.appendChild(tr);
+                });
+            } catch (error) {
+                console.error("Fehler beim Laden der Spiele:", error);
+            }
+        }
 
-            const sheetTeams = [
-                "LB Strikers", "GGoldies", "Team Watos", "Inter Madrid", "UnderdoGGs",
-                "Make Kitchen Great Again", "GGschirrSpüeler", "Asian Warriors", "m&m's",
-                "FGGK", "Die Bär-Tiger", "Yalla Tarek!", "Alph Irte",
-                "GGrundsätzlich GGwünnorientiert", "OKayKay"
-            ];
+        async function saveResult(team1, team2, button) {
+            const row = button.parentElement.parentElement;
+            const score1 = row.children[1].querySelector("input").value;
+            const score2 = row.children[3].querySelector("input").value;
 
-            sheetTeams.forEach(team => {
-                const option1 = document.createElement("option");
-                option1.value = team;
-                option1.textContent = team;
-                team1Select.appendChild(option1);
+            if (score1 === "" || score2 === "") {
+                alert("Bitte beide Tore eintragen!");
+                return;
+            }
 
-                const option2 = document.createElement("option");
-                option2.value = team;
-                option2.textContent = team;
-                team2Select.appendChild(option2);
-            });
+            try {
+                await fetch(API_URL, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ action: "saveResult", team1, score1, team2, score2 })
+                });
+                alert("Ergebnis gespeichert!");
+                loadGames();
+            } catch (error) {
+                console.error("Fehler beim Speichern:", error);
+            }
+        }
 
-            form.addEventListener("submit", async (event) => {
-                event.preventDefault();
-                const team1 = team1Select.value;
-                const score1 = document.getElementById("score1").value;
-                const team2 = team2Select.value;
-                const score2 = document.getElementById("score2").value;
-
-                if (team1 === team2) {
-                    alert("Ein Team kann nicht gegen sich selbst spielen!");
-                    return;
-                }
-
-                const data = { team1, score1, team2, score2 };
-
-                try {
-                    const response = await fetch(API_URL, {
-                        method: "POST",
-                        mode: "no-cors", // CORS umgehen
-                        headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify(data)
-                    });
-
-                    alert("Ergebnis gespeichert!");
-                    form.reset();
-                } catch (error) {
-                    console.error("Fehler beim Senden der Daten:", error);
-                    alert("Fehler beim Speichern des Ergebnisses! Siehe Konsole für Details.");
-                }
-            });
-        });
+        async function deleteGame(team1, team2) {
+            if (!confirm("Möchtest du dieses Spiel wirklich löschen?")) return;
+            try {
+                await fetch(API_URL, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ action: "deleteGame", team1, team2 })
+                });
+                alert("Spiel gelöscht!");
+                loadGames();
+            } catch (error) {
+                console.error("Fehler beim Löschen:", error);
+            }
+        }
     </script>
 </body>
 </html>

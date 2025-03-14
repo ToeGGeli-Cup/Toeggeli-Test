@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - TöGGeli-Cup</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin: 20px;
+            background-color: #333;
+            color: white;
+        }
+        input, select, button {
+            padding: 10px;
+            margin: 5px;
+            font-size: 16px;
+        }
+        #adminPanel {
+            display: none; /* Versteckt das Admin-Panel bis zur Passwort-Eingabe */
+        }
+    </style>
+</head>
+<body>
+    <h1>Admin-Bereich</h1>
+
+    <div id="login">
+        <label for="password">Passwort:</label>
+        <input type="password" id="password">
+        <button onclick="checkPassword()">Login</button>
+    </div>
+
+    <div id="adminPanel">
+        <h2>Ergebnis eintragen</h2>
+        <form id="resultForm">
+            <label for="team1">Team 1:</label>
+            <select id="team1" required></select>
+
+            <label for="score1">Tore Team 1:</label>
+            <input type="number" id="score1" min="0" max="10" required>
+
+            <label for="team2">Team 2:</label>
+            <select id="team2" required></select>
+
+            <label for="score2">Tore Team 2:</label>
+            <input type="number" id="score2" min="0" max="10" required>
+
+            <button type="submit">Ergebnis speichern</button>
+        </form>
+    </div>
+
+    <script>
+        const ADMIN_PASSWORD = "DEIN_SICHERES_PASSWORT"; // Ändere hier das Passwort
+        const API_URL = "https://script.google.com/macros/s/DEINE_GOOGLE_APPS_SCRIPT_URL/exec"; // Hier deine URL einfügen
+
+        function checkPassword() {
+            const inputPassword = document.getElementById("password").value;
+            if (inputPassword === ADMIN_PASSWORD) {
+                document.getElementById("login").style.display = "none";
+                document.getElementById("adminPanel").style.display = "block";
+            } else {
+                alert("Falsches Passwort!");
+            }
+        }
+
+        document.addEventListener("DOMContentLoaded", () => {
+            const form = document.getElementById("resultForm");
+            const team1Select = document.getElementById("team1");
+            const team2Select = document.getElementById("team2");
+
+            const sheetTeams = [
+                "LB Strikers", "GGoldies", "Team Watos", "Inter Madrid", "UnderdoGGs",
+                "Make Kitchen Great Again", "GGschirrSpüeler", "Asian Warriors", "m&m's",
+                "FGGK", "Die Bär-Tiger", "Yalla Tarek!", "Alph Irte",
+                "GGrundsätzlich GGwünnorientiert", "OKayKay"
+            ];
+
+            // Teams in die Dropdowns laden
+            sheetTeams.forEach(team => {
+                const option1 = document.createElement("option");
+                option1.value = team;
+                option1.textContent = team;
+                team1Select.appendChild(option1);
+
+                const option2 = document.createElement("option");
+                option2.value = team;
+                option2.textContent = team;
+                team2Select.appendChild(option2);
+            });
+
+            form.addEventListener("submit", async (event) => {
+                event.preventDefault();
+
+                const team1 = team1Select.value;
+                const score1 = document.getElementById("score1").value;
+                const team2 = team2Select.value;
+                const score2 = document.getElementById("score2").value;
+
+                if (team1 === team2) {
+                    alert("Ein Team kann nicht gegen sich selbst spielen!");
+                    return;
+                }
+
+                const data = { team1, score1, team2, score2 };
+
+                try {
+                    const response = await fetch(API_URL, {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify(data)
+                    });
+
+                    const result = await response.text();
+                    alert("Ergebnis gespeichert!");
+                    form.reset();
+                } catch (error) {
+                    console.error("Fehler:", error);
+                    alert("Fehler beim Speichern des Ergebnisses!");
+                }
+            });
+        });
+    </script>
+</body>
+</html>

@@ -88,7 +88,8 @@
 
     <script>
         const sheetId = "1qUf-YbZCdAwf5aHhdMRa2yrrqn1WRTNeZhDOwTYTPgk";
-        async function loadSheet(sheetName, targetId) {
+        
+        async function loadSheet(sheetName, targetId, processFunction = null) {
             const url = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:json&sheet=${sheetName}`;
             try {
                 const response = await fetch(url);
@@ -96,11 +97,18 @@
                 const json = JSON.parse(text.substr(47).slice(0, -2));
                 const tableBody = document.getElementById(targetId);
                 tableBody.innerHTML = "";
-                json.table.rows.forEach(row => {
+                
+                let data = json.table.rows.map(row => row.c.map(cell => cell ? cell.v : ""));
+                
+                if (processFunction) {
+                    data = processFunction(data);
+                }
+                
+                data.forEach(row => {
                     const tr = document.createElement("tr");
-                    row.c.forEach(cell => {
+                    row.forEach(cell => {
                         const td = document.createElement("td");
-                        td.textContent = cell ? cell.v : "";
+                        td.textContent = cell;
                         tr.appendChild(td);
                     });
                     tableBody.appendChild(tr);
@@ -109,15 +117,29 @@
                 console.error("Fehler beim Laden der Daten:", error);
             }
         }
-
+        
+        function sortRanking(data) {
+            return data
+                .map(row => ({
+                    team: row[1],
+                    points: parseInt(row[2]) || 0,
+                    games: parseInt(row[3]) || 0,
+                    goals: parseInt(row[4]) || 0,
+                    conceded: parseInt(row[5]) || 0,
+                    diff: parseInt(row[6]) || 0
+                }))
+                .sort((a, b) => b.points - a.points || b.diff - a.diff || b.goals - a.goals)
+                .map((team, index) => [index + 1, team.team, team.points, team.games, team.goals, team.conceded, team.diff]);
+        }
+        
         function loadAllData() {
             loadSheet("News", "news");
             loadSheet("Teams", "teams");
             loadSheet("Offene Spiele", "open-matches");
             loadSheet("Resultate", "results");
-            loadSheet("Rangliste", "ranking");
+            loadSheet("Rangliste", "ranking", sortRanking);
         }
-
+        
         loadAllData();
     </script>
 </body>

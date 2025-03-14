@@ -6,7 +6,7 @@
     <meta http-equiv="Cache-Control" content="max-age=0, no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
-    <title>TöGGeli-Cup 2025</title>
+    <title>TÃ¶GGeli-Cup 2025</title>
     <style>
         body { 
             font-family: Arial, sans-serif; 
@@ -47,7 +47,7 @@
     </style>
 </head>
 <body>
-    <h1>TöGGeli-Cup 2025</h1>
+    <h1>TÃ¶GGeli-Cup 2025</h1>
 
     <div class="news-container">
         <h2>News</h2>
@@ -97,6 +97,7 @@
                 const tableBody = document.getElementById(targetId);
                 tableBody.innerHTML = "";
                 json.table.rows.forEach(row => {
+                    if (!row.c[0] || row.c.every(cell => !cell)) return; // Ãœberspringt leere Zeilen
                     const tr = document.createElement("tr");
                     row.c.forEach(cell => {
                         const td = document.createElement("td");

@@ -78,26 +78,34 @@
         
         async function loadGames() {
             try {
-                const response = await fetch(API_URL + "?type=getGames");
+                const response = await fetch(API_URL + "?type=getGames", { mode: 'cors' });
                 const games = await response.json();
+
+                if (!games || games.length === 0) {
+                    throw new Error("Keine Spiele gefunden!");
+                }
+
                 const tableBody = document.getElementById("gamesTable");
                 tableBody.innerHTML = "";
                 
                 games.forEach(game => {
-                    const tr = document.createElement("tr");
+                    const team1 = game.team1 ? game.team1 : "Unbekannt";
+                    const team2 = game.team2 ? game.team2 : "Unbekannt";
                     
+                    const tr = document.createElement("tr");
                     tr.innerHTML = `
-                        <td>${game.team1}</td>
+                        <td>${team1}</td>
                         <td><input type="number" value="${game.score1 || ''}" min="0" max="10"></td>
-                        <td>${game.team2}</td>
+                        <td>${team2}</td>
                         <td><input type="number" value="${game.score2 || ''}" min="0" max="10"></td>
-                        <td><button onclick="saveGame('${game.team1}', '${game.team2}', this)">Speichern</button></td>
+                        <td><button onclick="saveGame('${team1}', '${team2}', this)">Speichern</button></td>
                     `;
                     
                     tableBody.appendChild(tr);
                 });
             } catch (error) {
                 console.error("Fehler beim Laden der Spiele:", error);
+                alert("Fehler beim Laden der Spiele! Siehe Konsole.");
             }
         }
 

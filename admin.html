@@ -17,23 +17,23 @@
             margin: 5px;
             font-size: 16px;
         }
-        #adminPanel {
-            display: none;
-        }
         table {
             width: 80%;
-            margin: 10px auto;
+            margin: 20px auto;
             border-collapse: collapse;
-            background-color: white;
-            color: black;
         }
         th, td {
             padding: 10px;
             border: 1px solid black;
+            background-color: white;
+            color: black;
         }
         th {
             background-color: #0059B2;
             color: white;
+        }
+        #adminPanel {
+            display: none;
         }
     </style>
 </head>
@@ -58,14 +58,14 @@
                     <th>Aktionen</th>
                 </tr>
             </thead>
-            <tbody id="games"></tbody>
+            <tbody id="gamesTable"></tbody>
         </table>
     </div>
 
     <script>
         const ADMIN_PASSWORD = "admin";
         const API_URL = "https://script.google.com/macros/s/AKfycbxTkCHXu8dkfwfNz9p5Qm5FD0NdHu7medSQ2aNg34IAE7tDWzkGFmmn9Nyz4P0wfR27/exec";
-
+        
         function checkPassword() {
             const inputPassword = document.getElementById("password").value;
             if (inputPassword === ADMIN_PASSWORD) {
@@ -76,25 +76,25 @@
                 alert("Falsches Passwort!");
             }
         }
-
+        
         async function loadGames() {
             try {
-                const response = await fetch(`${API_URL}?action=getGames`);
+                const response = await fetch(API_URL + "?type=getGames");
                 const games = await response.json();
-                const tableBody = document.getElementById("games");
+                const tableBody = document.getElementById("gamesTable");
                 tableBody.innerHTML = "";
+                
                 games.forEach(game => {
                     const tr = document.createElement("tr");
+                    
                     tr.innerHTML = `
                         <td>${game.team1}</td>
-                        <td><input type="number" value="${game.score1}" min="0"></td>
+                        <td><input type="number" value="${game.score1 || ''}" min="0" max="10"></td>
                         <td>${game.team2}</td>
-                        <td><input type="number" value="${game.score2}" min="0"></td>
-                        <td>
-                            <button onclick="saveResult('${game.team1}', '${game.team2}', this)">Speichern</button>
-                            <button onclick="deleteGame('${game.team1}', '${game.team2}')">Löschen</button>
-                        </td>
+                        <td><input type="number" value="${game.score2 || ''}" min="0" max="10"></td>
+                        <td><button onclick="saveGame('${game.team1}', '${game.team2}', this)">Speichern</button></td>
                     `;
+                    
                     tableBody.appendChild(tr);
                 });
             } catch (error) {
@@ -102,41 +102,29 @@
             }
         }
 
-        async function saveResult(team1, team2, button) {
+        async function saveGame(team1, team2, button) {
             const row = button.parentElement.parentElement;
             const score1 = row.children[1].querySelector("input").value;
             const score2 = row.children[3].querySelector("input").value;
-
+            
             if (score1 === "" || score2 === "") {
-                alert("Bitte beide Tore eintragen!");
+                alert("Bitte beide Tore eingeben!");
                 return;
             }
-
+            
+            const data = { team1, score1, team2, score2 };
+            
             try {
                 await fetch(API_URL, {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ action: "saveResult", team1, score1, team2, score2 })
+                    body: JSON.stringify(data)
                 });
-                alert("Ergebnis gespeichert!");
+                alert("Spiel gespeichert!");
                 loadGames();
             } catch (error) {
-                console.error("Fehler beim Speichern:", error);
-            }
-        }
-
-        async function deleteGame(team1, team2) {
-            if (!confirm("Möchtest du dieses Spiel wirklich löschen?")) return;
-            try {
-                await fetch(API_URL, {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ action: "deleteGame", team1, team2 })
-                });
-                alert("Spiel gelöscht!");
-                loadGames();
-            } catch (error) {
-                console.error("Fehler beim Löschen:", error);
+                console.error("Fehler beim Speichern des Spiels:", error);
+                alert("Fehler beim Speichern des Ergebnisses!");
             }
         }
     </script>

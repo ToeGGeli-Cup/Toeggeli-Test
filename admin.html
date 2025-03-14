@@ -18,7 +18,7 @@
             font-size: 16px;
         }
         #adminPanel {
-            display: none; /* Versteckt das Admin-Panel bis zur Passwort-Eingabe */
+            display: none;
         }
     </style>
 </head>
@@ -51,8 +51,8 @@
     </div>
 
     <script>
-        const ADMIN_PASSWORD = "admin"; // Ändere hier das Passwort
-        const API_URL = "https://script.google.com/macros/s/AKfycbxgZscznKO_kyzMYTz3dp5uu1RxpM2ah6xofSWe9v2-KWWfDIYAMZXM9SUUmml3pAttgQ/exec"; // Deine API-URL
+        const ADMIN_PASSWORD = "admin";
+        const API_URL = "https://script.google.com/macros/s/AKfycbxTkCHXu8dkfwfNz9p5Qm5FD0NdHu7medSQ2aNg34IAE7tDWzkGFmmn9Nyz4P0wfR27/exec";
 
         function checkPassword() {
             const inputPassword = document.getElementById("password").value;
@@ -76,7 +76,6 @@
                 "GGrundsätzlich GGwünnorientiert", "OKayKay"
             ];
 
-            // Teams in die Dropdowns laden
             sheetTeams.forEach(team => {
                 const option1 = document.createElement("option");
                 option1.value = team;
@@ -91,7 +90,6 @@
 
             form.addEventListener("submit", async (event) => {
                 event.preventDefault();
-
                 const team1 = team1Select.value;
                 const score1 = document.getElementById("score1").value;
                 const team2 = team2Select.value;
@@ -112,17 +110,13 @@
                         body: JSON.stringify(data)
                     });
 
-                    if (!response.ok) {
-                        throw new Error(`Server antwortete mit Status: ${response.status}`);
-                    }
-
                     const result = await response.json();
-                    
+
                     if (result.status === "success") {
                         alert("Ergebnis gespeichert!");
                         form.reset();
                     } else {
-                        alert("Fehler beim Speichern des Ergebnisses!");
+                        alert("Fehler: " + result.message);
                         console.error("Fehler:", result.message);
                     }
                 } catch (error) {

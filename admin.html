@@ -3,11 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="max-age=0, no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
     <title>Admin - TöGGeli-Cup 2025</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #5B3A2E;
+        body { 
+            font-family: Arial, sans-serif; 
+            background-color: #5B3A2E; 
             color: white;
             text-align: center;
             margin: 20px;
@@ -15,126 +18,136 @@
         h1 {
             font-weight: bold;
         }
-        .table-container {
-            width: 100%;
-            max-width: 800px;
-            margin: auto;
-            background: white;
-            color: black;
-            padding: 20px;
-            border-radius: 10px;
-        }
         table {
-            width: 100%;
+            width: 80%;
+            margin: 10px auto;
             border-collapse: collapse;
         }
         th, td {
             padding: 10px;
             border: 1px solid black;
-            text-align: center;
+            background-color: white;
+            color: black;
         }
         th {
             background-color: #0059B2;
             color: white;
         }
-        .edit-input {
-            width: 50px;
-            text-align: center;
-        }
         button {
-            padding: 10px;
-            margin-top: 10px;
+            padding: 5px 10px;
             background-color: #D81B60;
             color: white;
             border: none;
             cursor: pointer;
-            border-radius: 5px;
-        }
-        button:hover {
-            background-color: #b0154d;
         }
     </style>
 </head>
 <body>
-
-    <h1>Admin - Spiele bearbeiten</h1>
-    <div class="table-container">
-        <table>
-            <thead>
-                <tr>
-                    <th>Team 1</th>
-                    <th>Tore Team 1</th>
-                    <th>Team 2</th>
-                    <th>Tore Team 2</th>
-                    <th>Aktion</th>
-                </tr>
-            </thead>
-            <tbody id="games"></tbody>
-        </table>
-    </div>
-
+    <h1>Admin-Bereich</h1>
+    <h2>Spiele verwalten</h2>
+    <table>
+        <thead>
+            <tr><th>Team 1</th><th>Tore Team 1</th><th>Team 2</th><th>Tore Team 2</th><th>Aktionen</th></tr>
+        </thead>
+        <tbody id="games"></tbody>
+    </table>
+    
     <script>
-        const API_URL = "https://script.google.com/macros/s/AKfycbxvnVcyrBXLtwlqPo7MzqfsQfGtARdMgXkiUOAqcY7gfO7gqbC-eJ0NN3WKhkYk61EjEg/exec"; // Ersetze dies mit deiner Google Apps Script Web-App URL
-
-        async function fetchGames() {
+        const API_URL = "https://script.google.com/macros/s/AKfycbxnfXUhZa2CWbHEUmihVMTdq4jBOSR28opZS64n-QDArRoxGWZCkiwyicgLlDUVkbBX_g/exec";
+        
+        async function loadGames() {
             try {
-                const response = await fetch(API_URL);
-                const games = await response.json();
+                console.log("Lade Spiele von API...");
+                const response = await fetch(`${API_URL}?type=getGames`, { mode: 'cors' });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP-Fehler! Status: ${response.status}`);
+                }
+                
+                const text = await response.text();
+                console.log("Antwort erhalten:", text);
+                
+                let games;
+                try {
+                    games = JSON.parse(text);
+                } catch (jsonError) {
+                    throw new Error("Fehler beim Parsen der API-Antwort als JSON: " + jsonError.message);
+                }
+                
+                if (!Array.isArray(games)) {
+                    throw new Error("Ungültige API-Antwort: Erwartetes Array nicht erhalten.");
+                }
+                
                 const tableBody = document.getElementById("games");
                 tableBody.innerHTML = "";
-
-                games.forEach((game, index) => {
+                
+                games.forEach(game => {
                     const tr = document.createElement("tr");
+                    
+                    ["team1", "score1", "team2", "score2"].forEach((key, index) => {
+                        const td = document.createElement("td");
+                        if (index % 2 === 1) {
+                            const input = document.createElement("input");
+                            input.type = "number";
+                            input.value = game[key] || "";
+                            input.dataset.key = key;
+                            input.dataset.team1 = game.team1;
+                            input.dataset.team2 = game.team2;
+                            td.appendChild(input);
+                        } else {
+                            td.textContent = game[key] || "-";
+                        }
+                        tr.appendChild(td);
+                    });
 
-                    tr.innerHTML = `
-                        <td>${game.team1}</td>
-                        <td><input type="number" class="edit-input" value="${game.score1}" id="score1-${index}"></td>
-                        <td>${game.team2}</td>
-                        <td><input type="number" class="edit-input" value="${game.score2}" id="score2-${index}"></td>
-                        <td><button onclick="updateGame(${index}, '${game.team1}', '${game.team2}')">Speichern</button></td>
-                    `;
-
+                    const saveButton = document.createElement("button");
+                    saveButton.textContent = "Speichern";
+                    saveButton.onclick = () => saveGame(tr);
+                    const td = document.createElement("td");
+                    td.appendChild(saveButton);
+                    tr.appendChild(td);
+                    
                     tableBody.appendChild(tr);
                 });
             } catch (error) {
                 console.error("Fehler beim Laden der Spiele:", error);
+                alert("Fehler beim Laden der Spiele: " + error.message);
             }
         }
 
-        async function updateGame(index, team1, team2) {
-            const score1 = document.getElementById(`score1-${index}`).value;
-            const score2 = document.getElementById(`score2-${index}`).value;
-
-            const requestData = {
-                team1: team1,
-                score1: score1,
-                team2: team2,
-                score2: score2
+        async function saveGame(row) {
+            const inputs = row.querySelectorAll("input");
+            const data = {
+                team1: inputs[0].dataset.team1,
+                team2: inputs[0].dataset.team2,
+                score1: inputs[0].value,
+                score2: inputs[1].value
             };
+            
+            console.log("Speichere Spiel:", data);
 
             try {
                 const response = await fetch(API_URL, {
                     method: "POST",
-                    headers: {
-                        "Content-Type": "application/json"
-                    },
-                    body: JSON.stringify(requestData)
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(data)
                 });
-
-                const result = await response.json();
-                if (result.success) {
-                    alert("Spielergebnis aktualisiert!");
-                    fetchGames();
-                } else {
-                    alert("Fehler beim Aktualisieren!");
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP-Fehler! Status: ${response.status}`);
                 }
+                
+                const result = await response.text();
+                console.log("Antwort von API:", result);
+                alert("Spiel erfolgreich gespeichert!");
+                loadGames();
             } catch (error) {
-                console.error("Fehler beim Aktualisieren:", error);
+                console.error("Fehler beim Speichern des Spiels:", error);
+                alert("Fehler beim Speichern des Spiels: " + error.message);
             }
         }
 
-        fetchGames();
+        loadGames();
     </script>
-
 </body>
 </html>

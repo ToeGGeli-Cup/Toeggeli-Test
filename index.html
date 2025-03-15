@@ -18,112 +18,88 @@
         h1, h2 {
             font-weight: bold;
         }
+        .container {
+            width: 95%;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
         .news-container {
-            width: 80%;
+            width: 100%;
+            max-width: 800px;
             margin: 20px auto;
             padding: 15px;
             background-color: #D81B60;
             border-radius: 10px;
+            text-align: left;
+        }
+        .news-container h2 {
             text-align: center;
-            overflow-x: auto;
         }
         table {
-            width: 80%;
+            width: 100%;
+            max-width: 800px;
             margin: 10px auto;
             border-collapse: collapse;
+            overflow-x: auto;
+            display: block;
         }
         th, td {
             padding: 10px;
             border: 1px solid black;
             background-color: white;
             color: black;
+            text-align: center;
         }
         th {
             background-color: #0059B2;
             color: white;
         }
-        
-        /* Mobile Optimierung */
         @media screen and (max-width: 768px) {
-            body {
-                font-size: 14px;
-            }
-            h1 {
-                font-size: 22px;
-            }
-            h2 {
-                font-size: 20px;
-            }
-            .news-container {
-                width: 95%;
-                padding: 10px;
-            }
             table {
-                width: 100%;
                 display: block;
                 overflow-x: auto;
                 white-space: nowrap;
             }
             th, td {
-                padding: 8px;
-                font-size: 12px;
-            }
-            thead {
-                display: none;
-            }
-            tbody, tr, td {
-                display: block;
-                width: 100%;
-            }
-            tr {
-                margin-bottom: 15px;
-                border-bottom: 2px solid #5B3A2E;
-            }
-            td {
-                text-align: left;
-                padding-left: 50%;
-                position: relative;
-            }
-            td:before {
-                content: attr(data-label);
-                position: absolute;
-                left: 10px;
-                font-weight: bold;
+                padding: 5px;
+                font-size: 14px;
             }
         }
     </style>
 </head>
 <body>
     <h1>TöGGeli-Cup 2025</h1>
+    
+    <div class="container">
+        <div class="news-container">
+            <h2>News</h2>
+            <div id="news"></div>
+        </div>
 
-    <div class="news-container">
-        <h2>News</h2>
-        <div id="news"></div>
+        <h2>Teams</h2>
+        <table>
+            <thead>
+                <tr><th>Teamname</th><th>Spieler:in 1</th><th>Spieler:in 2</th></tr>
+            </thead>
+            <tbody id="teams"></tbody>
+        </table>
+
+        <h2>Spiele</h2>
+        <table>
+            <thead>
+                <tr><th>Team 1</th><th>vs</th><th>Team 2</th></tr>
+            </thead>
+            <tbody id="games"></tbody>
+        </table>
+
+        <h2>Rangliste</h2>
+        <table>
+            <thead>
+                <tr><th>Platz</th><th>Team</th><th>Punkte</th><th>Spiele</th><th>Tore</th><th>Gegentore</th><th>Tordifferenz</th></tr>
+            </thead>
+            <tbody id="ranking"></tbody>
+        </table>
     </div>
-
-    <h2>Teams</h2>
-    <table>
-        <thead>
-            <tr><th>Teamname</th><th>Spieler:in 1</th><th>Spieler:in 2</th></tr>
-        </thead>
-        <tbody id="teams"></tbody>
-    </table>
-
-    <h2>Spiele</h2>
-    <table>
-        <thead>
-            <tr><th>Team 1</th><th>Tore Team 1</th><th>Team 2</th><th>Tore Team 2</th></tr>
-        </thead>
-        <tbody id="games"></tbody>
-    </table>
-
-    <h2>Rangliste</h2>
-    <table>
-        <thead>
-            <tr><th>Platz</th><th>Team</th><th>Punkte</th><th>Spiele</th><th>Tore</th><th>Gegentore</th><th>Tordifferenz</th></tr>
-        </thead>
-        <tbody id="ranking"></tbody>
-    </table>
 
     <script>
         const sheetId = "1qUf-YbZCdAwf5aHhdMRa2yrrqn1WRTNeZhDOwTYTPgk";
@@ -145,10 +121,9 @@
 
                 data.forEach(row => {
                     const tr = document.createElement("tr");
-                    row.forEach((cell, index) => {
+                    row.forEach(cell => {
                         const td = document.createElement("td");
                         td.textContent = cell;
-                        td.setAttribute("data-label", document.querySelector(`thead tr th:nth-child(${index + 1})`).textContent);
                         tr.appendChild(td);
                     });
                     tableBody.appendChild(tr);
@@ -158,11 +133,48 @@
             }
         }
 
+        function processGames(data) {
+            return data.sort((a, b) => {
+                const hasScoreA = a[1] !== "" && a[3] !== "";
+                const hasScoreB = b[1] !== "" && b[3] !== "";
+                return hasScoreA - hasScoreB;
+            });
+        }
+
+        function sortRanking(data) {
+            let ranking = {};
+            data.forEach(row => {
+                const [team1, score1, team2, score2] = row;
+                if (!(team1 in ranking)) ranking[team1] = { team: team1, points: 0, games: 0, goals: 0, conceded: 0 };
+                if (!(team2 in ranking)) ranking[team2] = { team: team2, points: 0, games: 0, goals: 0, conceded: 0 };
+                
+                if (score1 !== "" && score2 !== "") {
+                    ranking[team1].games++;
+                    ranking[team2].games++;
+                    ranking[team1].goals += parseInt(score1, 10);
+                    ranking[team2].goals += parseInt(score2, 10);
+                    ranking[team1].conceded += parseInt(score2, 10);
+                    ranking[team2].conceded += parseInt(score1, 10);
+                    if (parseInt(score1, 10) > parseInt(score2, 10)) ranking[team1].points += 1;
+                    if (parseInt(score2, 10) > parseInt(score1, 10)) ranking[team2].points += 1;
+                }
+            });
+
+            return Object.values(ranking)
+                .sort((a, b) => 
+                    b.points - a.points || 
+                    (b.goals - b.conceded) - (a.goals - a.conceded) || 
+                    b.goals - a.goals || 
+                    (typeof a.team === "string" && typeof b.team === "string" ? a.team.localeCompare(b.team) : 0)
+                )
+                .map((team, index) => [index + 1, team.team, team.points, team.games, team.goals, team.conceded, team.goals - team.conceded]);
+        }
+
         function loadAllData() {
             loadSheet("News", "news");
             loadSheet("Teams", "teams");
-            loadSheet("Spiele", "games");
-            loadSheet("Spiele", "ranking");
+            loadSheet("Spiele", "games", processGames);
+            loadSheet("Spiele", "ranking", sortRanking);
         }
 
         window.addEventListener("load", () => {

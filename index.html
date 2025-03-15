@@ -6,72 +6,137 @@
     <meta http-equiv="Cache-Control" content="max-age=0, no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
-    <title>Admin - TöGGeli-Cup 2025</title>
+    <title>TöGGeli-Cup 2025</title>
     <style>
         body { 
             font-family: Arial, sans-serif; 
-            background-color: #333; 
+            background-color: #5B3A2E; 
             color: white;
             text-align: center;
             margin: 20px;
         }
-        h1 {
+        h1, h2 {
             font-weight: bold;
+        }
+        .news-container {
+            width: 80%;
+            margin: 20px auto;
+            padding: 15px;
+            background-color: #D81B60;
+            border-radius: 10px;
+            text-align: left;
         }
         table {
             width: 80%;
             margin: 10px auto;
             border-collapse: collapse;
-            background-color: white;
-            color: black;
         }
         th, td {
             padding: 10px;
             border: 1px solid black;
-            text-align: center;
+            background-color: white;
+            color: black;
         }
         th {
             background-color: #0059B2;
             color: white;
         }
-        input {
-            width: 50px;
-            text-align: center;
-        }
-        button {
-            background-color: #D81B60;
-            color: white;
-            border: none;
-            padding: 5px 10px;
-            cursor: pointer;
-        }
     </style>
 </head>
 <body>
-    <h1>Admin-Bereich</h1>
-    <h2>Spiele verwalten</h2>
+    <h1>TöGGeli-Cup 2025</h1>
+
+    <div class="news-container">
+        <h2>News</h2>
+        <div id="news"></div>
+    </div>
+
+    <h2>Teams</h2>
     <table>
         <thead>
-            <tr><th>Team 1</th><th>Tore Team 1</th><th>Team 2</th><th>Tore Team 2</th><th>Aktionen</th></tr>
+            <tr><th>Teamname</th><th>Spieler:in 1</th><th>Spieler:in 2</th></tr>
         </thead>
-        <tbody id="admin-games"></tbody>
+        <tbody id="teams"></tbody>
+    </table>
+
+    <h2>Spiele</h2>
+    <table>
+        <thead>
+            <tr><th>Team 1</th><th>Tore Team 1</th><th>Team 2</th><th>Tore Team 2</th></tr>
+        </thead>
+        <tbody id="games"></tbody>
+    </table>
+
+    <h2>Rangliste</h2>
+    <table>
+        <thead>
+            <tr><th>Platz</th><th>Team</th><th>Punkte</th><th>Spiele</th><th>Tore</th><th>Gegentore</th><th>Tordifferenz</th></tr>
+        </thead>
+        <tbody id="ranking"></tbody>
     </table>
 
     <script>
-        const API_URL = "https://script.google.com/macros/s/YOUR_API_URL_HERE/exec";
-
-        async function loadGames() {
+        const sheetId = "1qUf-YbZCdAwf5aHhdMRa2yrrqn1WRTNeZhDOwTYTPgk";
+        
+        async function loadSheet(sheetName, targetId, processFunction = null) {
+            const url = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:json&sheet=${sheetName}`;
             try {
-                const response = await fetch(`${API_URL}?type=getGames`);
-                const games = await response.json();
-                const tableBody = document.getElementById("admin-games");
+                const response = await fetch(url);
+                const text = await response.text();
+                const json = JSON.parse(text.substr(47).slice(0, -2));
+                const tableBody = document.getElementById(targetId);
                 tableBody.innerHTML = "";
                 
-                games.forEach(game => {
+                let data = json.table.rows.map(row => row.c.map(cell => cell ? cell.v : ""));
+                
+                if (processFunction) {
+                    data = processFunction(data);
+                }
+                
+                data.forEach(row => {
                     const tr = document.createElement("tr");
-                    tr.innerHTML = `
-                        <td>${game.team1}</td>
-                        <td><input type="number" value="${game.score1 || ''}" id="score1-${game.team1}-${game.team2}"></td>
-                        <td>${game.team2}</td>
-                        <td><input type="number" value="${game.score2 || ''}" id="score2-${game.team1}-${game.team2}"></td>
-                        <td><button onclick="saveGame('${game.team1}', '${game.team2}')">Speic
+                    row.forEach(cell => {
+                        const td = document.createElement("td");
+                        td.textContent = cell;
+                        tr.appendChild(td);
+                    });
+                    tableBody.appendChild(tr);
+                });
+            } catch (error) {
+                console.error("Fehler beim Laden der Daten:", error);
+            }
+        }
+
+        function processGames(data) {
+            return data.sort((a, b) => {
+                const hasScoreA = a[1] !== "" && a[3] !== "";
+                const hasScoreB = b[1] !== "" && b[3] !== "";
+                return hasScoreA - hasScoreB;
+            });
+        }
+        
+        function sortRanking(data) {
+            return data
+                .map(row => ({
+                    team: row[1],
+                    points: parseInt(row[2]) || 0,
+                    games: parseInt(row[3]) || 0,
+                    goals: parseInt(row[4]) || 0,
+                    conceded: parseInt(row[5]) || 0,
+                    diff: parseInt(row[6]) || 0
+                }))
+                .sort((a, b) => b.points - a.points || b.diff - a.diff || b.goals - a.goals || a.team.localeCompare(b.team))
+                .map((team, index) => [index + 1, team.team, team.points, team.games, team.goals, team.conceded, team.diff]);
+        }
+        
+        function loadAllData() {
+            loadSheet("News", "news");
+            loadSheet("Teams", "teams");
+            loadSheet("Spiele", "games", processGames);
+            loadSheet("Rangliste", "ranking", sortRanking);
+        }
+        
+        loadAllData();
+    </script>
+</body>
+</html>

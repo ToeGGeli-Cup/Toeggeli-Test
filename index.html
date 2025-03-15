@@ -18,16 +18,14 @@
         h1, h2 {
             font-weight: bold;
         }
-      .news-container {
+        .news-container {
             width: 80%;
             margin: 20px auto;
             padding: 15px;
             background-color: #D81B60;
             border-radius: 10px;
-            text-align: left; /* News-Texte bleiben linksbündig */
-        }
-        .news-container h2 {
-            text-align: center; /* Überschrift "News" zentrieren */
+            text-align: center;
+            overflow-x: auto;
         }
         table {
             width: 80%;
@@ -43,6 +41,55 @@
         th {
             background-color: #0059B2;
             color: white;
+        }
+        
+        /* Mobile Optimierung */
+        @media screen and (max-width: 768px) {
+            body {
+                font-size: 14px;
+            }
+            h1 {
+                font-size: 22px;
+            }
+            h2 {
+                font-size: 20px;
+            }
+            .news-container {
+                width: 95%;
+                padding: 10px;
+            }
+            table {
+                width: 100%;
+                display: block;
+                overflow-x: auto;
+                white-space: nowrap;
+            }
+            th, td {
+                padding: 8px;
+                font-size: 12px;
+            }
+            thead {
+                display: none;
+            }
+            tbody, tr, td {
+                display: block;
+                width: 100%;
+            }
+            tr {
+                margin-bottom: 15px;
+                border-bottom: 2px solid #5B3A2E;
+            }
+            td {
+                text-align: left;
+                padding-left: 50%;
+                position: relative;
+            }
+            td:before {
+                content: attr(data-label);
+                position: absolute;
+                left: 10px;
+                font-weight: bold;
+            }
         }
     </style>
 </head>
@@ -98,9 +145,10 @@
 
                 data.forEach(row => {
                     const tr = document.createElement("tr");
-                    row.forEach(cell => {
+                    row.forEach((cell, index) => {
                         const td = document.createElement("td");
                         td.textContent = cell;
+                        td.setAttribute("data-label", document.querySelector(`thead tr th:nth-child(${index + 1})`).textContent);
                         tr.appendChild(td);
                     });
                     tableBody.appendChild(tr);
@@ -110,56 +158,17 @@
             }
         }
 
-        function processGames(data) {
-            return data.sort((a, b) => {
-                const hasScoreA = a[1] !== "" && a[3] !== "";
-                const hasScoreB = b[1] !== "" && b[3] !== "";
-                return hasScoreA - hasScoreB;
-            });
-        }
-
-        function sortRanking(data) {
-            let ranking = {};
-            data.forEach(row => {
-                const [team1, score1, team2, score2] = row;
-                if (!(team1 in ranking)) ranking[team1] = { team: team1, points: 0, games: 0, goals: 0, conceded: 0 };
-                if (!(team2 in ranking)) ranking[team2] = { team: team2, points: 0, games: 0, goals: 0, conceded: 0 };
-                
-                if (score1 !== "" && score2 !== "") {
-                    ranking[team1].games++;
-                    ranking[team2].games++;
-                    ranking[team1].goals += parseInt(score1, 10);
-                    ranking[team2].goals += parseInt(score2, 10);
-                    ranking[team1].conceded += parseInt(score2, 10);
-                    ranking[team2].conceded += parseInt(score1, 10);
-                    if (parseInt(score1, 10) > parseInt(score2, 10)) ranking[team1].points += 1;
-                    if (parseInt(score2, 10) > parseInt(score1, 10)) ranking[team2].points += 1;
-                }
-            });
-
-            return Object.values(ranking)
-                .sort((a, b) => 
-                    b.points - a.points || 
-                    (b.goals - b.conceded) - (a.goals - a.conceded) || 
-                    b.goals - a.goals || 
-                    (typeof a.team === "string" && typeof b.team === "string" ? a.team.localeCompare(b.team) : 0)
-                )
-                .map((team, index) => [index + 1, team.team, team.points, team.games, team.goals, team.conceded, team.goals - team.conceded]);
-        }
-
         function loadAllData() {
             loadSheet("News", "news");
             loadSheet("Teams", "teams");
-            loadSheet("Spiele", "games", processGames);
-            loadSheet("Spiele", "ranking", sortRanking);
+            loadSheet("Spiele", "games");
+            loadSheet("Spiele", "ranking");
         }
 
-        // Automatische Aktualisierung bei jedem Öffnen der Website
         window.addEventListener("load", () => {
             loadAllData();
         });
 
-        // Regelmäßige Aktualisierung alle 30 Sekunden
         setInterval(loadAllData, 30000);
     </script>
 </body>

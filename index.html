@@ -1,128 +1,162 @@
 <!DOCTYPE html>
-<html lang="de">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="Cache-Control" content="max-age=0, no-cache, no-store, must-revalidate">
-    <meta http-equiv="Pragma" content="no-cache">
-    <meta http-equiv="Expires" content="0">
-    <title>TöGGeli-Cup 2025</title>
-    <style>
-        body { 
-            font-family: Arial, sans-serif; 
-            background-color: #5B3A2E; 
-            color: white;
-            text-align: center;
-            margin: 20px;
-        }
-        h1, h2 {
-            font-weight: bold;
-        }
-        .news-container {
-            width: 80%;
-            margin: 20px auto;
-            padding: 15px;
-            background-color: #D81B60;
-            border-radius: 10px;
-            text-align: left;
-        }
-        table {
-            width: 80%;
-            margin: 10px auto;
-            border-collapse: collapse;
-        }
-        th, td {
-            padding: 10px;
-            border: 1px solid black;
-            background-color: white;
-            color: black;
-        }
-        th {
-            background-color: #0059B2;
-            color: white;
-        }
-    </style>
-</head>
-<body>
-    <h1>TöGGeli-Cup 2025</h1>
-
-    <div class="news-container">
-        <h2>News</h2>
-        <div id="news"></div>
-    </div>
-
-    <h2>Teams</h2>
-    <table>
-        <thead>
-            <tr><th>Teamname</th><th>Spieler:in 1</th><th>Spieler:in 2</th></tr>
-        </thead>
-        <tbody id="teams"></tbody>
-    </table>
-
-    <h2>Spiele</h2>
-    <table>
-        <thead>
-            <tr><th>Team 1</th><th>Tore Team 1</th><th>Team 2</th><th>Tore Team 2</th></tr>
-        </thead>
-        <tbody id="games"></tbody>
-    </table>
-
-    <h2>Rangliste</h2>
-    <table>
-        <thead>
-            <tr><th>Platz</th><th>Team</th><th>Punkte</th><th>Spiele</th><th>Tore</th><th>Gegentore</th><th>Tordifferenz</th></tr>
-        </thead>
-        <tbody id="ranking"></tbody>
-    </table>
-
-    <script>
-        const sheetId = "1qUf-YbZCdAwf5aHhdMRa2yrrqn1WRTNeZhDOwTYTPgk";
-        
-        async function loadSheet(sheetName, targetId, processFunction = null) {
-            const url = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:json&sheet=${sheetName}`;
-            try {
-                const response = await fetch(url);
-                const text = await response.text();
-                const json = JSON.parse(text.substr(47).slice(0, -2));
-                const tableBody = document.getElementById(targetId);
-                tableBody.innerHTML = "";
-                
-                let data = json.table.rows.map(row => row.c.map(cell => cell ? cell.v : ""));
-                
-                if (processFunction) {
-                    data = processFunction(data);
-                }
-                
-                data.forEach(row => {
-                    const tr = document.createElement("tr");
-                    row.forEach(cell => {
-                        const td = document.createElement("td");
-                        td.textContent = cell;
-                        tr.appendChild(td);
-                    });
-                    tableBody.appendChild(tr);
-                });
-            } catch (error) {
-                console.error("Fehler beim Laden der Daten:", error);
-            }
-        }
-
-        function processGames(data) {
-            return data.sort((a, b) => {
-                const hasScoreA = a[1] !== "" && a[3] !== "";
-                const hasScoreB = b[1] !== "" && b[3] !== "";
-                return hasScoreB - hasScoreA || new Date(b[4]) - new Date(a[4]);
-            });
-        }
-        
-        function loadAllData() {
-            loadSheet("News", "news");
-            loadSheet("Teams", "teams");
-            loadSheet("Spiele", "games", processGames);
-            loadSheet("Spiele", "ranking", sortRanking);
-        }
-        
-        loadAllData();
-    </script>
-</body>
-</html>
+ <html lang="de">
+ <head>
+     <meta charset="UTF-8">
+     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+     <meta http-equiv="Cache-Control" content="max-age=0, no-cache, no-store, must-revalidate">
+     <meta http-equiv="Pragma" content="no-cache">
+     <meta http-equiv="Expires" content="0">
+     <title>TöGGeli-Cup 2025</title>
+     <style>
+         body { 
+             font-family: Arial, sans-serif; 
+             background-color: #5B3A2E; 
+             color: white;
+             text-align: center;
+             margin: 20px;
+         }
+         h1, h2 {
+             font-weight: bold;
+         }
+         .news-container {
+             width: 80%;
+             margin: 20px auto;
+             padding: 15px;
+             background-color: #D81B60;
+             border-radius: 10px;
+             text-align: left;
+         }
+         table {
+             width: 80%;
+             margin: 10px auto;
+             border-collapse: collapse;
+         }
+         th, td {
+             padding: 10px;
+             border: 1px solid black;
+             background-color: white;
+             color: black;
+         }
+         th {
+             background-color: #0059B2;
+             color: white;
+         }
+     </style>
+ </head>
+ <body>
+     <h1>TöGGeli-Cup 2025</h1>
+ 
+     <div class="news-container">
+         <h2>News</h2>
+         <div id="news"></div>
+     </div>
+ 
+     <h2>Teams</h2>
+     <table>
+         <thead>
+             <tr><th>Teamname</th><th>Spieler:in 1</th><th>Spieler:in 2</th></tr>
+         </thead>
+         <tbody id="teams"></tbody>
+     </table>
+ 
+     <h2>Spiele</h2>
+     <table>
+         <thead>
+             <tr><th>Team 1</th><th>Tore Team 1</th><th>Team 2</th><th>Tore Team 2</th></tr>
+         </thead>
+         <tbody id="games"></tbody>
+     </table>
+ 
+     <h2>Rangliste</h2>
+     <table>
+         <thead>
+             <tr><th>Platz</th><th>Team</th><th>Punkte</th><th>Spiele</th><th>Tore</th><th>Gegentore</th><th>Tordifferenz</th></tr>
+         </thead>
+         <tbody id="ranking"></tbody>
+     </table>
+ 
+     <script>
+         const sheetId = "1qUf-YbZCdAwf5aHhdMRa2yrrqn1WRTNeZhDOwTYTPgk";
+ 
+         async function loadSheet(sheetName, targetId, processFunction = null) {
+             const url = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:json&sheet=${sheetName}`;
+             try {
+                 const response = await fetch(url);
+                 const text = await response.text();
+                 const json = JSON.parse(text.substr(47).slice(0, -2));
+                 const tableBody = document.getElementById(targetId);
+                 tableBody.innerHTML = "";
+ 
+                 let data = json.table.rows.map(row => row.c.map(cell => cell ? cell.v : ""));
+ 
+                 if (processFunction) {
+                     data = processFunction(data);
+                 }
+ 
+                 data.forEach(row => {
+                     const tr = document.createElement("tr");
+                     row.forEach(cell => {
+                         const td = document.createElement("td");
+                         td.textContent = cell;
+                         tr.appendChild(td);
+                     });
+                     tableBody.appendChild(tr);
+                 });
+             } catch (error) {
+                 console.error("Fehler beim Laden der Daten:", error);
+             }
+         }
+ 
+         function processGames(data) {
+             return data.sort((a, b) => {
+                 const hasScoreA = a[1] !== "" && a[3] !== "";
+                 const hasScoreB = b[1] !== "" && b[3] !== "";
+                 return hasScoreA - hasScoreB;
+             });
+         }
+ 
+         function sortRanking(data) {
+             return data
+                 .map(row => ({
+                     team: row[1],
+                     points: parseInt(row[2]) || 0,
+                     games: parseInt(row[3]) || 0,
+                     goals: parseInt(row[4]) || 0,
+                     conceded: parseInt(row[5]) || 0,
+                     diff: parseInt(row[6]) || 0
+                 }))
+                 .sort((a, b) => b.points - a.points || b.diff - a.diff || b.goals - a.goals || a.team.localeCompare(b.team))
+                 .map((team, index) => [index + 1, team.team, team.points, team.games, team.goals, team.conceded, team.diff]);
+             let ranking = {};
+             data.forEach(row => {
+                 const [team1, score1, team2, score2] = row;
+                 if (!(team1 in ranking)) ranking[team1] = { team: team1, points: 0, games: 0, goals: 0, conceded: 0 };
+                 if (!(team2 in ranking)) ranking[team2] = { team: team2, points: 0, games: 0, goals: 0, conceded: 0 };
+                 if (score1 !== "" && score2 !== "") {
+                     ranking[team1].games++;
+                     ranking[team2].games++;
+                     ranking[team1].goals += parseInt(score1);
+                     ranking[team2].goals += parseInt(score2);
+                     ranking[team1].conceded += parseInt(score2);
+                     ranking[team2].conceded += parseInt(score1);
+                     if (score1 > score2) ranking[team1].points += 1;
+                     if (score2 > score1) ranking[team2].points += 1;
+                 }
+             });
+             return Object.values(ranking)
+                 .sort((a, b) => b.points - a.points || (b.goals - b.conceded) - (a.goals - a.conceded) || b.goals - a.goals || a.team.localeCompare(b.team))
+                 .map((team, index) => [index + 1, team.team, team.points, team.games, team.goals, team.conceded, team.goals - team.conceded]);
+         }
+ 
+         function loadAllData() {
+             loadSheet("News", "news");
+             loadSheet("Teams", "teams");
+             loadSheet("Spiele", "games", processGames);
+             loadSheet("Rangliste", "ranking", sortRanking);
+             loadSheet("Spiele", "ranking", sortRanking);
+         }
+ 
+         loadAllData();
+     </script>
+ </body>
+ </html>

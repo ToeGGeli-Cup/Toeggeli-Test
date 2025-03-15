@@ -116,24 +116,32 @@
         }
         
         function sortRanking(data) {
-            return data
-                .map(row => ({
-                    team: row[1],
-                    points: parseInt(row[2]) || 0,
-                    games: parseInt(row[3]) || 0,
-                    goals: parseInt(row[4]) || 0,
-                    conceded: parseInt(row[5]) || 0,
-                    diff: parseInt(row[6]) || 0
-                }))
-                .sort((a, b) => b.points - a.points || b.diff - a.diff || b.goals - a.goals || a.team.localeCompare(b.team))
-                .map((team, index) => [index + 1, team.team, team.points, team.games, team.goals, team.conceded, team.diff]);
+            let ranking = {};
+            data.forEach(row => {
+                const [team1, score1, team2, score2] = row;
+                if (!(team1 in ranking)) ranking[team1] = { team: team1, points: 0, games: 0, goals: 0, conceded: 0 };
+                if (!(team2 in ranking)) ranking[team2] = { team: team2, points: 0, games: 0, goals: 0, conceded: 0 };
+                if (score1 !== "" && score2 !== "") {
+                    ranking[team1].games++;
+                    ranking[team2].games++;
+                    ranking[team1].goals += parseInt(score1);
+                    ranking[team2].goals += parseInt(score2);
+                    ranking[team1].conceded += parseInt(score2);
+                    ranking[team2].conceded += parseInt(score1);
+                    if (score1 > score2) ranking[team1].points += 1;
+                    if (score2 > score1) ranking[team2].points += 1;
+                }
+            });
+            return Object.values(ranking)
+                .sort((a, b) => b.points - a.points || (b.goals - b.conceded) - (a.goals - a.conceded) || b.goals - a.goals || a.team.localeCompare(b.team))
+                .map((team, index) => [index + 1, team.team, team.points, team.games, team.goals, team.conceded, team.goals - team.conceded]);
         }
         
         function loadAllData() {
             loadSheet("News", "news");
             loadSheet("Teams", "teams");
             loadSheet("Spiele", "games", processGames);
-            loadSheet("Rangliste", "ranking", sortRanking);
+            loadSheet("Spiele", "ranking", sortRanking);
         }
         
         loadAllData();

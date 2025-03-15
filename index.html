@@ -18,11 +18,6 @@
         h1, h2 {
             font-weight: bold;
         }
-        .container {
-            width: 95%;
-            max-width: 1200px;
-            margin: 0 auto;
-        }
         .news-container {
             width: 100%;
             max-width: 800px;
@@ -70,36 +65,34 @@
 <body>
     <h1>TöGGeli-Cup 2025</h1>
     
-    <div class="container">
-        <div class="news-container">
-            <h2>News</h2>
-            <div id="news"></div>
-        </div>
-
-        <h2>Teams</h2>
-        <table>
-            <thead>
-                <tr><th>Teamname</th><th>Spieler:in 1</th><th>Spieler:in 2</th></tr>
-            </thead>
-            <tbody id="teams"></tbody>
-        </table>
-
-        <h2>Spiele</h2>
-        <table>
-            <thead>
-                <tr><th>Team 1</th><th>vs</th><th>Team 2</th></tr>
-            </thead>
-            <tbody id="games"></tbody>
-        </table>
-
-        <h2>Rangliste</h2>
-        <table>
-            <thead>
-                <tr><th>Platz</th><th>Team</th><th>Punkte</th><th>Spiele</th><th>Tore</th><th>Gegentore</th><th>Tordifferenz</th></tr>
-            </thead>
-            <tbody id="ranking"></tbody>
-        </table>
+    <div class="news-container">
+        <h2>News</h2>
+        <div id="news"></div>
     </div>
+
+    <h2>Teams</h2>
+    <table>
+        <thead>
+            <tr><th>Teamname</th><th>Spieler:in 1</th><th>Spieler:in 2</th></tr>
+        </thead>
+        <tbody id="teams"></tbody>
+    </table>
+
+    <h2>Spiele</h2>
+    <table>
+        <thead>
+            <tr><th>Team 1</th><th>vs</th><th>Team 2</th></tr>
+        </thead>
+        <tbody id="games"></tbody>
+    </table>
+
+    <h2>Rangliste</h2>
+    <table>
+        <thead>
+            <tr><th>Platz</th><th>Team</th><th>Punkte</th><th>Spiele</th><th>Tore</th><th>Gegentore</th><th>Tordifferenz</th></tr>
+        </thead>
+        <tbody id="ranking"></tbody>
+    </table>
 
     <script>
         const sheetId = "1qUf-YbZCdAwf5aHhdMRa2yrrqn1WRTNeZhDOwTYTPgk";

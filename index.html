@@ -151,7 +151,13 @@
             loadSheet("Spiele", "ranking", sortRanking);
         }
 
-        loadAllData();
+        // Automatische Aktualisierung bei jedem Öffnen der Website
+        window.addEventListener("load", () => {
+            loadAllData();
+        });
+
+        // Regelmäßige Aktualisierung alle 30 Sekunden
+        setInterval(loadAllData, 30000);
     </script>
 </body>
 </html>

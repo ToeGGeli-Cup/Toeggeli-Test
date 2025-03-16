@@ -14,35 +14,28 @@
             color: white;
             text-align: center;
             margin: 0;
-            padding-top: 60px; /* Platz für fixierte Navigation */
+            padding-top: 60px;
         }
         h1, h2 {
             font-weight: bold;
-            margin-top: 60px; /* Damit die Titel nicht verdeckt werden */
         }
         .navbar {
             position: fixed;
             top: 0;
             width: 100%;
             background-color: #D81B60;
-            padding: 10px 5px;
+            padding: 10px 0;
             display: flex;
             justify-content: center;
-            flex-wrap: wrap; /* Falls Platz nicht reicht, umbricht es */
-            gap: 5px;
+            gap: 10px;
             z-index: 1000;
         }
         .navbar a {
-            flex-grow: 1;
-            max-width: 120px;
             background-color: #0059B2;
             color: white;
-            padding: 8px;
-            text-align: center;
+            padding: 10px 15px;
             text-decoration: none;
             border-radius: 5px;
-            font-size: 14px;
-            white-space: nowrap;
         }
         .navbar a:hover {
             background-color: #003D82;
@@ -91,17 +84,6 @@
             th, td {
                 padding: 5px;
                 font-size: 12px;
-            }
-            .navbar {
-                flex-wrap: nowrap;
-                overflow-x: auto;
-                justify-content: start;
-                white-space: nowrap;
-            }
-            .navbar a {
-                flex-grow: 0;
-                font-size: 12px;
-                padding: 6px;
             }
         }
     </style>
@@ -199,11 +181,11 @@
         }
 
         function processGames(data) {
-            return data.filter(row => row[1] === "" || row[3] === ""); // Nur offene Spiele
+            return data.filter(row => row[1] === "" || row[3] === "");
         }
 
-        function processResults(data) {
-            return data.filter(row => row[1] !== "" && row[3] !== ""); // Nur abgeschlossene Spiele
+        function processFinishedGames(data) {
+            return data.filter(row => row[1] !== "" && row[3] !== "");
         }
 
         function sortRanking(data) {
@@ -216,26 +198,30 @@
                 if (score1 !== "" && score2 !== "") {
                     ranking[team1].games++;
                     ranking[team2].games++;
-                    ranking[team1].goals += parseInt(score1);
-                    ranking[team2].goals += parseInt(score2);
-                    ranking[team1].conceded += parseInt(score2);
-                    ranking[team2].conceded += parseInt(score1);
-                    if (score1 > score2) ranking[team1].points += 3;
-                    if (score2 > score1) ranking[team2].points += 3;
+                    ranking[team1].goals += parseInt(score1, 10);
+                    ranking[team2].goals += parseInt(score2, 10);
+                    ranking[team1].conceded += parseInt(score2, 10);
+                    ranking[team2].conceded += parseInt(score1, 10);
+                    if (parseInt(score1, 10) > parseInt(score2, 10)) ranking[team1].points += 1;
+                    if (parseInt(score2, 10) > parseInt(score1, 10)) ranking[team2].points += 1;
                 }
             });
 
-            return Object.values(ranking).sort((a, b) => b.points - a.points || (b.goals - b.conceded) - (a.goals - a.conceded));
+            return Object.values(ranking)
+                .sort((a, b) => b.points - a.points)
+                .map((team, index) => [index + 1, team.team, team.points, team.games, team.goals, team.conceded, team.goals - team.conceded]);
         }
 
         function loadAllData() {
+            loadSheet("News", "news-content");
+            loadSheet("Teams", "teams-content");
             loadSheet("Spiele", "open-games-content", processGames);
-            loadSheet("Spiele", "finished-games-content", processResults);
+            loadSheet("Spiele", "finished-games-content", processFinishedGames);
             loadSheet("Spiele", "ranking-content", sortRanking);
         }
 
         window.addEventListener("load", loadAllData);
-        setInterval(loadAllData, 30000);
     </script>
+
 </body>
 </html>

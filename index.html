@@ -8,37 +8,37 @@
     <meta http-equiv="Expires" content="0">
     <title>TöGGeli-Cup 2025</title>
     <style>
-        /* ✨ Fixe Navigation */
+        body { 
+            font-family: Arial, sans-serif; 
+            background-color: #5B3A2E; 
+            color: white;
+            text-align: center;
+            margin: 0;
+            padding-top: 50px; /* Abstand für fixe Navbar */
+        }
+        h1, h2 {
+            font-weight: bold;
+        }
         .navbar {
             position: fixed;
             top: 0;
             width: 100%;
             background-color: #D81B60;
             padding: 10px 0;
-            text-align: center;
+            display: flex;
+            justify-content: center;
+            gap: 10px;
             z-index: 1000;
         }
         .navbar a {
-            text-decoration: none;
+            background-color: #0059B2;
             color: white;
             padding: 10px 15px;
-            margin: 5px;
-            background-color: #0059B2;
+            text-decoration: none;
             border-radius: 5px;
-            font-weight: bold;
-            display: inline-block;
-            font-size: 14px;
         }
         .navbar a:hover {
-            background-color: #003f7f;
-        }
-        /* Abstand für den Hauptinhalt */
-        body {
-            padding-top: 60px;
-            font-family: Arial, sans-serif;
-            background-color: #5B3A2E;
-            color: white;
-            text-align: center;
+            background-color: #003D82;
         }
         .container {
             width: 100%;
@@ -81,10 +81,6 @@
             h1, h2 {
                 font-size: 18px;
             }
-            .navbar a {
-                padding: 8px 10px;
-                font-size: 12px;
-            }
             th, td {
                 padding: 5px;
                 font-size: 12px;
@@ -94,17 +90,17 @@
 </head>
 <body>
 
-    <!-- 🔹 Navigation (bleibt oben fixiert) -->
+    <!-- Navigation -->
     <div class="navbar">
         <a href="#news">News</a>
         <a href="#teams">Teams</a>
-        <a href="#offene-spiele">Offene Spiele</a>
-        <a href="#resultate">Resultate</a>
-        <a href="#rangliste">Rangliste</a>
+        <a href="#open-games">Offene Spiele</a>
+        <a href="#finished-games">Resultate</a>
+        <a href="#ranking">Rangliste</a>
     </div>
 
     <h1>TöGGeli-Cup 2025</h1>
-    
+
     <div class="container">
         <div id="news" class="news-container">
             <h2>News</h2>
@@ -121,33 +117,33 @@
             </table>
         </div>
 
-        <h2 id="offene-spiele">Offene Spiele</h2>
+        <h2 id="open-games">Offene Spiele</h2>
         <div class="table-container">
             <table>
                 <thead>
                     <tr><th>Team 1</th><th>Tore Team 1</th><th>Team 2</th><th>Tore Team 2</th></tr>
                 </thead>
-                <tbody id="open-games"></tbody>
+                <tbody id="open-games-content"></tbody>
             </table>
         </div>
 
-        <h2 id="resultate">Resultate</h2>
+        <h2 id="finished-games">Resultate</h2>
         <div class="table-container">
             <table>
                 <thead>
                     <tr><th>Team 1</th><th>Tore Team 1</th><th>Team 2</th><th>Tore Team 2</th></tr>
                 </thead>
-                <tbody id="finished-games"></tbody>
+                <tbody id="finished-games-content"></tbody>
             </table>
         </div>
 
-        <h2 id="rangliste">Rangliste</h2>
+        <h2 id="ranking">Rangliste</h2>
         <div class="table-container">
             <table>
                 <thead>
                     <tr><th>Platz</th><th>Team</th><th>Punkte</th><th>Spiele</th><th>Tore</th><th>Gegentore</th><th>Tordifferenz</th></tr>
                 </thead>
-                <tbody id="ranking"></tbody>
+                <tbody id="ranking-content"></tbody>
             </table>
         </div>
     </div>
@@ -155,19 +151,21 @@
     <script>
         const sheetId = "1qUf-YbZCdAwf5aHhdMRa2yrrqn1WRTNeZhDOwTYTPgk";
 
-        async function loadGames() {
-            const url = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:json&sheet=Spiele`;
+        async function loadSheet(sheetName, targetId, processFunction = null) {
+            const url = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:json&sheet=${sheetName}`;
             try {
                 const response = await fetch(url);
                 const text = await response.text();
                 const json = JSON.parse(text.substr(47).slice(0, -2));
-                const openGames = document.getElementById("open-games");
-                const finishedGames = document.getElementById("finished-games");
-                openGames.innerHTML = "";
-                finishedGames.innerHTML = "";
+                const tableBody = document.getElementById(targetId);
+                tableBody.innerHTML = "";
 
                 let data = json.table.rows.map(row => row.c.map(cell => cell ? cell.v : ""));
-                
+
+                if (processFunction) {
+                    data = processFunction(data);
+                }
+
                 data.forEach(row => {
                     const tr = document.createElement("tr");
                     row.forEach(cell => {
@@ -175,49 +173,56 @@
                         td.textContent = cell;
                         tr.appendChild(td);
                     });
-
-                    // Falls beide Tore-Spalten leer sind → Offenes Spiel
-                    if (row[1] === "" && row[3] === "") {
-                        openGames.appendChild(tr);
-                    } else {
-                        finishedGames.appendChild(tr);
-                    }
+                    tableBody.appendChild(tr);
                 });
             } catch (error) {
-                console.error("Fehler beim Laden der Spiele:", error);
+                console.error("Fehler beim Laden der Daten:", error);
             }
         }
 
-        function loadSheet(sheetName, targetId) {
-            const url = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:json&sheet=${sheetName}`;
-            fetch(url)
-                .then(response => response.text())
-                .then(text => {
-                    const json = JSON.parse(text.substr(47).slice(0, -2));
-                    const tableBody = document.getElementById(targetId);
-                    tableBody.innerHTML = "";
-                    json.table.rows.map(row => row.c.map(cell => cell ? cell.v : ""))
-                        .forEach(row => {
-                            const tr = document.createElement("tr");
-                            row.forEach(cell => {
-                                const td = document.createElement("td");
-                                td.textContent = cell;
-                                tr.appendChild(td);
-                            });
-                            tableBody.appendChild(tr);
-                        });
-                })
-                .catch(error => console.error(`Fehler beim Laden von ${sheetName}:`, error));
+        function processGames(data) {
+            const openGames = document.getElementById("open-games-content");
+            const finishedGames = document.getElementById("finished-games-content");
+            openGames.innerHTML = "";
+            finishedGames.innerHTML = "";
+
+            data.forEach(row => {
+                const tr = document.createElement("tr");
+                row.forEach(cell => {
+                    const td = document.createElement("td");
+                    td.textContent = cell;
+                    tr.appendChild(td);
+                });
+
+                // Prüfen, ob beide Tore eingetragen sind
+                const score1 = row[1] !== "" ? row[1] : null;
+                const score2 = row[3] !== "" ? row[3] : null;
+
+                if (score1 !== null && score2 !== null) {
+                    finishedGames.appendChild(tr);
+                } else {
+                    openGames.appendChild(tr);
+                }
+            });
+        }
+
+        function sortRanking(data) {
+            return data.sort((a, b) => b[2] - a[2]); // Nach Punkten sortieren
+        }
+
+        function loadAllData() {
+            loadSheet("News", "news-content");
+            loadSheet("Teams", "teams-content");
+            loadSheet("Spiele", "open-games-content", processGames);
+            loadSheet("Spiele", "ranking-content", sortRanking);
         }
 
         window.addEventListener("load", () => {
-            loadSheet("News", "news-content");
-            loadSheet("Teams", "teams-content");
-            loadGames();
-            loadSheet("Spiele", "ranking");
+            loadAllData();
         });
 
-        setInterval(loadGames, 30000);
+        setInterval(loadAllData, 30000);
     </script>
+
 </body>
 </html>

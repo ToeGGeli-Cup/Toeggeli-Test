@@ -202,25 +202,26 @@
                     ranking[team2].goals += parseInt(score2, 10);
                     ranking[team1].conceded += parseInt(score2, 10);
                     ranking[team2].conceded += parseInt(score1, 10);
-                    if (parseInt(score1, 10) > parseInt(score2, 10)) ranking[team1].points += 1;
-                    if (parseInt(score2, 10) > parseInt(score1, 10)) ranking[team2].points += 1;
+                    
+                    if (score1 > score2) {
+                        ranking[team1].points += 3;
+                    } else if (score1 < score2) {
+                        ranking[team2].points += 3;
+                    } else {
+                        ranking[team1].points += 1;
+                        ranking[team2].points += 1;
+                    }
                 }
             });
 
             return Object.values(ranking)
-                .sort((a, b) => b.points - a.points)
+                .sort((a, b) => b.points - a.points || (b.goals - b.conceded) - (a.goals - a.conceded) || b.goals - a.goals || a.team.localeCompare(b.team))
                 .map((team, index) => [index + 1, team.team, team.points, team.games, team.goals, team.conceded, team.goals - team.conceded]);
         }
 
-        function loadAllData() {
-            loadSheet("News", "news-content");
-            loadSheet("Teams", "teams-content");
-            loadSheet("Spiele", "open-games-content", processGames);
-            loadSheet("Spiele", "finished-games-content", processFinishedGames);
+        window.addEventListener("load", () => {
             loadSheet("Spiele", "ranking-content", sortRanking);
-        }
-
-        window.addEventListener("load", loadAllData);
+        });
     </script>
 
 </body>

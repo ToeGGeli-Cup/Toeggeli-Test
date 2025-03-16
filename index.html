@@ -8,15 +8,37 @@
     <meta http-equiv="Expires" content="0">
     <title>TöGGeli-Cup 2025</title>
     <style>
-        body { 
-            font-family: Arial, sans-serif; 
-            background-color: #5B3A2E; 
+        /* ✨ Fixe Navigation oben */
+        .navbar {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            background-color: #D81B60;
+            padding: 10px 0;
+            text-align: center;
+            z-index: 1000;
+        }
+        .navbar a {
+            text-decoration: none;
+            color: white;
+            padding: 10px 15px;
+            margin: 5px;
+            background-color: #0059B2;
+            border-radius: 5px;
+            font-weight: bold;
+            display: inline-block;
+            font-size: 14px;
+        }
+        .navbar a:hover {
+            background-color: #003f7f;
+        }
+        /* Abstand für den Hauptinhalt, damit er nicht verdeckt wird */
+        body {
+            padding-top: 60px;
+            font-family: Arial, sans-serif;
+            background-color: #5B3A2E;
             color: white;
             text-align: center;
-            margin: 20px;
-        }
-        h1, h2 {
-            font-weight: bold;
         }
         .container {
             width: 100%;
@@ -59,6 +81,10 @@
             h1, h2 {
                 font-size: 18px;
             }
+            .navbar a {
+                padding: 8px 10px;
+                font-size: 12px;
+            }
             th, td {
                 padding: 5px;
                 font-size: 12px;
@@ -67,25 +93,35 @@
     </style>
 </head>
 <body>
+
+    <!-- 🔹 Navigation (bleibt oben fixiert) -->
+    <div class="navbar">
+        <a href="#news">News</a>
+        <a href="#teams">Teams</a>
+        <a href="#offene-spiele">Offene Spiele</a>
+        <a href="#resultate">Resultate</a>
+        <a href="#rangliste">Rangliste</a>
+    </div>
+
     <h1>TöGGeli-Cup 2025</h1>
     
     <div class="container">
-        <div class="news-container">
+        <div id="news" class="news-container">
             <h2>News</h2>
-            <div id="news"></div>
+            <div id="news-content"></div>
         </div>
 
-        <h2>Teams</h2>
+        <h2 id="teams">Teams</h2>
         <div class="table-container">
             <table>
                 <thead>
                     <tr><th>Teamname</th><th>Spieler:in 1</th><th>Spieler:in 2</th></tr>
                 </thead>
-                <tbody id="teams"></tbody>
+                <tbody id="teams-content"></tbody>
             </table>
         </div>
 
-        <h2>Spiele</h2>
+        <h2 id="offene-spiele">Offene Spiele</h2>
         <div class="table-container">
             <table>
                 <thead>
@@ -95,7 +131,7 @@
             </table>
         </div>
 
-        <h2>Rangliste</h2>
+        <h2 id="resultate">Resultate</h2>
         <div class="table-container">
             <table>
                 <thead>
@@ -165,28 +201,20 @@
                 }
             });
 
-            return Object.values(ranking)
-                .sort((a, b) => 
-                    b.points - a.points || 
-                    (b.goals - b.conceded) - (a.goals - a.conceded) || 
-                    b.goals - a.goals || 
-                    (typeof a.team === "string" && typeof b.team === "string" ? a.team.localeCompare(b.team) : 0)
-                )
+            return Object.values(ranking).sort((a, b) => b.points - a.points)
                 .map((team, index) => [index + 1, team.team, team.points, team.games, team.goals, team.conceded, team.goals - team.conceded]);
         }
 
         function loadAllData() {
-            loadSheet("News", "news");
-            loadSheet("Teams", "teams");
+            loadSheet("News", "news-content");
+            loadSheet("Teams", "teams-content");
             loadSheet("Spiele", "games", processGames);
             loadSheet("Spiele", "ranking", sortRanking);
         }
 
-        window.addEventListener("load", () => {
-            loadAllData();
-        });
-
+        window.addEventListener("load", loadAllData);
         setInterval(loadAllData, 30000);
     </script>
+
 </body>
 </html>

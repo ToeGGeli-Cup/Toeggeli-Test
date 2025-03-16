@@ -14,11 +14,12 @@
             color: white;
             text-align: center;
             margin: 0;
-            padding-top: 60px;
+            padding-top: 70px; /* Mehr Platz für Navbar */
         }
         h1, h2 {
             font-weight: bold;
         }
+        /* Verbesserte Navbar */
         .navbar {
             position: fixed;
             top: 0;
@@ -29,6 +30,8 @@
             justify-content: center;
             gap: 10px;
             z-index: 1000;
+            overflow-x: auto; /* Falls Navbar zu breit wird */
+            white-space: nowrap;
         }
         .navbar a {
             background-color: #0059B2;
@@ -36,6 +39,7 @@
             padding: 10px 15px;
             text-decoration: none;
             border-radius: 5px;
+            flex-shrink: 0; /* Buttons werden nicht kleiner */
         }
         .navbar a:hover {
             background-color: #003D82;
@@ -188,37 +192,12 @@
             return data.filter(row => row[1] !== "" && row[3] !== "");
         }
 
-        function sortRanking(data) {
-            let ranking = {};
-            data.forEach(row => {
-                const [team1, score1, team2, score2] = row;
-                if (!(team1 in ranking)) ranking[team1] = { team: team1, points: 0, games: 0, goals: 0, conceded: 0 };
-                if (!(team2 in ranking)) ranking[team2] = { team: team2, points: 0, games: 0, goals: 0, conceded: 0 };
-
-                if (score1 !== "" && score2 !== "") {
-                    ranking[team1].games++;
-                    ranking[team2].games++;
-                    ranking[team1].goals += parseInt(score1, 10);
-                    ranking[team2].goals += parseInt(score2, 10);
-                    ranking[team1].conceded += parseInt(score2, 10);
-                    ranking[team2].conceded += parseInt(score1, 10);
-                    
-                    if (parseInt(score1, 10) > parseInt(score2, 10)) ranking[team1].points += 1;
-                    if (parseInt(score2, 10) > parseInt(score1, 10)) ranking[team2].points += 1;
-                }
-            });
-
-            return Object.values(ranking)
-                .sort((a, b) => b.points - a.points || (b.goals - b.conceded) - (a.goals - a.conceded) || b.goals - a.goals || a.team.localeCompare(b.team))
-                .map((team, index) => [index + 1, team.team, team.points, team.games, team.goals, team.conceded, team.goals - team.conceded]);
-        }
-
         function loadAllData() {
             loadSheet("News", "news-content");
             loadSheet("Teams", "teams-content");
             loadSheet("Spiele", "open-games-content", processGames);
             loadSheet("Spiele", "finished-games-content", processFinishedGames);
-            loadSheet("Spiele", "ranking-content", sortRanking);
+            loadSheet("Spiele", "ranking-content");
         }
 
         window.addEventListener("load", loadAllData);

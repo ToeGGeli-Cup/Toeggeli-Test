@@ -14,11 +14,11 @@
             color: white;
             text-align: center;
             margin: 0;
-            padding-top: 60px; /* Platz für die fixierte Navigation */
+            padding-top: 60px; /* Platz für fixierte Navigation */
         }
         h1, h2 {
             font-weight: bold;
-            margin-top: 60px; /* Sicherstellen, dass nichts verdeckt wird */
+            margin-top: 60px; /* Damit die Titel nicht verdeckt werden */
         }
         .navbar {
             position: fixed;
@@ -28,7 +28,7 @@
             padding: 10px 5px;
             display: flex;
             justify-content: center;
-            flex-wrap: wrap; /* Falls der Platz nicht reicht, wird umgebrochen */
+            flex-wrap: wrap; /* Falls Platz nicht reicht, umbricht es */
             gap: 5px;
             z-index: 1000;
         }
@@ -93,8 +93,8 @@
                 font-size: 12px;
             }
             .navbar {
-                flex-wrap: nowrap; /* Verhindert Zeilenumbruch */
-                overflow-x: auto; /* Falls Platz zu knapp ist, horizontal scrollen */
+                flex-wrap: nowrap;
+                overflow-x: auto;
                 justify-content: start;
                 white-space: nowrap;
             }
@@ -199,11 +199,11 @@
         }
 
         function processGames(data) {
-            return data.sort((a, b) => {
-                const hasScoreA = a[1] !== "" && a[3] !== "";
-                const hasScoreB = b[1] !== "" && b[3] !== "";
-                return hasScoreA - hasScoreB;
-            });
+            return data.filter(row => row[1] === "" || row[3] === ""); // Nur offene Spiele
+        }
+
+        function processResults(data) {
+            return data.filter(row => row[1] !== "" && row[3] !== ""); // Nur abgeschlossene Spiele
         }
 
         function sortRanking(data) {
@@ -216,20 +216,21 @@
                 if (score1 !== "" && score2 !== "") {
                     ranking[team1].games++;
                     ranking[team2].games++;
-                    ranking[team1].goals += parseInt(score1, 10);
-                    ranking[team2].goals += parseInt(score2, 10);
-                    ranking[team1].conceded += parseInt(score2, 10);
-                    ranking[team2].conceded += parseInt(score1, 10);
+                    ranking[team1].goals += parseInt(score1);
+                    ranking[team2].goals += parseInt(score2);
+                    ranking[team1].conceded += parseInt(score2);
+                    ranking[team2].conceded += parseInt(score1);
+                    if (score1 > score2) ranking[team1].points += 3;
+                    if (score2 > score1) ranking[team2].points += 3;
                 }
             });
 
-            return Object.values(ranking).map((team, index) => [index + 1, team.team, team.points, team.games, team.goals, team.conceded, team.goals - team.conceded]);
+            return Object.values(ranking).sort((a, b) => b.points - a.points || (b.goals - b.conceded) - (a.goals - a.conceded));
         }
 
         function loadAllData() {
-            loadSheet("News", "news-content");
-            loadSheet("Teams", "teams-content");
             loadSheet("Spiele", "open-games-content", processGames);
+            loadSheet("Spiele", "finished-games-content", processResults);
             loadSheet("Spiele", "ranking-content", sortRanking);
         }
 

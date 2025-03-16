@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fetch-Test</title>
+</head>
+<body>
+    <h1>API-Test</h1>
+    <button onclick="testFetch()">Fetch testen</button>
+    <pre id="output"></pre>
+
+    <script>
+        function testFetch() {
+            const apiUrl = "https://script.google.com/macros/s/DEINE_API_URL/exec?type=getGames";
+            
+            document.getElementById("output").textContent = "Lade Daten...";
+
+            fetch(apiUrl)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP-Fehler! Status: ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    console.log("Antwort von API:", data);
+                    document.getElementById("output").textContent = JSON.stringify(data, null, 2);
+                })
+                .catch(error => {
+                    console.error("Fehler:", error);
+                    document.getElementById("output").textContent = "Fehler: " + error.message;
+                });
+        }
+    </script>
+</body>
+</html>

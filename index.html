@@ -317,28 +317,33 @@ async function loadSheet(sheetName, targetId, processFunction = null) {
 
 
 function processGames(data) {
-    console.log("Raw data from Google Sheets:", data); // Debugging: Ausgabe der Rohdaten
+    console.log("Raw data from Google Sheets:", data); // Debugging: Zeigt alle geladenen Daten an
 
-    let filteredGames = data.filter(row => {
-        // Stelle sicher, dass die Zeile genug Spalten für Team 1 und Team 2 hat
+    let filteredGames = data.map((row, index) => {
+        // Sicherstellen, dass die Zeile genug Spalten für Team 1 und Team 2 hat
         if (!row || row.length < 3 || !row[0] || !row[2]) {
             console.log("Skipping row (missing team names):", row);
-            return false;
+            return null; // Diese Zeilen ignorieren
         }
 
-        // Falls mindestens eine der Tor-Spalten leer ist, gilt das Spiel als "offen"
+        // Falls mindestens eine der Tor-Spalten leer ist, ist das Spiel offen
         const tore1 = row.length > 1 && row[1] !== undefined && row[1] !== "" && row[1] !== null;
         const tore2 = row.length > 3 && row[3] !== undefined && row[3] !== "" && row[3] !== null;
 
-        const isOpen = !(tore1 && tore2); // Offen, wenn eine der Tor-Spalten leer ist
+        const isOpen = !(tore1 && tore2); // Offen, wenn eine der Tor-Spalten fehlt oder leer ist
 
         console.log(`Processing row: ${row[0]} vs ${row[2]} | Tore1: ${row[1] || "leer"}, Tore2: ${row[3] || "leer"} | Offen: ${isOpen}`);
 
-        return isOpen;
-    }).map(row => [row[0] || "", "vs", row[2] || ""]);
+        return isOpen ? { index, teams: [row[0], "vs", row[2]] } : null;
+    }).filter(game => game !== null);
 
-    console.log("Filtered open games:", filteredGames); // Debugging: Ausgabe der offenen Spiele
-    return filteredGames;
+    // 🛠 Sortierung nach ursprünglicher Reihenfolge, damit keine Spiele verschwinden
+    filteredGames.sort((a, b) => a.index - b.index);
+
+    let finalGames = filteredGames.map(game => game.teams);
+
+    console.log("Filtered open games:", finalGames); // Debugging: Gibt die finalen offenen Spiele aus
+    return finalGames;
 }
 
 

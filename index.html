@@ -50,7 +50,7 @@
         }
         .section-container {
             width: 100%;
-            background-color: #D81B60; /* Einheitliche Boxen für alle Abschnitte */
+            background-color: #D81B60;
             border-radius: 10px;
             padding: 15px;
             margin-bottom: 20px;
@@ -201,14 +201,6 @@
             }
         }
 
-        function processGames(data) {
-            return data.filter(row => row[1] === "" || row[3] === "").map(row => [row[0], "vs", row[2]]);
-        }
-
-        function processFinishedGames(data) {
-            return data.filter(row => row[1] !== "" && row[3] !== "");
-        }
-
         function sortRanking(data) {
             let ranking = {};
             data.forEach(row => {
@@ -223,6 +215,7 @@
                     ranking[team2].goals += parseInt(score2, 10);
                     ranking[team1].conceded += parseInt(score2, 10);
                     ranking[team2].conceded += parseInt(score1, 10);
+                    
                     if (parseInt(score1, 10) > parseInt(score2, 10)) ranking[team1].points += 1;
                     if (parseInt(score2, 10) > parseInt(score1, 10)) ranking[team2].points += 1;
                 }
@@ -232,10 +225,6 @@
         }
 
         function loadAllData() {
-            loadSheet("News", "news-content");
-            loadSheet("Teams", "teams-content");
-            loadSheet("Spiele", "open-games-content", processGames);
-            loadSheet("Spiele", "finished-games-content", processFinishedGames);
             loadSheet("Spiele", "ranking-content", sortRanking);
         }
 

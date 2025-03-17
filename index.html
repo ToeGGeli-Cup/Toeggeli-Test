@@ -227,7 +227,11 @@
             loadSheet("Spiele", "ranking-content", sortRanking);
         }
 
-        window.addEventListener("load", loadAllData);
+       window.onload = function() {
+    loadAllData();
+    setInterval(loadAllData, 30000); // Alle 30 Sekunden aktualisieren
+};
+
     </script>
 
 </body>

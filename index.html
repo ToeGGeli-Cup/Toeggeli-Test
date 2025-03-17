@@ -317,8 +317,8 @@ async function loadSheet(sheetName, targetId, processFunction = null) {
 
 
         function processGames(data) {
-            return data.filter(row => row[1] === "" || row[3] === "").map(row => [row[0], "vs", row[2]]);
-        }
+    return data.filter(row => row[1] === "" && row[3] === "").map(row => [row[0], "vs", row[2]]);
+}
 
         function processFinishedGames(data) {
             return data.filter(row => row[1] !== "" && row[3] !== "");

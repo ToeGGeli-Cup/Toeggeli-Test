@@ -191,9 +191,12 @@
         }
     }
 
-    function processGames(data) {
-        return data.filter(row => row[1] === "" || row[3] === "");
-    }
+   function processGames(data) {
+    return data
+        .filter(row => row[1] === "" || row[3] === "") // Nur offene Spiele (keine Tore)
+        .map(row => [row[0], "vs", row[2]]); // Zeigt nur "Team 1 vs Team 2" an
+}
+
 
     function processFinishedGames(data) {
         return data.filter(row => row[1] !== "" && row[3] !== "");

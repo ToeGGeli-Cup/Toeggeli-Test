@@ -271,7 +271,7 @@
     <script>
         const sheetId = "1qUf-YbZCdAwf5aHhdMRa2yrrqn1WRTNeZhDOwTYTPgk";
 
- async function loadSheet(sheetName, targetId, processFunction = null) {
+async function loadSheet(sheetName, targetId, processFunction = null) {
     const url = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:json&sheet=${sheetName}`;
     try {
         const response = await fetch(url);
@@ -289,11 +289,12 @@
         data.forEach(rowObj => {
             const tr = document.createElement("tr");
 
-            // Falls rowObj eine CSS-Klasse enthält (z. B. "highlight-top-4"), wende sie an
+            // Prüfe, ob rowObj eine CSS-Klasse hat und wende sie an
             if (rowObj.rowClass) {
                 tr.classList.add(rowObj.rowClass);
             }
 
+            // Erstelle die Tabellenzellen basierend auf den Zeilenwerten
             rowObj.row.forEach(cell => {
                 const td = document.createElement("td");
                 td.textContent = cell;

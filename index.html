@@ -289,16 +289,19 @@ async function loadSheet(sheetName, targetId, processFunction = null) {
         data.forEach(rowObj => {
             const tr = document.createElement("tr");
 
-            // Unterscheidung: Falls rowObj ein Objekt mit "rowClass" ist (Ranking-Tabelle)
-            if (Array.isArray(rowObj)) {
-                rowObj.forEach(cell => {
+            // 🔹 Prüfen, ob rowObj ein Objekt mit "rowClass" ist (Ranking-Tabelle)
+            if (rowObj.row) {
+                if (rowObj.rowClass) {
+                    tr.classList.add(rowObj.rowClass); // Klasse für Top 4 setzen
+                }
+                rowObj.row.forEach(cell => {
                     const td = document.createElement("td");
                     td.textContent = cell;
                     tr.appendChild(td);
                 });
             } else {
-                tr.classList.add(rowObj.rowClass); // CSS-Klasse für die Top 4 setzen
-                rowObj.row.forEach(cell => {
+                // 🔹 Normale Tabellen ohne CSS-Klasse
+                rowObj.forEach(cell => {
                     const td = document.createElement("td");
                     td.textContent = cell;
                     tr.appendChild(td);
@@ -311,8 +314,6 @@ async function loadSheet(sheetName, targetId, processFunction = null) {
         console.error("Fehler beim Laden der Daten:", error);
     }
 }
-
-
 
 
         function processGames(data) {

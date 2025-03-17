@@ -103,9 +103,9 @@
             color: white;
         }
 
-        /* ✅ Neue CSS-Klasse für die Top-4-Plätze in der Rangliste */
+        /* ✅ Neue CSS-Klasse für die Top-4-Plätze */
         .qualified {
-            background-color: #90EE90 !important; /* Sanftes Grün */
+            background-color: #90EE90 !important; /* Dezentes Grün */
             font-weight: bold;
         }
 
@@ -127,58 +127,6 @@
             th, td {
                 padding: 5px;
                 font-size: 12px;
-            }
-        }
-
-        .burger-menu {
-            display: none;
-            background: #0059B2;
-            color: white;
-            border: none;
-            padding: 10px 15px;
-            font-size: 18px;
-            cursor: pointer;
-            border-radius: 5px;
-            font-weight: bold;
-            position: fixed;
-            top: 20px;
-            right: 10px;
-            z-index: 1100;
-        }
-
-        @media screen and (max-width: 768px) {
-            .burger-menu {
-                display: block;
-            }
-
-            .navbar-links {
-                display: none;
-                flex-direction: column;
-                background-color: #D81B60;
-                position: fixed;
-                top: 50px;
-                right: 0;
-                width: 100%;
-                text-align: center;
-                padding: 10px 0;
-                border-radius: 0 0 10px 10px;
-                z-index: 1000;
-            }
-
-            .navbar-links.show {
-                display: flex;
-            }
-
-            .navbar-links a {
-                padding: 12px;
-                font-size: 16px;
-                border-top: 1px solid white;
-                color: white;
-                text-decoration: none;
-            }
-
-            .navbar-links a:hover {
-                background-color: #003D82;
             }
         }
 
@@ -218,34 +166,67 @@
 </div>
 
 <script>
+    const sheetId = "1qUf-YbZCdAwf5aHhdMRa2yrrqn1WRTNeZhDOwTYTPgk";
+
     async function loadSheet(sheetName, targetId, processFunction = null) {
-        const url = `https://docs.google.com/spreadsheets/d/YOUR_SHEET_ID/gviz/tq?tqx=out:json&sheet=${sheetName}`;
-        const response = await fetch(url);
-        const text = await response.text();
-        const json = JSON.parse(text.substr(47).slice(0, -2));
-        const tableBody = document.getElementById(targetId);
-        tableBody.innerHTML = "";
+        try {
+            const url = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:json&sheet=${sheetName}`;
+            const response = await fetch(url);
+            const text = await response.text();
+            const json = JSON.parse(text.substr(47).slice(0, -2));
 
-        let data = json.table.rows.map(row => row.c.map(cell => cell ? cell.v : ""));
+            const tableBody = document.getElementById(targetId);
+            tableBody.innerHTML = "";
 
-        if (processFunction) {
-            data = processFunction(data);
-        }
+            let data = json.table.rows.map(row => row.c.map(cell => cell ? cell.v : ""));
 
-        data.forEach((row, index) => {
-            const tr = document.createElement("tr");
-            if (index < 4) tr.classList.add("qualified");
-            row.forEach(cell => {
-                const td = document.createElement("td");
-                td.textContent = cell;
-                tr.appendChild(td);
+            if (processFunction) {
+                data = processFunction(data);
+            }
+
+            data.forEach((row, index) => {
+                const tr = document.createElement("tr");
+                if (index < 4) tr.classList.add("qualified"); // ✅ Top 4 grün hervorheben
+                row.forEach(cell => {
+                    const td = document.createElement("td");
+                    td.textContent = cell;
+                    tr.appendChild(td);
+                });
+                tableBody.appendChild(tr);
             });
-            tableBody.appendChild(tr);
+
+        } catch (error) {
+            console.error("Fehler beim Laden der Daten:", error);
+        }
+    }
+
+    function sortRanking(data) {
+        let ranking = {};
+        data.forEach(row => {
+            const [team1, score1, team2, score2] = row;
+            if (!(team1 in ranking)) ranking[team1] = { team: team1, points: 0, games: 0, goals: 0, conceded: 0 };
+            if (!(team2 in ranking)) ranking[team2] = { team: team2, points: 0, games: 0, goals: 0, conceded: 0 };
+
+            if (score1 !== "" && score2 !== "") {
+                ranking[team1].games++;
+                ranking[team2].games++;
+                ranking[team1].goals += parseInt(score1, 10);
+                ranking[team2].goals += parseInt(score2, 10);
+                ranking[team1].conceded += parseInt(score2, 10);
+                ranking[team2].conceded += parseInt(score1, 10);
+
+                if (parseInt(score1, 10) > parseInt(score2, 10)) ranking[team1].points += 1;
+                if (parseInt(score2, 10) > parseInt(score1, 10)) ranking[team2].points += 1;
+            }
         });
+
+        return Object.values(ranking)
+            .sort((a, b) => b.points - a.points)
+            .map((team, index) => [index + 1, team.team, team.points, team.games, team.goals, team.conceded, team.goals - team.conceded]);
     }
 
     window.onload = function() {
-        loadSheet("Spiele", "ranking-content");
+        loadSheet("Spiele", "ranking-content", sortRanking);
     };
 </script>
 

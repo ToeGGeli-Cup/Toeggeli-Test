@@ -273,57 +273,31 @@
        const sheetId = "1qUf-YbZCdAwf5aHhdMRa2yrrqn1WRTNeZhDOwTYTPgk";
 
 // ✅ Funktion zum Laden von Google Sheets Daten
-async function loadSheet(sheetName, targetId, processFunction = null) {
-    const url = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:json&sheet=${sheetName}`;
-    try {
-        const response = await fetch(url);
-        const text = await response.text();
-        const json = JSON.parse(text.substr(47).slice(0, -2));
-        const tableBody = document.getElementById(targetId);
-        tableBody.innerHTML = "";
-
-        let data = json.table.rows.map(row => row.c.map(cell => cell ? cell.v : ""));
-
-        if (processFunction) {
-            data = processFunction(data);
-        }
-
-        data.forEach((rowObj, index) => {
-            const tr = document.createElement("tr");
-
-            if (targetId === "ranking-content" && index < 4) {
-                tr.classList.add("highlight-top-4"); // ✅ TOP 4 Teams grün hinterlegen
-            }
-
-            rowObj.forEach(cell => {
-                const td = document.createElement("td");
-                td.textContent = cell;
-                tr.appendChild(td);
-            });
-
-            tableBody.appendChild(tr);
-        });
-    } catch (error) {
-        console.error(`Fehler beim Laden von ${sheetName}:`, error);
-    }
-}
-
-// ✅ Funktion für offene Spiele (nur aus "Spiele"-Tabelle)
-function processGames(data) {
-    return data.map(row => [row[0], "vs", row[2]]);
-}
-
-// ✅ Funktion für abgeschlossene Spiele (nur aus "Resultate"-Tabelle)
-function processFinishedGames(data) {
-    return data;
-}
-
-// ✅ Funktion für die Rangliste (nur aus "Resultate"-Tabelle)
-function sortRanking(data) {
+async function sortRanking() {
     let ranking = {};
 
-    // 🔹 Nur "Resultate" werden für die Rangliste benutzt
-    data.forEach(row => {
+    // 🔹 1️⃣ Hole alle Teams aus der "Teams"-Tabelle
+    const teamsUrl = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:json&sheet=Teams`;
+    const teamsResponse = await fetch(teamsUrl);
+    const teamsText = await teamsResponse.text();
+    const teamsJson = JSON.parse(teamsText.substr(47).slice(0, -2));
+
+    let teamsList = teamsJson.table.rows.map(row => row.c[0] ? row.c[0].v : "").filter(team => team !== "");
+
+    // 🔹 2️⃣ Hole alle Resultate aus der "Resultate"-Tabelle
+    const resultsUrl = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:json&sheet=Resultate`;
+    const resultsResponse = await fetch(resultsUrl);
+    const resultsText = await resultsResponse.text();
+    const resultsJson = JSON.parse(resultsText.substr(47).slice(0, -2));
+
+    let resultsData = resultsJson.table.rows.map(row => row.c.map(cell => cell ? cell.v : ""));
+
+    // 🔹 3️⃣ Erstelle das Ranking mit Punkten, Toren, usw.
+    teamsList.forEach(team => {
+        ranking[team] = { team: team, points: 0, games: 0, goals: 0, conceded: 0 };
+    });
+
+    resultsData.forEach(row => {
         const [team1, score1, team2, score2] = row;
 
         if (!(team1 in ranking)) ranking[team1] = { team: team1, points: 0, games: 0, goals: 0, conceded: 0 };
@@ -340,6 +314,7 @@ function sortRanking(data) {
         if (parseInt(score2, 10) > parseInt(score1, 10)) ranking[team2].points += 1;
     });
 
+    // 🔹 4️⃣ Sortiere nach Punkten, Tordifferenz, Toren, Alphabet
     let sortedTeams = Object.values(ranking)
         .sort((a, b) => 
             b.points - a.points || 

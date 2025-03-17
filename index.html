@@ -124,18 +124,88 @@
                 font-size: 12px;
             }
         }
+
+        /* Burger-Menü für mobile Ansicht */
+.burger-menu {
+    display: none; /* Standardmäßig versteckt */
+    flex-direction: column;
+    cursor: pointer;
+    position: absolute;
+    top: 15px;
+    right: 20px;
+    z-index: 1100;
+}
+
+.burger-menu div {
+    width: 30px;
+    height: 4px;
+    background-color: white;
+    margin: 5px 0;
+    transition: 0.4s;
+}
+
+/* Mobile Navigation */
+.navbar-links {
+    display: flex;
+    gap: 5px;
+}
+
+/* Verstecke die Links auf kleinen Bildschirmen */
+@media screen and (max-width: 768px) {
+    .navbar-links {
+        display: none;
+        flex-direction: column;
+        position: absolute;
+        top: 50px;
+        right: 10px;
+        background-color: #D81B60;
+        width: 200px;
+        border-radius: 10px;
+        text-align: center;
+        box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.3);
+    }
+
+    .navbar-links a {
+        padding: 10px;
+        display: block;
+        border-bottom: 1px solid white;
+    }
+
+    .navbar-links a:last-child {
+        border-bottom: none;
+    }
+
+    .navbar-links.show {
+        display: flex;
+    }
+
+    .burger-menu {
+        display: flex;
+    }
+}
+
+        
     </style>
 </head>
 <body>
 
-    <!-- Navigation -->
+        <!-- Navigation -->
     <div class="navbar">
-        <a href="#news">News</a>
-        <a href="#teams">Teams</a>
-        <a href="#open-games">Offene Spiele</a>
-        <a href="#finished-games">Resultate</a>
-        <a href="#ranking">Rangliste</a>
+        <div class="burger-menu" onclick="toggleMenu()">
+            <div></div>
+            <div></div>
+            <div></div>
+        </div>
+        <div class="navbar-links">
+            <a href="#home">Home</a>
+            <a href="#news">News</a>
+            <a href="#teams">Teams</a>
+            <a href="#open-games">Offene Spiele</a>
+            <a href="#finished-games">Resultate</a>
+            <a href="#ranking">Rangliste</a>
+        </div>
     </div>
+
 
     <h1>TöGGeli-Cup 2025</h1>
 
@@ -284,6 +354,14 @@
             setInterval(loadAllData, 30000);
         };
     </script>
+
+    <script>
+    function toggleMenu() {
+        const menu = document.querySelector(".navbar-links");
+        menu.classList.toggle("show");
+    }
+</script>
+
 
 </body>
 </html>

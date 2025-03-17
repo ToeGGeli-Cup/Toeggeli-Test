@@ -276,23 +276,28 @@
 async function sortRanking() {
     let ranking = {};
 
-    // 🔹 1️⃣ Hole alle Teams aus der "Teams"-Tabelle
+    // 🔹 1️⃣ Starte beide Google Sheets-Anfragen gleichzeitig
     const teamsUrl = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:json&sheet=Teams`;
-    const teamsResponse = await fetch(teamsUrl);
-    const teamsText = await teamsResponse.text();
-    const teamsJson = JSON.parse(teamsText.substr(47).slice(0, -2));
-
-    let teamsList = teamsJson.table.rows.map(row => row.c[0] ? row.c[0].v : "").filter(team => team !== "");
-
-    // 🔹 2️⃣ Hole alle Resultate aus der "Resultate"-Tabelle
     const resultsUrl = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:json&sheet=Resultate`;
-    const resultsResponse = await fetch(resultsUrl);
+
+    const [teamsResponse, resultsResponse] = await Promise.all([
+        fetch(teamsUrl),
+        fetch(resultsUrl)
+    ]);
+
+    const teamsText = await teamsResponse.text();
     const resultsText = await resultsResponse.text();
+
+    const teamsJson = JSON.parse(teamsText.substr(47).slice(0, -2));
     const resultsJson = JSON.parse(resultsText.substr(47).slice(0, -2));
 
+    // 🔹 2️⃣ Lade alle Teams aus der "Teams"-Tabelle
+    let teamsList = teamsJson.table.rows.map(row => row.c[0] ? row.c[0].v : "").filter(team => team !== "");
+
+    // 🔹 3️⃣ Lade alle Spiele aus der "Resultate"-Tabelle
     let resultsData = resultsJson.table.rows.map(row => row.c.map(cell => cell ? cell.v : ""));
 
-    // 🔹 3️⃣ Erstelle das Ranking mit Punkten, Toren, usw.
+    // 🔹 4️⃣ Erstelle das Ranking mit Punkten, Toren usw.
     teamsList.forEach(team => {
         ranking[team] = { team: team, points: 0, games: 0, goals: 0, conceded: 0 };
     });
@@ -314,7 +319,7 @@ async function sortRanking() {
         if (parseInt(score2, 10) > parseInt(score1, 10)) ranking[team2].points += 1;
     });
 
-    // 🔹 4️⃣ Sortiere nach Punkten, Tordifferenz, Toren, Alphabet
+    // 🔹 5️⃣ Sortiere nach Punkten, Tordifferenz, Toren, Alphabet
     let sortedTeams = Object.values(ranking)
         .sort((a, b) => 
             b.points - a.points || 
@@ -325,6 +330,7 @@ async function sortRanking() {
 
     return sortedTeams.map((team, index) => [index + 1, team.team, team.points, team.games, team.goals, team.conceded, team.goals - team.conceded]);
 }
+
 
 // ✅ Funktion zum Laden aller Daten
 function loadAllData() {

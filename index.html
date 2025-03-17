@@ -318,12 +318,16 @@ async function loadSheet(sheetName, targetId, processFunction = null) {
 
 function processGames(data) {
     return data.filter(row => {
-        // Sicherstellen, dass die Spalten für Tore existieren (mindestens 4 Spalten)
-        if (row.length < 4) return true;
+        // Stelle sicher, dass die Spalten existieren (mindestens 4 Spalten)
+        if (!row || row.length < 4) return true;
 
-        // Falls keine Tore eingetragen sind, oder nur eine Spalte fehlt → offenes Spiel
-        return (row[1] === undefined || row[1] === "" || row[3] === undefined || row[3] === "");
-    }).map(row => [row[0], "vs", row[2]]);
+        // Falls eine der beiden Tor-Spalten leer ist, gilt das Spiel als "offen"
+        const tore1 = row[1] !== undefined && row[1] !== "" && row[1] !== null;
+        const tore2 = row[3] !== undefined && row[3] !== "" && row[3] !== null;
+
+        // Spiel gilt als offen, wenn KEINE Tore eingetragen wurden oder eine Spalte fehlt
+        return !(tore1 && tore2);
+    }).map(row => [row[0] || "", "vs", row[2] || ""]);
 }
 
         function processFinishedGames(data) {

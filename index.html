@@ -336,9 +336,11 @@ async function sortRanking() {
 function loadAllData() {
     loadSheet("News", "news-content");
     loadSheet("Teams", "teams-content");
-    loadSheet("Spiele", "open-games-content", processGames); // Offene Spiele
-    loadSheet("Resultate", "finished-games-content", processFinishedGames); // Abgeschlossene Spiele
-    loadSheet("Resultate", "ranking-content", sortRanking); // Rangliste nur aus "Resultate"
+    loadSheet("Spiele", "open-games-content", processGames);
+    loadSheet("Resultate", "finished-games-content", processFinishedGames);
+    loadSheet("Resultate", "ranking-content", sortRanking);
+}
+
 }
 
 window.onload = function() {

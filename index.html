@@ -9,12 +9,6 @@
     <title>TöGGeli-Cup 2025</title>
     <style>
 
-     /* Hervorhebung für die ersten vier Plätze */
-.highlight-top-4 td {
-    background-color: #90EE90 !important; /* Hellgrün für Qualifikation */
-}
-
-
         html {
             scroll-behavior: smooth;
         }
@@ -147,6 +141,11 @@
     z-index: 1100; /* Stellt sicher, dass es über allem bleibt */
 }
 
+/* Die ersten vier Zeilen in der offenen Spiele-Tabelle grün hervorheben */
+#open-games-content tr:nth-child(-n+4) {
+    background-color: #90EE90 !important; /* Hellgrün */
+}
+        
 /* Responsive: Burger-Menü nur auf kleinen Bildschirmen */
 @media screen and (max-width: 768px) {
     .burger-menu {
@@ -271,129 +270,74 @@
     <script>
         const sheetId = "1qUf-YbZCdAwf5aHhdMRa2yrrqn1WRTNeZhDOwTYTPgk";
 
-async function loadSheet(sheetName, targetId, processFunction = null) {
-    const url = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:json&sheet=${sheetName}`;
-    try {
-        const response = await fetch(url);
-        const text = await response.text();
-        const json = JSON.parse(text.substr(47).slice(0, -2));
-        const tableBody = document.getElementById(targetId);
-        tableBody.innerHTML = ""; // Tabelle zurücksetzen
+        async function loadSheet(sheetName, targetId, processFunction = null) {
+            const url = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:json&sheet=${sheetName}`;
+            try {
+                const response = await fetch(url);
+                const text = await response.text();
+                const json = JSON.parse(text.substr(47).slice(0, -2));
+                const tableBody = document.getElementById(targetId);
+                tableBody.innerHTML = "";
 
-        let data = json.table.rows.map(row => row.c.map(cell => cell ? cell.v : ""));
+                let data = json.table.rows.map(row => row.c.map(cell => cell ? cell.v : ""));
 
-        if (processFunction) {
-            data = processFunction(data);
+                if (processFunction) {
+                    data = processFunction(data);
+                }
+
+                data.forEach(row => {
+                    const tr = document.createElement("tr");
+                    row.forEach(cell => {
+                        const td = document.createElement("td");
+                        td.textContent = cell;
+                        tr.appendChild(td);
+                    });
+                    tableBody.appendChild(tr);
+                });
+            } catch (error) {
+                console.error("Fehler beim Laden der Daten:", error);
+            }
         }
 
-        console.log(`📊 Daten für ${targetId}:`, data); // 🔍 Debugging: Zeigt die gefilterten Daten
-
-        if (data.length === 0) {
-            console.warn(`⚠️ Keine Daten für ${targetId} geladen!`);
+        function processGames(data) {
+            return data.filter(row => row[1] === "" || row[3] === "").map(row => [row[0], "vs", row[2]]);
         }
-
-        data.forEach(row => {
-            const tr = document.createElement("tr");
-
-            row.forEach(cell => {
-                const td = document.createElement("td");
-                td.textContent = cell;
-                tr.appendChild(td);
-            });
-
-            tableBody.appendChild(tr);
-        });
-
-        console.log(`✅ Tabelle "${targetId}" erfolgreich aktualisiert.`);
-
-    } catch (error) {
-        console.error("❌ Fehler beim Laden der Daten:", error);
-    }
-}
-
-
-function processGames(data) {
-    console.log("Raw data from Google Sheets:", data); // Debugging: Zeigt alle geladenen Daten an
-
-    let filteredGames = data.map((row, index) => {
-        // Sicherstellen, dass die Zeile genug Spalten für Team 1 und Team 2 hat
-        if (!row || row.length < 3 || !row[0] || !row[2]) {
-            console.log("Skipping row (missing team names):", row);
-            return null; // Diese Zeilen ignorieren
-        }
-
-        // Falls mindestens eine der Tor-Spalten leer ist, ist das Spiel offen
-        const tore1 = row.length > 1 && row[1] !== undefined && row[1] !== "" && row[1] !== null;
-        const tore2 = row.length > 3 && row[3] !== undefined && row[3] !== "" && row[3] !== null;
-
-        const isOpen = !(tore1 && tore2); // Offen, wenn eine der Tor-Spalten fehlt oder leer ist
-
-        console.log(`Processing row: ${row[0]} vs ${row[2]} | Tore1: ${row[1] || "leer"}, Tore2: ${row[3] || "leer"} | Offen: ${isOpen}`);
-
-        return isOpen ? { index, teams: [row[0], "vs", row[2]] } : null;
-    }).filter(game => game !== null);
-
-    // 🛠 Sortierung nach ursprünglicher Reihenfolge, damit keine Spiele verschwinden
-    filteredGames.sort((a, b) => a.index - b.index);
-
-    let finalGames = filteredGames.map(game => game.teams);
-
-    console.log("Filtered open games:", finalGames); // Debugging: Gibt die finalen offenen Spiele aus
-    return finalGames;
-}
-
 
         function processFinishedGames(data) {
             return data.filter(row => row[1] !== "" && row[3] !== "");
         }
 
-function sortRanking(data) {
-    let ranking = {};
+           function sortRanking(data) {
+        let ranking = {};
+        data.forEach(row => {
+            const [team1, score1, team2, score2] = row;
+            if (!(team1 in ranking)) ranking[team1] = { team: team1, points: 0, games: 0, goals: 0, conceded: 0 };
+            if (!(team2 in ranking)) ranking[team2] = { team: team2, points: 0, games: 0, goals: 0, conceded: 0 };
 
-    // ✅ Alle Teams aus der Spiele-Tabelle erfassen (auch ohne Spiele)
-    data.forEach(row => {
-        const [team1, score1, team2, score2] = row;
-
-        if (!(team1 in ranking)) ranking[team1] = { team: team1, points: 0, games: 0, goals: 0, conceded: 0 };
-        if (!(team2 in ranking)) ranking[team2] = { team: team2, points: 0, games: 0, goals: 0, conceded: 0 };
-
-        if (score1 !== "" && score2 !== "") {
-            ranking[team1].games++;
-            ranking[team2].games++;
-            ranking[team1].goals += parseInt(score1, 10);
-            ranking[team2].goals += parseInt(score2, 10);
-            ranking[team1].conceded += parseInt(score2, 10);
-            ranking[team2].conceded += parseInt(score1, 10);
-
-            if (parseInt(score1, 10) > parseInt(score2, 10)) ranking[team1].points += 1;
-            if (parseInt(score2, 10) > parseInt(score1, 10)) ranking[team2].points += 1;
-        }
-    });
-
-    // ✅ Teams aus der "Teams"-Tabelle hinzufügen, die noch kein Spiel hatten
-    const teamsTable = document.getElementById("teams-content");
-    if (teamsTable) {
-        Array.from(teamsTable.children).forEach(row => {
-            const teamName = row.children[0]?.textContent;
-            if (teamName && !(teamName in ranking)) {
-                ranking[teamName] = { team: teamName, points: 0, games: 0, goals: 0, conceded: 0 };
+            if (score1 !== "" && score2 !== "") {
+                ranking[team1].games++;
+                ranking[team2].games++;
+                ranking[team1].goals += parseInt(score1, 10);
+                ranking[team2].goals += parseInt(score2, 10);
+                ranking[team1].conceded += parseInt(score2, 10);
+                ranking[team2].conceded += parseInt(score1, 10);
+                
+                // ✅ **Korrektur: 1 Punkt für einen Sieg**
+                if (parseInt(score1, 10) > parseInt(score2, 10)) ranking[team1].points += 1;
+                if (parseInt(score2, 10) > parseInt(score1, 10)) ranking[team2].points += 1;
             }
         });
+
+        return Object.values(ranking)
+            .sort((a, b) => 
+                b.points - a.points || 
+                (b.goals - b.conceded) - (a.goals - a.conceded) || 
+                b.goals - a.goals || 
+                a.team.localeCompare(b.team)
+            )
+            .map((team, index) => [index + 1, team.team, team.points, team.games, team.goals, team.conceded, team.goals - team.conceded]);
     }
 
-    let sortedTeams = Object.values(ranking)
-        .sort((a, b) => 
-            b.points - a.points || 
-            (b.goals - b.conceded) - (a.goals - a.conceded) || 
-            b.goals - a.goals || 
-            a.team.localeCompare(b.team)
-        );
-
-    return sortedTeams.map((team, index) => {
-        let row = [index + 1, team.team, team.points, team.games, team.goals, team.conceded, team.goals - team.conceded];
-        return index < 4 ? { row, rowClass: 'highlight-top-4' } : row;
-    });
-}
 
         function loadAllData() {
             loadSheet("News", "news-content");

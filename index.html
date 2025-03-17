@@ -278,7 +278,7 @@ async function loadSheet(sheetName, targetId, processFunction = null) {
         const text = await response.text();
         const json = JSON.parse(text.substr(47).slice(0, -2));
         const tableBody = document.getElementById(targetId);
-        tableBody.innerHTML = "";
+        tableBody.innerHTML = ""; // Tabelle zurücksetzen
 
         let data = json.table.rows.map(row => row.c.map(cell => cell ? cell.v : ""));
 
@@ -286,32 +286,28 @@ async function loadSheet(sheetName, targetId, processFunction = null) {
             data = processFunction(data);
         }
 
-        data.forEach(rowObj => {
+        console.log(`📊 Daten für ${targetId}:`, data); // 🔍 Debugging: Zeigt die gefilterten Daten
+
+        if (data.length === 0) {
+            console.warn(`⚠️ Keine Daten für ${targetId} geladen!`);
+        }
+
+        data.forEach(row => {
             const tr = document.createElement("tr");
 
-            // 🔹 Prüfen, ob rowObj ein Objekt mit "rowClass" ist (Ranking-Tabelle)
-            if (rowObj.row) {
-                if (rowObj.rowClass) {
-                    tr.classList.add(rowObj.rowClass); // Klasse für Top 4 setzen
-                }
-                rowObj.row.forEach(cell => {
-                    const td = document.createElement("td");
-                    td.textContent = cell;
-                    tr.appendChild(td);
-                });
-            } else {
-                // 🔹 Normale Tabellen ohne CSS-Klasse
-                rowObj.forEach(cell => {
-                    const td = document.createElement("td");
-                    td.textContent = cell;
-                    tr.appendChild(td);
-                });
-            }
+            row.forEach(cell => {
+                const td = document.createElement("td");
+                td.textContent = cell;
+                tr.appendChild(td);
+            });
 
             tableBody.appendChild(tr);
         });
+
+        console.log(`✅ Tabelle "${targetId}" erfolgreich aktualisiert.`);
+
     } catch (error) {
-        console.error("Fehler beim Laden der Daten:", error);
+        console.error("❌ Fehler beim Laden der Daten:", error);
     }
 }
 

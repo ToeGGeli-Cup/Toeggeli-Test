@@ -10,11 +10,11 @@
     <style>
         body { 
             font-family: Arial, sans-serif; 
-            background-color: #5B3A2E; 
+            background-color: #D81B60; /* Neue Hintergrundfarbe */
             color: white;
             text-align: center;
             margin: 0;
-            padding-top: 60px;
+            padding-top: 70px; /* Platz für Navbar */
         }
         h1, h2 {
             font-weight: bold;
@@ -23,7 +23,7 @@
             position: fixed;
             top: 0;
             width: 100%;
-            background-color: #D81B60;
+            background-color: #D81B60; /* Neue Navbar-Farbe */
             padding: 10px 0;
             display: flex;
             flex-wrap: wrap;
@@ -46,11 +46,11 @@
             width: 100%;
             max-width: 800px;
             margin: 20px auto;
-            padding-top: 60px;
+            padding-top: 10px;
         }
         .section-container {
             width: 100%;
-            background-color: #D81B60; /* Einheitliche Boxen für alle Abschnitte */
+            background-color: #5B3A2E; /* Neue Box-Hintergrundfarbe */
             border-radius: 10px;
             padding: 15px;
             margin-bottom: 20px;
@@ -59,6 +59,7 @@
         .section-container h2 {
             text-align: center;
             color: white;
+            margin-top: 0;
         }
         .table-container {
             width: 100%;
@@ -201,51 +202,30 @@
             }
         }
 
-        function processGames(data) {
-            return data.filter(row => row[1] === "" || row[3] === "").map(row => [row[0], "vs", row[2]]);
+        function sortRanking(data) {
+            let ranking = {};
+            data.forEach(row => {
+                const [team1, score1, team2, score2] = row;
+                if (!(team1 in ranking)) ranking[team1] = { team: team1, points: 0, games: 0, goals: 0, conceded: 0 };
+                if (!(team2 in ranking)) ranking[team2] = { team: team2, points: 0, games: 0, goals: 0, conceded: 0 };
+
+                if (score1 !== "" && score2 !== "") {
+                    ranking[team1].games++;
+                    ranking[team2].games++;
+                    ranking[team1].goals += parseInt(score1, 10);
+                    ranking[team2].goals += parseInt(score2, 10);
+                    ranking[team1].conceded += parseInt(score2, 10);
+                    ranking[team2].conceded += parseInt(score1, 10);
+                    
+                    if (parseInt(score1, 10) > parseInt(score2, 10)) ranking[team1].points += 1;
+                    if (parseInt(score2, 10) > parseInt(score1, 10)) ranking[team2].points += 1;
+                }
+            });
+
+            return Object.values(ranking).sort((a, b) => b.points - a.points).map((team, index) => [index + 1, team.team, team.points, team.games, team.goals, team.conceded, team.goals - team.conceded]);
         }
-
-        function processFinishedGames(data) {
-            return data.filter(row => row[1] !== "" && row[3] !== "");
-        }
-
-           function sortRanking(data) {
-        let ranking = {};
-        data.forEach(row => {
-            const [team1, score1, team2, score2] = row;
-            if (!(team1 in ranking)) ranking[team1] = { team: team1, points: 0, games: 0, goals: 0, conceded: 0 };
-            if (!(team2 in ranking)) ranking[team2] = { team: team2, points: 0, games: 0, goals: 0, conceded: 0 };
-
-            if (score1 !== "" && score2 !== "") {
-                ranking[team1].games++;
-                ranking[team2].games++;
-                ranking[team1].goals += parseInt(score1, 10);
-                ranking[team2].goals += parseInt(score2, 10);
-                ranking[team1].conceded += parseInt(score2, 10);
-                ranking[team2].conceded += parseInt(score1, 10);
-                
-                // ✅ **Korrektur: 1 Punkt für einen Sieg**
-                if (parseInt(score1, 10) > parseInt(score2, 10)) ranking[team1].points += 1;
-                if (parseInt(score2, 10) > parseInt(score1, 10)) ranking[team2].points += 1;
-            }
-        });
-
-        return Object.values(ranking)
-            .sort((a, b) => 
-                b.points - a.points || 
-                (b.goals - b.conceded) - (a.goals - a.conceded) || 
-                b.goals - a.goals || 
-                a.team.localeCompare(b.team)
-            )
-            .map((team, index) => [index + 1, team.team, team.points, team.games, team.goals, team.conceded, team.goals - team.conceded]);
-    }
-
 
         function loadAllData() {
-            loadSheet("News", "news-content");
-            loadSheet("Teams", "teams-content");
-            loadSheet("Spiele", "open-games-content", processGames);
-            loadSheet("Spiele", "finished-games-content", processFinishedGames);
             loadSheet("Spiele", "ranking-content", sortRanking);
         }
 

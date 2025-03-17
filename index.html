@@ -9,9 +9,9 @@
     <title>TöGGeli-Cup 2025</title>
     <style>
 
-      /* Hervorhebung der ersten vier Plätze */
-.highlight-top-4 {
-    background-color: #90EE90 !important; /* Hellgrün */
+     /* Hervorhebung für die ersten vier Plätze */
+.highlight-top-4 td {
+    background-color: #90EE90 !important; /* Hellgrün für Qualifikation */
 }
 
 
@@ -289,17 +289,21 @@ async function loadSheet(sheetName, targetId, processFunction = null) {
         data.forEach(rowObj => {
             const tr = document.createElement("tr");
 
-            // Prüfe, ob rowObj eine CSS-Klasse hat und wende sie an
-            if (rowObj.rowClass) {
-                tr.classList.add(rowObj.rowClass);
+            // Unterscheidung: Falls rowObj ein Objekt mit "rowClass" ist (Ranking-Tabelle)
+            if (Array.isArray(rowObj)) {
+                rowObj.forEach(cell => {
+                    const td = document.createElement("td");
+                    td.textContent = cell;
+                    tr.appendChild(td);
+                });
+            } else {
+                tr.classList.add(rowObj.rowClass); // CSS-Klasse für die Top 4 setzen
+                rowObj.row.forEach(cell => {
+                    const td = document.createElement("td");
+                    td.textContent = cell;
+                    tr.appendChild(td);
+                });
             }
-
-            // Erstelle die Tabellenzellen basierend auf den Zeilenwerten
-            rowObj.row.forEach(cell => {
-                const td = document.createElement("td");
-                td.textContent = cell;
-                tr.appendChild(td);
-            });
 
             tableBody.appendChild(tr);
         });
@@ -307,6 +311,7 @@ async function loadSheet(sheetName, targetId, processFunction = null) {
         console.error("Fehler beim Laden der Daten:", error);
     }
 }
+
 
 
 
@@ -348,10 +353,7 @@ function sortRanking(data) {
 
     return sortedTeams.map((team, index) => {
         let row = [index + 1, team.team, team.points, team.games, team.goals, team.conceded, team.goals - team.conceded];
-        
-        // Füge für die Top 4 eine CSS-Klasse hinzu
-        let rowClass = index < 4 ? 'highlight-top-4' : '';
-        return { row, rowClass };
+        return index < 4 ? { row, rowClass: 'highlight-top-4' } : row;
     });
 }
 

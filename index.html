@@ -177,6 +177,7 @@
     }
 }
 
+
         
     </style>
 </head>
@@ -345,7 +346,7 @@
     </script>
 
     <script>
-    function scrollToTop() {
+  function scrollToTop() {
     window.scrollTo({ top: 0, behavior: "smooth" });
     closeMenu(); // Schließt das Menü nach dem Klick auf Home
 }
@@ -353,13 +354,6 @@
 function toggleMenu() {
     const menu = document.querySelector(".navbar-links");
     menu.classList.toggle("show");
-
-    // Automatisches Einklappen nach 5 Sekunden
-    if (menu.classList.contains("show")) {
-        setTimeout(() => {
-            menu.classList.remove("show");
-        }, 5000); // Menü schließt nach 5 Sekunden
-    }
 }
 
 function closeMenu() {

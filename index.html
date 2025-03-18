@@ -298,9 +298,9 @@
             return data.filter(row => row[1] === "" || row[3] === "").map(row => [row[0], "vs", row[2]]);
         }
 
-        function processFinishedGames(data) {
-            return data.filter(row => row[1] !== "" && row[3] !== "");
-        }
+       function processFinishedGames(data) {
+    return data.map(row => [row[0], row[1], row[2], row[3]]); // Nimmt nur 4 Spalten
+}
 
            function sortRanking(data) {
         let ranking = {};

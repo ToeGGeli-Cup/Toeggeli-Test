@@ -347,10 +347,12 @@
             setInterval(loadAllData, 300000);
         };
     </script>
-<audio id="notification-sound" src="https://www.myinstants.com/media/sounds/bell.mp3"></audio>
+
+<audio id="notification-sound" src="https://www.soundjay.com/button/beep-07.wav"></audio>
 
 <script>
     const sheetId = "1qUf-YbZCdAwf5aHhdMRa2yrrqn1WRTNeZhDOwTYTPgk";
+    let firstLoad = true; // Variable, um ersten Ladevorgang zu erkennen
 
     async function loadSheet(sheetName, targetId, processFunction = null) {
         const url = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:json&sheet=${sheetName}`;
@@ -382,8 +384,11 @@
             // Prüfen, ob sich die Resultate geändert haben
             if (targetId === "finished-games-content") {
                 let currentResults = tableBody.innerHTML;
+                
                 if (currentResults !== previousResults) {
-                    document.getElementById("notification-sound").play(); // Sound abspielen
+                    if (!firstLoad) {  // Nur nach der ersten Interaktion
+                        document.getElementById("notification-sound").play();
+                    }
                     localStorage.setItem("previousResults", currentResults); // Speichern
                 }
             }
@@ -437,6 +442,8 @@
         loadSheet("Spiele", "open-games-content", processGames);
         loadSheet("Resultate", "finished-games-content", processFinishedGames);
         loadSheet("Spiele", "ranking-content", sortRanking);
+
+        firstLoad = false; // Ab hier darf der Sound abgespielt werden
     }
 
     window.onload = function() {
@@ -445,29 +452,6 @@
     };
 </script>
 
-    <script>
-  function scrollToTop() {
-    window.scrollTo({ top: 0, behavior: "smooth" });
-    closeMenu(); // Schließt das Menü nach dem Klick auf Home
-}
-
-function toggleMenu() {
-    const menu = document.querySelector(".navbar-links");
-    menu.classList.toggle("show");
-}
-
-function closeMenu() {
-    document.querySelector(".navbar-links").classList.remove("show");
-}
-
-document.querySelector(".rules-link").addEventListener("click", function() {
-    closeMenu(); // Menü schließen nach Klick auf "Turnierregeln"
-});
-
-
-</script>
-
-<audio id="notification-sound" src="https://www.myinstants.com/de/instant/bet365-goal-sound-68534/#google_vignette"></audio>
 
 </body>
 </html>

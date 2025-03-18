@@ -11,7 +11,6 @@
         html {
             scroll-behavior: smooth;
         }
-
         body { 
             font-family: Arial, sans-serif; 
             background-color: #5B3A2E; 
@@ -46,7 +45,6 @@
         .navbar a:hover {
             background-color: #003D82;
         }
-
         .burger-menu {
             display: none;
             background: #0059B2;
@@ -62,12 +60,10 @@
             right: 10px;
             z-index: 1100;
         }
-
         @media screen and (max-width: 768px) {
             .burger-menu {
                 display: block;
             }
-
             .navbar-links {
                 display: none;
                 flex-direction: column;
@@ -81,37 +77,22 @@
                 border-radius: 0 0 10px 10px;
                 z-index: 1000;
             }
-
             .navbar-links.show {
                 display: flex;
             }
-
             .navbar-links a {
                 padding: 12px;
                 font-size: 16px;
                 border-top: 1px solid white;
-                color: white;
-                text-decoration: none;
             }
-
             .navbar-links a:hover {
                 background-color: #003D82;
             }
         }
-
         .container {
             width: 100%;
             max-width: 800px;
             margin: 20px auto;
-            padding-top: 60px;
-        }
-        .section-container {
-            width: 100%;
-            background-color: #5B3A2E;
-            border-radius: 10px;
-            padding: 15px;
-            margin-bottom: 20px;
-            text-align: center;
         }
         .table-container {
             width: 100%;
@@ -140,15 +121,22 @@
     <button class="burger-menu" onclick="toggleMenu()">☰ Menü</button>
     <div class="navbar-links">
         <a href="#" onclick="scrollToTop()">Home</a>
-        <a href="#games">Spiele</a>
-        <a href="#ranking">Rangliste</a>
-        <a href="TC_2025_Turnierregeln.pdf" target="_blank">Turnierregeln</a>
+        <a href="#news" onclick="closeMenu()">News</a>
+        <a href="#teams" onclick="closeMenu()">Teams</a>
+        <a href="#games" onclick="closeMenu()">Spiele</a>
+        <a href="#ranking" onclick="closeMenu()">Rangliste</a>
+        <a href="TC_2025_Turnierregeln.pdf" target="_blank" class="menu-item rules-link">Turnierregeln</a>
     </div>
 </div>
 
 <h1>TöGGeli-Cup 2025</h1>
 
 <div class="container">
+    <div id="news" class="section-container">
+        <h2>News</h2>
+        <div id="news-content"></div>
+    </div>
+
     <div id="games" class="section-container">
         <h2>Spiele</h2>
         <div class="table-container">
@@ -207,31 +195,36 @@
     }
 
     function processGames(data) {
-        return data.map(row => [
-            row[0] || "",  
-            row[1] !== undefined && row[1] !== "" ? row[1] : "",  
-            row[2] || "",  
-            row[3] !== undefined && row[3] !== "" ? row[3] : ""  
-        ]);
+        return data.map(row => row.map(cell => cell !== undefined && cell !== "" ? cell : ""));
     }
 
-    function toggleMenu() {
-        const menu = document.querySelector(".navbar-links");
-        menu.classList.toggle("show");
-    }
-
-    function closeMenu() {
-        document.querySelector(".navbar-links").classList.remove("show");
+    function processRanking(data) {
+        return data.filter(row => row[1] !== "" && row[3] !== "");
     }
 
     function loadAllData() {
+        loadSheet("News", "news-content");
         loadSheet("Spiele", "games-content", processGames);
+        loadSheet("Spiele", "ranking-content", processRanking);
     }
 
     window.onload = function() {
         loadAllData();
         setInterval(loadAllData, 300000);
     };
+
+    function scrollToTop() {
+        window.scrollTo({ top: 0, behavior: "smooth" });
+        closeMenu();
+    }
+
+    function toggleMenu() {
+        document.querySelector(".navbar-links").classList.toggle("show");
+    }
+
+    function closeMenu() {
+        document.querySelector(".navbar-links").classList.remove("show");
+    }
 </script>
 
 </body>

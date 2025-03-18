@@ -302,87 +302,49 @@
             return data.filter(row => row[1] !== "" && row[3] !== "");
         }
 
-    async function sortRanking() {
-    let ranking = {};
-    
-    // 1️⃣ Alle Teams aus der "Teams"-Tabelle holen
-    const teamsResponse = await fetch(`https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:json&sheet=Teams`);
-    const teamsText = await teamsResponse.text();
-    const teamsJson = JSON.parse(teamsText.substr(47).slice(0, -2));
-    
-    let teams = teamsJson.table.rows.map(row => row.c.map(cell => cell ? cell.v.trim() : "").filter(cell => cell !== "")[0]); // Nur Teamnamen ohne leere Werte
+           function sortRanking(data) {
+        let ranking = {};
+        data.forEach(row => {
+            const [team1, score1, team2, score2] = row;
+            if (!(team1 in ranking)) ranking[team1] = { team: team1, points: 0, games: 0, goals: 0, conceded: 0 };
+            if (!(team2 in ranking)) ranking[team2] = { team: team2, points: 0, games: 0, goals: 0, conceded: 0 };
 
-    // 2️⃣ Alle Teams mit 0 Punkten initialisieren
-    teams.forEach(team => {
-        if (team && team.trim() !== "") { // ❗️ Filtert leere oder falsche Werte heraus
-            ranking[team] = { team: team, points: 0, games: 0, goals: 0, conceded: 0 };
+            if (score1 !== "" && score2 !== "") {
+                ranking[team1].games++;
+                ranking[team2].games++;
+                ranking[team1].goals += parseInt(score1, 10);
+                ranking[team2].goals += parseInt(score2, 10);
+                ranking[team1].conceded += parseInt(score2, 10);
+                ranking[team2].conceded += parseInt(score1, 10);
+                
+                // ✅ **Korrektur: 1 Punkt für einen Sieg**
+                if (parseInt(score1, 10) > parseInt(score2, 10)) ranking[team1].points += 1;
+                if (parseInt(score2, 10) > parseInt(score1, 10)) ranking[team2].points += 1;
+            }
+        });
+
+        return Object.values(ranking)
+            .sort((a, b) => 
+                b.points - a.points || 
+                (b.goals - b.conceded) - (a.goals - a.conceded) || 
+                b.goals - a.goals || 
+                a.team.localeCompare(b.team)
+            )
+            .map((team, index) => [index + 1, team.team, team.points, team.games, team.goals, team.conceded, team.goals - team.conceded]);
+    }
+
+
+        function loadAllData() {
+            loadSheet("News", "news-content");
+            loadSheet("Teams", "teams-content");
+            loadSheet("Spiele", "open-games-content", processGames);
+            loadSheet("Spiele", "finished-games-content", processFinishedGames);
+            loadSheet("Spiele", "ranking-content", sortRanking);
         }
-    });
 
-    // 3️⃣ Ergebnisse aus "Resultate"-Tabelle holen und Punkte hinzufügen
-    const resultResponse = await fetch(`https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:json&sheet=Resultate`);
-    const resultText = await resultResponse.text();
-    const resultJson = JSON.parse(resultText.substr(47).slice(0, -2));
-
-    let results = resultJson.table.rows.map(row => row.c.map(cell => cell ? cell.v : "").filter(cell => cell !== ""));
-
-    results.forEach(row => {
-        const [team1, score1, team2, score2] = row;
-
-        if (!(team1 in ranking)) ranking[team1] = { team: team1, points: 0, games: 0, goals: 0, conceded: 0 };
-        if (!(team2 in ranking)) ranking[team2] = { team: team2, points: 0, games: 0, goals: 0, conceded: 0 };
-
-        if (score1 !== "" && score2 !== "") {
-            ranking[team1].games++;
-            ranking[team2].games++;
-            ranking[team1].goals += parseInt(score1, 10);
-            ranking[team2].goals += parseInt(score2, 10);
-            ranking[team1].conceded += parseInt(score2, 10);
-            ranking[team2].conceded += parseInt(score1, 10);
-
-            if (parseInt(score1, 10) > parseInt(score2, 10)) ranking[team1].points += 1;
-            if (parseInt(score2, 10) > parseInt(score1, 10)) ranking[team2].points += 1;
-        }
-    });
-
-    // 4️⃣ Rangliste sortieren
-    let sortedTeams = Object.values(ranking)
-        .sort((a, b) =>
-            b.points - a.points ||
-            (b.goals - b.conceded) - (a.goals - a.conceded) ||
-            b.goals - a.goals ||
-            a.team.localeCompare(b.team)
-        )
-        .map((team, index) => [index + 1, team.team, team.points, team.games, team.goals, team.conceded, team.goals - team.conceded]);
-
-    return sortedTeams;
-}
-
-// Funktion aufrufen und anzeigen
-async function loadRanking() {
-    const rankingData = await sortRanking();
-    const tableBody = document.getElementById("ranking-content");
-    tableBody.innerHTML = "";
-
-    rankingData.forEach(row => {
-        if (row[1]) { // ❗️ Verhindert leere Zeilen in der Tabelle
-            const tr = document.createElement("tr");
-            row.forEach(cell => {
-                const td = document.createElement("td");
-                td.textContent = cell;
-                tr.appendChild(td);
-            });
-            tableBody.appendChild(tr);
-        }
-    });
-}
-
-// Funktion bei Seitenstart laden
-window.onload = function() {
-    loadRanking();
-    setInterval(loadRanking, 300000);
-};
-
+        window.onload = function() {
+            loadAllData();
+            setInterval(loadAllData, 300000);
         };
     </script>
 

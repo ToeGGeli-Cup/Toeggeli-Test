@@ -347,6 +347,103 @@
             setInterval(loadAllData, 300000);
         };
     </script>
+<audio id="notification-sound" src="https://www.myinstants.com/media/sounds/bell.mp3"></audio>
+
+<script>
+    const sheetId = "1qUf-YbZCdAwf5aHhdMRa2yrrqn1WRTNeZhDOwTYTPgk";
+
+    async function loadSheet(sheetName, targetId, processFunction = null) {
+        const url = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:json&sheet=${sheetName}`;
+        try {
+            const response = await fetch(url);
+            const text = await response.text();
+            const json = JSON.parse(text.substr(47).slice(0, -2));
+            const tableBody = document.getElementById(targetId);
+            let previousResults = localStorage.getItem("previousResults") || "";
+
+            tableBody.innerHTML = "";
+
+            let data = json.table.rows.map(row => row.c.map(cell => cell ? cell.v : ""));
+
+            if (processFunction) {
+                data = processFunction(data);
+            }
+
+            data.forEach(row => {
+                const tr = document.createElement("tr");
+                row.forEach(cell => {
+                    const td = document.createElement("td");
+                    td.textContent = cell;
+                    tr.appendChild(td);
+                });
+                tableBody.appendChild(tr);
+            });
+
+            // Prüfen, ob sich die Resultate geändert haben
+            if (targetId === "finished-games-content") {
+                let currentResults = tableBody.innerHTML;
+                if (currentResults !== previousResults) {
+                    document.getElementById("notification-sound").play(); // Sound abspielen
+                    localStorage.setItem("previousResults", currentResults); // Speichern
+                }
+            }
+
+        } catch (error) {
+            console.error("Fehler beim Laden der Daten:", error);
+        }
+    }
+
+    function processGames(data) {
+        return data.filter(row => row[1] === "" || row[3] === "").map(row => [row[0], "vs", row[2]]);
+    }
+
+    function processFinishedGames(data) {
+        return data.filter(row => row[1] !== "" && row[3] !== "");
+    }
+
+    function sortRanking(data) {
+        let ranking = {};
+        data.forEach(row => {
+            const [team1, score1, team2, score2] = row;
+            if (!(team1 in ranking)) ranking[team1] = { team: team1, points: 0, games: 0, goals: 0, conceded: 0 };
+            if (!(team2 in ranking)) ranking[team2] = { team: team2, points: 0, games: 0, goals: 0, conceded: 0 };
+
+            if (score1 !== "" && score2 !== "") {
+                ranking[team1].games++;
+                ranking[team2].games++;
+                ranking[team1].goals += parseInt(score1, 10);
+                ranking[team2].goals += parseInt(score2, 10);
+                ranking[team1].conceded += parseInt(score2, 10);
+                ranking[team2].conceded += parseInt(score1, 10);
+
+                if (parseInt(score1, 10) > parseInt(score2, 10)) ranking[team1].points += 1;
+                if (parseInt(score2, 10) > parseInt(score1, 10)) ranking[team2].points += 1;
+            }
+        });
+
+        return Object.values(ranking)
+            .sort((a, b) => 
+                b.points - a.points || 
+                (b.goals - b.conceded) - (a.goals - a.conceded) || 
+                b.goals - a.goals || 
+                a.team.localeCompare(b.team)
+            )
+            .map((team, index) => [index + 1, team.team, team.points, team.games, team.goals, team.conceded, team.goals - team.conceded]);
+    }
+
+    function loadAllData() {
+        loadSheet("News", "news-content");
+        loadSheet("Teams", "teams-content");
+        loadSheet("Spiele", "open-games-content", processGames);
+        loadSheet("Resultate", "finished-games-content", processFinishedGames);
+        loadSheet("Spiele", "ranking-content", sortRanking);
+    }
+
+    window.onload = function() {
+        loadAllData();
+        setInterval(loadAllData, 300000);
+    };
+</script>
 
     <script>
   function scrollToTop() {
@@ -370,7 +467,7 @@ document.querySelector(".rules-link").addEventListener("click", function() {
 
 </script>
 
-<audio id="notification-sound" src="https://www.myinstants.com/de/search/?name=quagmire"></audio>
+<audio id="notification-sound" src="https://www.myinstants.com/de/instant/bet365-goal-sound-68534/#google_vignette"></audio>
 
 </body>
 </html>

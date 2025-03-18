@@ -13,6 +13,23 @@
             scroll-behavior: smooth;
         }
 
+function requestNotificationPermission() {
+    if ("Notification" in window) {
+        Notification.requestPermission().then(permission => {
+            if (permission === "granted") {
+                console.log("Benachrichtigungen erlaubt!");
+            }
+        });
+    }
+}
+
+// Beim Laden der Seite prüfen
+window.onload = function() {
+    requestNotificationPermission();
+    loadAllData();
+    setInterval(loadAllData, 300000);
+};
+
         
         body { 
             font-family: Arial, sans-serif; 
@@ -293,6 +310,36 @@
                 console.error("Fehler beim Laden der Daten:", error);
             }
         }
+
+        function checkForNewResults(newResults) {
+    let previousResults = JSON.parse(localStorage.getItem("previousResults")) || [];
+
+    newResults.forEach(result => {
+        if (!previousResults.some(old => JSON.stringify(old) === JSON.stringify(result))) {
+            // Falls das Resultat neu ist → Push-Benachrichtigung senden
+            if (Notification.permission === "granted") {
+                new Notification("Neues Spielergebnis!", {
+                    body: `${result[0]} ${result[1]} - ${result[3]} ${result[2]}`,
+                    icon: "https://yourwebsite.com/icon.png"
+                });
+            }
+        }
+    });
+
+    // Aktualisiere gespeicherte Ergebnisse
+    localStorage.setItem("previousResults", JSON.stringify(newResults));
+}
+
+// Anpassung in loadAllData(), um neue Resultate zu prüfen
+async function loadAllData() {
+    await loadSheet("News", "news-content");
+    await loadSheet("Teams", "teams-content");
+    await loadSheet("Spiele", "open-games-content", processGames);
+    let results = await loadSheet("Resultate", "finished-games-content", processFinishedGames);
+    
+    checkForNewResults(results); // Prüft neue Resultate und sendet ggf. eine Benachrichtigung
+}
+
 
         function processGames(data) {
             return data.filter(row => row[1] === "" || row[3] === "").map(row => [row[0], "vs", row[2]]);

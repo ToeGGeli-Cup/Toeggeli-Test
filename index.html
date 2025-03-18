@@ -33,6 +33,19 @@ function askForNotificationPermission() {
 // Rufe die Funktion auf, wenn die Seite geladen wird
 askForNotificationPermission();
 
+function testNotification() {
+    if (Notification.permission === "granted") {
+        new Notification("Test-Benachrichtigung", {
+            body: "Wenn du das siehst, funktionieren Benachrichtigungen!",
+            icon: "https://yourwebsite.com/icon.png" // Optional, ein kleines Symbol für die Nachricht
+        });
+    } else {
+        console.log("❌ Benachrichtigungen nicht erlaubt.");
+    }
+}
+
+// Nach 3 Sekunden eine Test-Benachrichtigung senden
+setTimeout(testNotification, 3000);
 
         
         body { 
@@ -366,7 +379,25 @@ askForNotificationPermission();
     localStorage.setItem("previousResults", JSON.stringify(newResults));
 }
 
-// Anpassung in loadAllData(), um neue Resultate zu prüfen
+function checkForNewResults(newResults) {
+    let previousResults = JSON.parse(localStorage.getItem("previousResults")) || [];
+
+    newResults.forEach(result => {
+        if (!previousResults.some(old => JSON.stringify(old) === JSON.stringify(result))) {
+            // Falls das Resultat neu ist → Push-Benachrichtigung senden
+            if (Notification.permission === "granted") {
+                new Notification("Neues Spielergebnis!", {
+                    body: `${result[0]} ${result[1]} - ${result[3]} ${result[2]}`,
+                    icon: "https://yourwebsite.com/icon.png" // Optional
+                });
+            }
+        }
+    });
+
+    // Speichere die neuen Ergebnisse im LocalStorage
+    localStorage.setItem("previousResults", JSON.stringify(newResults));
+}
+
 async function loadAllData() {
     await loadSheet("News", "news-content");
     await loadSheet("Teams", "teams-content");

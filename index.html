@@ -280,6 +280,18 @@ window.onload = function() {
     </div>
 
     <script>
+
+        if ("Notification" in window) {
+    Notification.requestPermission().then(permission => {
+        if (permission === "granted") {
+            console.log("Benachrichtigungen erlaubt.");
+        } else {
+            console.log("Benachrichtigungen blockiert.");
+        }
+    });
+}
+
+        
         const sheetId = "1qUf-YbZCdAwf5aHhdMRa2yrrqn1WRTNeZhDOwTYTPgk";
 
         async function loadSheet(sheetName, targetId, processFunction = null) {
@@ -320,6 +332,26 @@ window.onload = function() {
             if (Notification.permission === "granted") {
                 new Notification("Neues Spielergebnis!", {
                     body: `${result[0]} ${result[1]} - ${result[3]} ${result[2]}`,
+                    icon: "https://yourwebsite.com/icon.png" // Falls du ein Icon hast
+                });
+            }
+        }
+    });
+
+    // Aktualisiere gespeicherte Ergebnisse
+    localStorage.setItem("previousResults", JSON.stringify(newResults));
+}
+
+        
+        function checkForNewResults(newResults) {
+    let previousResults = JSON.parse(localStorage.getItem("previousResults")) || [];
+
+    newResults.forEach(result => {
+        if (!previousResults.some(old => JSON.stringify(old) === JSON.stringify(result))) {
+            // Falls das Resultat neu ist → Push-Benachrichtigung senden
+            if (Notification.permission === "granted") {
+                new Notification("Neues Spielergebnis!", {
+                    body: `${result[0]} ${result[1]} - ${result[3]} ${result[2]}`,
                     icon: "https://yourwebsite.com/icon.png"
                 });
             }
@@ -339,6 +371,7 @@ async function loadAllData() {
     
     checkForNewResults(results); // Prüft neue Resultate und sendet ggf. eine Benachrichtigung
 }
+
 
 
         function processGames(data) {

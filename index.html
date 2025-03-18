@@ -13,22 +13,26 @@
             scroll-behavior: smooth;
         }
 
-function requestNotificationPermission() {
+function askForNotificationPermission() {
     if ("Notification" in window) {
         Notification.requestPermission().then(permission => {
             if (permission === "granted") {
-                console.log("Benachrichtigungen erlaubt!");
+                console.log("✅ Benachrichtigungen erlaubt.");
+            } else if (permission === "denied") {
+                console.log("❌ Benachrichtigungen blockiert. Bitte manuell in den Browsereinstellungen aktivieren.");
+                alert("Benachrichtigungen sind blockiert. Bitte erlaube sie in den Browsereinstellungen.");
+            } else {
+                console.log("ℹ️ Benutzer hat die Entscheidung noch nicht getroffen.");
             }
         });
+    } else {
+        console.log("❌ Dieser Browser unterstützt keine Benachrichtigungen.");
     }
 }
 
-// Beim Laden der Seite prüfen
-window.onload = function() {
-    requestNotificationPermission();
-    loadAllData();
-    setInterval(loadAllData, 300000);
-};
+// Rufe die Funktion auf, wenn die Seite geladen wird
+askForNotificationPermission();
+
 
         
         body { 

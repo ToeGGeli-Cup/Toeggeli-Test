@@ -298,9 +298,17 @@
             return data.filter(row => row[1] === "" || row[3] === "").map(row => [row[0], "vs", row[2]]);
         }
 
-        function processFinishedGames(data) {
-            return data.filter(row => row[1] !== "" && row[3] !== "");
-        }
+      function processFinishedGames(data) {
+    return data
+        .map(row => [
+            row[0] || "",  // Team 1
+            row[1] !== undefined && row[1] !== "" ? row[1] : "0", // Tore Team 1 (Setzt 0, falls leer)
+            row[2] || "",  // Team 2
+            row[3] !== undefined && row[3] !== "" ? row[3] : "0"  // Tore Team 2 (Setzt 0, falls leer)
+        ])
+        .filter(row => row[0] && row[2]); // Entfernt komplett leere Zeilen
+}
+
 
            function sortRanking(data) {
         let ranking = {};

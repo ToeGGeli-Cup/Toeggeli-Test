@@ -8,10 +8,7 @@
     <meta http-equiv="Expires" content="0">
     <title>TöGGeli-Cup 2025</title>
     <style>
-        html {
-            scroll-behavior: smooth;
-        }
-
+        html { scroll-behavior: smooth; }
         body { 
             font-family: Arial, sans-serif; 
             background-color: #5B3A2E; 
@@ -20,11 +17,7 @@
             margin: 0;
             padding-top: 60px;
         }
-
-        h1, h2 {
-            font-weight: bold;
-        }
-
+        h1, h2 { font-weight: bold; }
         .navbar {
             position: fixed;
             top: 0;
@@ -37,7 +30,6 @@
             gap: 5px;
             z-index: 1000;
         }
-
         .navbar a {
             background-color: #0059B2;
             color: white;
@@ -46,11 +38,7 @@
             border-radius: 5px;
             font-size: 14px;
         }
-
-        .navbar a:hover {
-            background-color: #003D82;
-        }
-
+        .navbar a:hover { background-color: #003D82; }
         .tournament-logo {
             display: flex;
             justify-content: center;
@@ -61,20 +49,17 @@
             width: 210px;
             height: auto;
         }
-
         .tournament-logo img {
             width: 100%;
             height: auto;
             border-radius: 10px;
         }
-
         .container {
             width: 100%;
             max-width: 800px;
             margin: 20px auto;
             padding-top: 60px;
         }
-
         .section-container {
             width: 100%;
             background-color: #5B3A2E;
@@ -83,17 +68,11 @@
             margin-bottom: 20px;
             text-align: center;
         }
-
-        .table-container {
-            width: 100%;
-            overflow-x: auto;
-        }
-
+        .table-container { width: 100%; overflow-x: auto; }
         table {
             width: 100%;
             border-collapse: collapse;
         }
-
         th, td {
             padding: 10px;
             border: 1px solid black;
@@ -101,31 +80,13 @@
             color: black;
             text-align: center;
         }
-
-        th {
-            background-color: #0059B2;
-            color: white;
-        }
-
+        th { background-color: #0059B2; color: white; }
         @media screen and (max-width: 768px) {
-            body {
-                font-size: 14px;
-            }
-            h1, h2 {
-                font-size: 18px;
-            }
-            .navbar {
-                flex-direction: row;
-                flex-wrap: wrap;
-            }
-            .navbar a {
-                padding: 8px 10px;
-                font-size: 12px;
-            }
-            th, td {
-                padding: 5px;
-                font-size: 12px;
-            }
+            body { font-size: 14px; }
+            h1, h2 { font-size: 18px; }
+            .navbar { flex-direction: row; flex-wrap: wrap; }
+            .navbar a { padding: 8px 10px; font-size: 12px; }
+            th, td { padding: 5px; font-size: 12px; }
         }
     </style>
 </head>
@@ -192,7 +153,7 @@
 <script>
     const sheetId = "1qUf-YbZCdAwf5aHhdMRa2yrrqn1WRTNeZhDOwTYTPgk";
 
-    async function loadSheet(sheetName, targetId) {
+    async function loadSheet(sheetName, targetId, processFunction = null) {
         const url = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:json&sheet=${sheetName}`;
         try {
             const response = await fetch(url);
@@ -201,7 +162,11 @@
             const tableBody = document.getElementById(targetId);
             tableBody.innerHTML = "";
 
-            let data = json.table.rows.map(row => row.c.map(cell => cell ? cell.v : "0"));
+            let data = json.table.rows.map(row => row.c.map(cell => cell ? cell.v : ""));
+
+            if (processFunction) {
+                data = processFunction(data);
+            }
 
             data.forEach(row => {
                 const tr = document.createElement("tr");
@@ -217,21 +182,30 @@
         }
     }
 
+    function processGames(data) {
+        return data.map(row => [
+            row[0] || "",  
+            row[1] !== undefined && row[1] !== "" ? row[1] : "0", 
+            row[2] || "",  
+            row[3] !== undefined && row[3] !== "" ? row[3] : "0"
+        ]);
+    }
+
+    function processRanking(data) {
+        return data; // Hier die Sortierlogik einfügen
+    }
+
     function loadAllData() {
         loadSheet("News", "news-content");
         loadSheet("Teams", "teams-content");
-        loadSheet("Spiele", "games-content");
-        loadSheet("Spiele", "ranking-content");
+        loadSheet("Spiele", "games-content", processGames);
+        loadSheet("Spiele", "ranking-content", processRanking);
     }
 
     window.onload = function() {
         loadAllData();
         setInterval(loadAllData, 300000);
     };
-
-    function scrollToTop() {
-        window.scrollTo({ top: 0, behavior: "smooth" });
-    }
 </script>
 
 </body>

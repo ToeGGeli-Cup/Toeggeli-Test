@@ -108,8 +108,6 @@
     color: white;
 }
 
-
-
         
         .container {
             width: 100%;
@@ -249,70 +247,6 @@
     <div class="tournament-logo">
         <img src="Logo.png" alt="TöGGeli-Cup 2025 Logo">
     </div>
-<script>
-    // 🕒 COUNTDOWN BIS ZU DEN SPIELTAGEN
-    function updateCountdown() {
-        const now = new Date().getTime();
-
-        const groupStageEnd = new Date("2025-06-06T23:59:59").getTime(); // Vorrunde-Ende
-        const finalStage = new Date("2025-06-17T18:00:00").getTime(); // Finalspiele
-
-        let targetDate = groupStageEnd;
-        let message = "Vorrunde endet in:";
-
-        if (now > groupStageEnd) {
-            targetDate = finalStage;
-            message = "Finalspiele beginnen in:";
-        }
-
-        const distance = targetDate - now;
-
-        if (distance < 0) {
-            document.getElementById("countdown").innerHTML = "Die Finalspiele haben begonnen!";
-            return;
-        }
-
-        const days = Math.floor(distance / (1000 * 60 * 60 * 24));
-        const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-        const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
-        const seconds = Math.floor((distance % (1000 * 60)) / 1000);
-
-        document.getElementById("countdown").innerHTML = `${message} ${days} Tage ${hours} Std ${minutes} Min ${seconds} Sek`;
-    }
-
-    // 📊 FORTSCHRITTSANZEIGE: GESPIELTE SPIELE LADEN
-    async function updateProgress() {
-        const sheetId = "1qUf-YbZCdAwf5aHhdMRa2yrrqn1WRTNeZhDOwTYTPgk";
-        const url = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:json&sheet=Spiele`;
-
-        try {
-            const response = await fetch(url);
-            const text = await response.text();
-            const json = JSON.parse(text.substr(47).slice(0, -2));
-            const data = json.table.rows.map(row => row.c.map(cell => cell ? cell.v : ""));
-
-            const totalGames = 105; // Gesamtzahl der Vorrundenspiele
-            const playedGames = data.filter(row => row[1] !== "" && row[3] !== "").length; // Spiele mit Ergebnissen
-
-            const progressPercentage = (playedGames / totalGames) * 100;
-
-            document.getElementById("progress-fill").style.width = `${progressPercentage}%`;
-            document.getElementById("progress-text").innerText = `${playedGames} von ${totalGames} Spielen gespielt`;
-
-        } catch (error) {
-            console.error("Fehler beim Laden der gespielten Spiele:", error);
-        }
-    }
-
-    // 🔄 AUTOMATISCHE UPDATES
-    window.onload = function () {
-        updateCountdown();
-        setInterval(updateCountdown, 1000); // Countdown jede Sekunde aktualisieren
-
-        updateProgress();
-        setInterval(updateProgress, 60000); // Fortschritt jede Minute aktualisieren
-    };
-</script>
 
     
     <div class="container">
@@ -464,67 +398,6 @@
         };
     </script>
 
-// 🕒 COUNTDOWN BIS ZU DEN SPIELTAGEN
-function updateCountdown() {
-    const now = new Date().getTime();
-
-    const groupStageEnd = new Date("2025-06-06T23:59:59").getTime(); // Vorrunde-Ende
-    const finalStage = new Date("2025-06-17T18:00:00").getTime(); // Finalspiele
-
-    let targetDate = groupStageEnd;
-    let message = "Vorrunde endet in:";
-
-    if (now > groupStageEnd) {
-        targetDate = finalStage;
-        message = "Finalspiele beginnen in:";
-    }
-
-    const distance = targetDate - now;
-
-    if (distance < 0) {
-        document.getElementById("countdown").innerHTML = "Die Finalspiele haben begonnen!";
-        return;
-    }
-
-    const days = Math.floor(distance / (1000 * 60 * 60 * 24));
-    const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-    const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
-    const seconds = Math.floor((distance % (1000 * 60)) / 1000);
-
-    document.getElementById("countdown").innerHTML = `${message} ${days} Tage ${hours} Std ${minutes} Min ${seconds} Sek`;
-}
-
-// 📊 FORTSCHRITTSANZEIGE: GESPIELTE SPIELE LADEN
-async function updateProgress() {
-    const url = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:json&sheet=Spiele`;
-    
-    try {
-        const response = await fetch(url);
-        const text = await response.text();
-        const json = JSON.parse(text.substr(47).slice(0, -2));
-        const data = json.table.rows.map(row => row.c.map(cell => cell ? cell.v : ""));
-
-        const totalGames = 105; // Gesamtzahl der Vorrundenspiele
-        const playedGames = data.filter(row => row[1] !== "" && row[3] !== "").length; // Spiele mit Ergebnissen
-
-        const progressPercentage = (playedGames / totalGames) * 100;
-
-        document.getElementById("progress-fill").style.width = `${progressPercentage}%`;
-        document.getElementById("progress-text").innerText = `${playedGames} von ${totalGames} Spielen gespielt`;
-
-    } catch (error) {
-        console.error("Fehler beim Laden der gespielten Spiele:", error);
-    }
-}
-
-// 🔄 AUTOMATISCHE UPDATES
-window.onload = function () {
-    updateCountdown();
-    setInterval(updateCountdown, 1000);
-
-    updateProgress();
-    setInterval(updateProgress, 60000); // Fortschritt jede Minute aktualisieren
-};
 
     
     <script>
@@ -549,6 +422,71 @@ document.querySelector(".rules-link").addEventListener("click", function() {
 
 </script>
 
+<script>
+    // 🕒 COUNTDOWN BIS ZU DEN SPIELTAGEN
+    function updateCountdown() {
+        const now = new Date().getTime();
 
+        const groupStageEnd = new Date("2025-06-06T23:59:59").getTime(); // Vorrunde-Ende
+        const finalStage = new Date("2025-06-17T18:00:00").getTime(); // Finalspiele
+
+        let targetDate = groupStageEnd;
+        let message = "Vorrunde endet in:";
+
+        if (now > groupStageEnd) {
+            targetDate = finalStage;
+            message = "Finalspiele beginnen in:";
+        }
+
+        const distance = targetDate - now;
+
+        if (distance < 0) {
+            document.getElementById("countdown").innerHTML = "Die Finalspiele haben begonnen!";
+            return;
+        }
+
+        const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+        const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+        const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+        document.getElementById("countdown").innerHTML = `${message} ${days} Tage ${hours} Std ${minutes} Min ${seconds} Sek`;
+    }
+
+    // 📊 FORTSCHRITTSANZEIGE: GESPIELTE SPIELE LADEN
+    async function updateProgress() {
+        const sheetId = "1qUf-YbZCdAwf5aHhdMRa2yrrqn1WRTNeZhDOwTYTPgk";
+        const url = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:json&sheet=Spiele`;
+
+        try {
+            const response = await fetch(url);
+            const text = await response.text();
+            const json = JSON.parse(text.substr(47).slice(0, -2));
+            const data = json.table.rows.map(row => row.c.map(cell => cell ? cell.v : ""));
+
+            const totalGames = 105; // Gesamtzahl der Vorrundenspiele
+            const playedGames = data.filter(row => row[1] !== "" && row[3] !== "").length; // Spiele mit Ergebnissen
+
+            const progressPercentage = (playedGames / totalGames) * 100;
+
+            document.getElementById("progress-fill").style.width = `${progressPercentage}%`;
+            document.getElementById("progress-text").innerText = `${playedGames} von ${totalGames} Spielen gespielt`;
+
+        } catch (error) {
+            console.error("Fehler beim Laden der gespielten Spiele:", error);
+        }
+    }
+
+    // 🔄 AUTOMATISCHE UPDATES
+    window.onload = function () {
+        updateCountdown();
+        setInterval(updateCountdown, 1000); // Countdown jede Sekunde aktualisieren
+
+        updateProgress();
+        setInterval(updateProgress, 60000); // Fortschritt jede Minute aktualisieren
+    };
+</script>
+
+    
 </body>
 </html>

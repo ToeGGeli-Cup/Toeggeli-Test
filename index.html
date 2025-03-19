@@ -179,47 +179,47 @@
 }
 
 /* 🕒 COUNTDOWN DESIGN */
-.countdown-container {
-    background: #D81B60;
-    color: white;
-    padding: 20px;
-    font-size: 24px;
-    font-weight: bold;
-    margin: 20px auto;
-    text-align: center;
-    border-radius: 10px;
-    max-width: 400px;
-}
+        .countdown-container {
+            background: #D81B60;
+            color: white;
+            padding: 20px;
+            font-size: 24px;
+            font-weight: bold;
+            margin: 20px auto;
+            text-align: center;
+            border-radius: 10px;
+            max-width: 400px;
+        }
 
-/* 📊 FORTSCHRITTSBALKEN DESIGN */
-.progress-container {
-    width: 80%;
-    max-width: 500px;
-    margin: 20px auto;
-    text-align: center;
-}
+        /* 📊 FORTSCHRITTSBALKEN DESIGN */
+        .progress-container {
+            width: 80%;
+            max-width: 500px;
+            margin: 20px auto;
+            text-align: center;
+        }
 
-.progress-bar {
-    width: 100%;
-    height: 30px;
-    background-color: #ddd;
-    border-radius: 5px;
-    overflow: hidden;
-    margin-bottom: 10px;
-}
+        .progress-bar {
+            width: 100%;
+            height: 30px;
+            background-color: #ddd;
+            border-radius: 5px;
+            overflow: hidden;
+            margin-bottom: 10px;
+        }
 
-#progress-fill {
-    height: 100%;
-    width: 0%;
-    background-color: #0059B2;
-    transition: width 0.5s ease-in-out;
-}
+        #progress-fill {
+            height: 100%;
+            width: 0%;
+            background-color: #0059B2;
+            transition: width 0.5s ease-in-out;
+        }
 
-#progress-text {
-    font-size: 18px;
-    font-weight: bold;
-    color: white;
-}
+        #progress-text {
+            font-size: 18px;
+            font-weight: bold;
+            color: white;
+        }
 
         
     </style>
@@ -248,29 +248,19 @@
         <img src="Logo.png" alt="TöGGeli-Cup 2025 Logo">
     </div>
 
-// 🕒 COUNTDOWN BIS ZUM ENDE DER VORRUNDE (nur Tage)
-function updateCountdown() {
-    const now = new Date().getTime();
-    const groupStageEnd = new Date("2025-06-06T23:59:59").getTime(); // Vorrunde-Ende
+ <!-- 🕒 Countdown -->
+    <div class="countdown-container">
+        <p id="countdown">Lade Countdown...</p>
+    </div>
 
-    const distance = groupStageEnd - now;
-
-    if (distance < 0) {
-        document.getElementById("countdown").innerHTML = "Die Vorrunde ist beendet!";
-        return;
-    }
-
-    const days = Math.ceil(distance / (1000 * 60 * 60 * 24)); // Aufrunden auf volle Tage
-
-    document.getElementById("countdown").innerHTML = `Vorrunde endet in: ${days} Tage`;
-}
-
-// 🔄 AUTOMATISCHE UPDATES
-window.onload = function () {
-    updateCountdown();
-    setInterval(updateCountdown, 60000); // Countdown alle 60 Sekunden aktualisieren
-};
-
+    <!-- 📊 Fortschrittsbalken -->
+    <div class="progress-container">
+        <h2>Gespielte Spiele der Vorrunde</h2>
+        <div class="progress-bar">
+            <div id="progress-fill"></div>
+        </div>
+        <p id="progress-text">Lade Daten...</p>
+    </div>
     
     <div class="container">
         <div id="news" class="section-container">
@@ -440,60 +430,60 @@ document.querySelector(".rules-link").addEventListener("click", function() {
     closeMenu(); // Menü schließen nach Klick auf "Turnierregeln"
 });
 
-<script>
-  // 🕒 COUNTDOWN BIS ZUM ENDE DER VORRUNDE (nur Tage)
-function updateCountdown() {
-    const now = new Date().getTime();
-    const groupStageEnd = new Date("2025-06-06T23:59:59").getTime(); // Vorrunde-Ende
 
-    const distance = groupStageEnd - now;
+</script>
 
-    if (distance < 0) {
-        document.getElementById("countdown").innerHTML = "Die Vorrunde ist beendet!";
-        return;
-    }
+    <script>
+        // 🕒 COUNTDOWN BIS ZUM ENDE DER VORRUNDE (nur Tage)
+        function updateCountdown() {
+            const now = new Date().getTime();
+            const groupStageEnd = new Date("2025-06-06T23:59:59").getTime(); // Vorrunde-Ende
 
-    const days = Math.ceil(distance / (1000 * 60 * 60 * 24)); // Aufrunden auf volle Tage
+            const distance = groupStageEnd - now;
 
-    document.getElementById("countdown").innerHTML = `Vorrunde endet in: ${days} Tage`;
-}
-    // 📊 FORTSCHRITTSANZEIGE: GESPIELTE SPIELE LADEN
-    async function updateProgress() {
-        const sheetId = "1qUf-YbZCdAwf5aHhdMRa2yrrqn1WRTNeZhDOwTYTPgk";
-        const url = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:json&sheet=Spiele`;
+            if (distance < 0) {
+                document.getElementById("countdown").innerHTML = "Die Vorrunde ist beendet!";
+                return;
+            }
 
-        try {
-            const response = await fetch(url);
-            const text = await response.text();
-            const json = JSON.parse(text.substr(47).slice(0, -2));
-            const data = json.table.rows.map(row => row.c.map(cell => cell ? cell.v : ""));
+            const days = Math.ceil(distance / (1000 * 60 * 60 * 24)); // Aufrunden auf volle Tage
 
-            const totalGames = 105; // Gesamtzahl der Vorrundenspiele
-            const playedGames = data.filter(row => row[1] !== "" && row[3] !== "").length; // Spiele mit Ergebnissen
-
-            const progressPercentage = (playedGames / totalGames) * 100;
-
-            document.getElementById("progress-fill").style.width = `${progressPercentage}%`;
-            document.getElementById("progress-text").innerText = `${playedGames} von ${totalGames} Spielen gespielt`;
-
-        } catch (error) {
-            console.error("Fehler beim Laden der gespielten Spiele:", error);
+            document.getElementById("countdown").innerHTML = `Vorrunde endet in: ${days} Tage`;
         }
-    }
 
-    // 🔄 AUTOMATISCHE UPDATES
-    window.onload = function () {
-        updateCountdown();
-        setInterval(updateCountdown, 1000); // Countdown jede Sekunde aktualisieren
+        // 📊 FORTSCHRITTSANZEIGE: GESPIELTE SPIELE LADEN
+        async function updateProgress() {
+            const sheetId = "1qUf-YbZCdAwf5aHhdMRa2yrrqn1WRTNeZhDOwTYTPgk";
+            const url = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:json&sheet=Spiele`;
 
-        updateProgress();
-        setInterval(updateProgress, 60000); // Fortschritt jede Minute aktualisieren
-    };
-</script>
+            try {
+                const response = await fetch(url);
+                const text = await response.text();
+                const json = JSON.parse(text.substr(47).slice(0, -2));
+                const data = json.table.rows.map(row => row.c.map(cell => cell ? cell.v : ""));
 
-        
-</script>
+                const totalGames = 105; // Gesamtzahl der Vorrundenspiele
+                const playedGames = data.filter(row => row[1] !== "" && row[3] !== "").length; // Spiele mit Ergebnissen
 
+                const progressPercentage = (playedGames / totalGames) * 100;
+
+                document.getElementById("progress-fill").style.width = `${progressPercentage}%`;
+                document.getElementById("progress-text").innerText = `${playedGames} von ${totalGames} Spielen gespielt`;
+
+            } catch (error) {
+                console.error("Fehler beim Laden der gespielten Spiele:", error);
+            }
+        }
+
+        // 🔄 AUTOMATISCHE UPDATES
+        window.onload = function () {
+            updateCountdown();
+            setInterval(updateCountdown, 60000); // Countdown alle 60 Sekunden aktualisieren
+
+            updateProgress();
+            setInterval(updateProgress, 60000); // Fortschritt jede Minute aktualisieren
+        };
+    </script>
 
 </body>
 </html>

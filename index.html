@@ -265,7 +265,7 @@
     <script>
         const sheetId = "1qUf-YbZCdAwf5aHhdMRa2yrrqn1WRTNeZhDOwTYTPgk";
 
-        async function loadSheet(sheetName, targetId, processFunction = null) {
+       async function loadSheet(sheetName, targetId, processFunction = null, removeFirstRow = false) {
     const url = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:json&sheet=${sheetName}`;
     try {
         const response = await fetch(url);
@@ -276,8 +276,10 @@
 
         let data = json.table.rows.map(row => row.c.map(cell => cell ? cell.v : ""));
 
-        // Erste Zeile entfernen (Header aus Google Sheets)
-        data = data.slice(1);
+        // Erste Zeile entfernen, aber nur wenn removeFirstRow = true
+        if (removeFirstRow) {
+            data = data.slice(1);
+        }
 
         if (processFunction) {
             data = processFunction(data);

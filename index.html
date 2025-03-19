@@ -441,36 +441,22 @@ document.querySelector(".rules-link").addEventListener("click", function() {
 });
 
 <script>
-    // 🕒 COUNTDOWN BIS ZU DEN SPIELTAGEN
-    function updateCountdown() {
-        const now = new Date().getTime();
+  // 🕒 COUNTDOWN BIS ZUM ENDE DER VORRUNDE (nur Tage)
+function updateCountdown() {
+    const now = new Date().getTime();
+    const groupStageEnd = new Date("2025-06-06T23:59:59").getTime(); // Vorrunde-Ende
 
-        const groupStageEnd = new Date("2025-06-06T23:59:59").getTime(); // Vorrunde-Ende
-        const finalStage = new Date("2025-06-17T18:00:00").getTime(); // Finalspiele
+    const distance = groupStageEnd - now;
 
-        let targetDate = groupStageEnd;
-        let message = "Vorrunde endet in:";
-
-        if (now > groupStageEnd) {
-            targetDate = finalStage;
-            message = "Finalspiele beginnen in:";
-        }
-
-        const distance = targetDate - now;
-
-        if (distance < 0) {
-            document.getElementById("countdown").innerHTML = "Die Finalspiele haben begonnen!";
-            return;
-        }
-
-        const days = Math.floor(distance / (1000 * 60 * 60 * 24));
-        const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-        const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
-        const seconds = Math.floor((distance % (1000 * 60)) / 1000);
-
-        document.getElementById("countdown").innerHTML = `${message} ${days} Tage ${hours} Std ${minutes} Min ${seconds} Sek`;
+    if (distance < 0) {
+        document.getElementById("countdown").innerHTML = "Die Vorrunde ist beendet!";
+        return;
     }
 
+    const days = Math.ceil(distance / (1000 * 60 * 60 * 24)); // Aufrunden auf volle Tage
+
+    document.getElementById("countdown").innerHTML = `Vorrunde endet in: ${days} Tage`;
+}
     // 📊 FORTSCHRITTSANZEIGE: GESPIELTE SPIELE LADEN
     async function updateProgress() {
         const sheetId = "1qUf-YbZCdAwf5aHhdMRa2yrrqn1WRTNeZhDOwTYTPgk";

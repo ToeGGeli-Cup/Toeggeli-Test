@@ -65,21 +65,49 @@
             height: auto;
             border-radius: 10px; /* Leicht abgerundete Ecken für das Bild */
         }
+/* 🕒 COUNTDOWN DESIGN */
+.countdown-container {
+    background: #D81B60;
+    color: white;
+    padding: 20px;
+    font-size: 24px;
+    font-weight: bold;
+    margin: 20px auto;
+    text-align: center;
+    border-radius: 10px;
+    max-width: 400px;
+}
 
-        <!-- COUNTDOWN -->
-<div class="countdown-container">
-    <h2>Nächste Deadline:</h2>
-    <p id="countdown"></p>
-</div>
+/* 📊 FORTSCHRITTSBALKEN DESIGN */
+.progress-container {
+    width: 80%;
+    max-width: 500px;
+    margin: 20px auto;
+    text-align: center;
+}
 
-<!-- FORTSCHRITTSBALKEN FÜR GESPIELTE SPIELE -->
-<div class="progress-container">
-    <h2>Gespielte Spiele der Vorrunde</h2>
-    <div class="progress-bar">
-        <div id="progress-fill"></div>
-    </div>
-    <p id="progress-text">0 von 105 Spielen gespielt</p>
-</div>
+.progress-bar {
+    width: 100%;
+    height: 30px;
+    background-color: #ddd;
+    border-radius: 5px;
+    overflow: hidden;
+    margin-bottom: 10px;
+}
+
+#progress-fill {
+    height: 100%;
+    width: 0%;
+    background-color: #0059B2;
+    transition: width 0.5s ease-in-out;
+}
+
+#progress-text {
+    font-size: 18px;
+    font-weight: bold;
+    color: white;
+}
+
 
 
         
@@ -221,49 +249,70 @@
     <div class="tournament-logo">
         <img src="Logo.png" alt="TöGGeli-Cup 2025 Logo">
     </div>
+<script>
+    // 🕒 COUNTDOWN BIS ZU DEN SPIELTAGEN
+    function updateCountdown() {
+        const now = new Date().getTime();
 
-    /* COUNTDOWN DESIGN */
-.countdown-container {
-    background: #D81B60;
-    color: white;
-    padding: 20px;
-    font-size: 24px;
-    font-weight: bold;
-    margin: 20px auto;
-    text-align: center;
-    border-radius: 10px;
-    max-width: 400px;
-}
+        const groupStageEnd = new Date("2025-06-06T23:59:59").getTime(); // Vorrunde-Ende
+        const finalStage = new Date("2025-06-17T18:00:00").getTime(); // Finalspiele
 
-/* FORTSCHRITTSBALKEN DESIGN */
-.progress-container {
-    width: 80%;
-    max-width: 500px;
-    margin: 20px auto;
-    text-align: center;
-}
+        let targetDate = groupStageEnd;
+        let message = "Vorrunde endet in:";
 
-.progress-bar {
-    width: 100%;
-    height: 30px;
-    background-color: #ddd;
-    border-radius: 5px;
-    overflow: hidden;
-    margin-bottom: 10px;
-}
+        if (now > groupStageEnd) {
+            targetDate = finalStage;
+            message = "Finalspiele beginnen in:";
+        }
 
-#progress-fill {
-    height: 100%;
-    width: 0%;
-    background-color: #0059B2;
-    transition: width 0.5s ease-in-out;
-}
+        const distance = targetDate - now;
 
-#progress-text {
-    font-size: 18px;
-    font-weight: bold;
-    color: white;
-}
+        if (distance < 0) {
+            document.getElementById("countdown").innerHTML = "Die Finalspiele haben begonnen!";
+            return;
+        }
+
+        const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+        const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+        const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+        document.getElementById("countdown").innerHTML = `${message} ${days} Tage ${hours} Std ${minutes} Min ${seconds} Sek`;
+    }
+
+    // 📊 FORTSCHRITTSANZEIGE: GESPIELTE SPIELE LADEN
+    async function updateProgress() {
+        const sheetId = "1qUf-YbZCdAwf5aHhdMRa2yrrqn1WRTNeZhDOwTYTPgk";
+        const url = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:json&sheet=Spiele`;
+
+        try {
+            const response = await fetch(url);
+            const text = await response.text();
+            const json = JSON.parse(text.substr(47).slice(0, -2));
+            const data = json.table.rows.map(row => row.c.map(cell => cell ? cell.v : ""));
+
+            const totalGames = 105; // Gesamtzahl der Vorrundenspiele
+            const playedGames = data.filter(row => row[1] !== "" && row[3] !== "").length; // Spiele mit Ergebnissen
+
+            const progressPercentage = (playedGames / totalGames) * 100;
+
+            document.getElementById("progress-fill").style.width = `${progressPercentage}%`;
+            document.getElementById("progress-text").innerText = `${playedGames} von ${totalGames} Spielen gespielt`;
+
+        } catch (error) {
+            console.error("Fehler beim Laden der gespielten Spiele:", error);
+        }
+    }
+
+    // 🔄 AUTOMATISCHE UPDATES
+    window.onload = function () {
+        updateCountdown();
+        setInterval(updateCountdown, 1000); // Countdown jede Sekunde aktualisieren
+
+        updateProgress();
+        setInterval(updateProgress, 60000); // Fortschritt jede Minute aktualisieren
+    };
+</script>
 
     
     <div class="container">

@@ -262,70 +262,55 @@
         </div>
     </div>
 
-  <script>
-    const sheetId = "1qUf-YbZCdAwf5aHhdMRa2yrrqn1WRTNeZhDOwTYTPgk";
+    <script>
+        const sheetId = "1qUf-YbZCdAwf5aHhdMRa2yrrqn1WRTNeZhDOwTYTPgk";
 
-    async function loadSheet(sheetName, targetId, processFunction = null) {
-        const url = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:json&sheet=${sheetName}`;
-        try {
-            const response = await fetch(url);
-            const text = await response.text();
-            const json = JSON.parse(text.substr(47).slice(0, -2));
-            const tableBody = document.getElementById(targetId);
-            tableBody.innerHTML = "";
+        async function loadSheet(sheetName, targetId, processFunction = null) {
+            const url = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:json&sheet=${sheetName}`;
+            try {
+                const response = await fetch(url);
+                const text = await response.text();
+                const json = JSON.parse(text.substr(47).slice(0, -2));
+                const tableBody = document.getElementById(targetId);
+                tableBody.innerHTML = "";
 
-            let data = json.table.rows.map(row => row.c.map(cell => cell ? cell.v : ""));
+                let data = json.table.rows.map(row => row.c.map(cell => cell ? cell.v : ""));
 
-            if (processFunction) {
-                data = processFunction(data);
-            }
+                if (processFunction) {
+                    data = processFunction(data);
+                }
 
-            data.forEach(row => {
-                const tr = document.createElement("tr");
-                row.forEach(cell => {
-                    const td = document.createElement("td");
-                    td.textContent = cell;
-                    tr.appendChild(td);
+                data.forEach(row => {
+                    const tr = document.createElement("tr");
+                    row.forEach(cell => {
+                        const td = document.createElement("td");
+                        td.textContent = cell;
+                        tr.appendChild(td);
+                    });
+                    tableBody.appendChild(tr);
                 });
-                tableBody.appendChild(tr);
-            });
-        } catch (error) {
-            console.error("Fehler beim Laden der Daten:", error);
+            } catch (error) {
+                console.error("Fehler beim Laden der Daten:", error);
+            }
         }
-    }
 
-    // Funktion zur Formatierung des aktuellen Datums und der Uhrzeit
-    function getFormattedTimestamp() {
-        const now = new Date();
-        const day = String(now.getDate()).padStart(2, '0');
-        const month = String(now.getMonth() + 1).padStart(2, '0'); // Monate starten bei 0
-        const year = now.getFullYear();
-        const hours = String(now.getHours()).padStart(2, '0');
-        const minutes = String(now.getMinutes()).padStart(2, '0');
-        return `${day}.${month}.${year} ${hours}:${minutes}`;
-    }
+        function processGames(data) {
+            return data.filter(row => row[1] === "" || row[3] === "").map(row => [row[0], "vs", row[2]]);
+        }
 
-    // Funktion zur Verarbeitung der News mit Timestamp
-    function processNews(data) {
-        return data.map(row => [getFormattedTimestamp(), ...row]);
-    }
+        function processFinishedGames(data) {
+    return data
+        .filter(row => row[1] !== "" && row[3] !== "") // Nur Spiele mit Ergebnissen
+        .map(row => [
+            row[0] || "",  
+            row[1] !== undefined && row[1] !== "" ? row[1] : "0", 
+            row[2] || "",  
+            row[3] !== undefined && row[3] !== "" ? row[3] : "0"  
+        ]);
+}
 
-    function processGames(data) {
-        return data.filter(row => row[1] === "" || row[3] === "").map(row => [row[0], "vs", row[2]]);
-    }
 
-    function processFinishedGames(data) {
-        return data
-            .filter(row => row[1] !== "" && row[3] !== "") // Nur Spiele mit Ergebnissen
-            .map(row => [
-                row[0] || "",  
-                row[1] !== undefined && row[1] !== "" ? row[1] : "", 
-                row[2] || "",  
-                row[3] !== undefined && row[3] !== "" ? row[3] : ""  
-            ]);
-    }
-
-    function sortRanking(data) {
+           function sortRanking(data) {
         let ranking = {};
         data.forEach(row => {
             const [team1, score1, team2, score2] = row;
@@ -339,7 +324,8 @@
                 ranking[team2].goals += parseInt(score2, 10);
                 ranking[team1].conceded += parseInt(score2, 10);
                 ranking[team2].conceded += parseInt(score1, 10);
-
+                
+                // ✅ **Korrektur: 1 Punkt für einen Sieg**
                 if (parseInt(score1, 10) > parseInt(score2, 10)) ranking[team1].points += 1;
                 if (parseInt(score2, 10) > parseInt(score1, 10)) ranking[team2].points += 1;
             }
@@ -355,20 +341,20 @@
             .map((team, index) => [index + 1, team.team, team.points, team.games, team.goals, team.conceded, team.goals - team.conceded]);
     }
 
-    function loadAllData() {
-        loadSheet("News", "news-content", processNews);
-        loadSheet("Teams", "teams-content");
-        loadSheet("Spiele", "open-games-content", processGames);
-        loadSheet("Spiele", "finished-games-content", processFinishedGames);
-        loadSheet("Spiele", "ranking-content", sortRanking);
-    }
 
-    window.onload = function() {
-        loadAllData();
-        setInterval(loadAllData, 300000);
-    };
-</script>
+        function loadAllData() {
+            loadSheet("News", "news-content");
+            loadSheet("Teams", "teams-content");
+            loadSheet("Spiele", "open-games-content", processGames);
+            loadSheet("Spiele", "finished-games-content", processFinishedGames);
+            loadSheet("Spiele", "ranking-content", sortRanking);
+        }
 
+        window.onload = function() {
+            loadAllData();
+            setInterval(loadAllData, 300000);
+        };
+    </script>
 
     <script>
   function scrollToTop() {

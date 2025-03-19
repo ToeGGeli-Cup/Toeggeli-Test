@@ -276,9 +276,9 @@
 
         let data = json.table.rows.map(row => row.c.map(cell => cell ? cell.v : ""));
 
-        // Erste Zeile entfernen, aber nur wenn removeFirstRow = true
-        if (removeFirstRow) {
-            data = data.slice(1);
+        // Falls removeFirstRow = true, entferne die erste Zeile
+        if (removeFirstRow && data.length > 0) {
+            data.shift();
         }
 
         if (processFunction) {
@@ -298,6 +298,7 @@
         console.error("Fehler beim Laden der Daten:", error);
     }
 }
+
 
 
         function processGames(data) {

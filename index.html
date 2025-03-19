@@ -475,14 +475,20 @@ document.querySelector(".rules-link").addEventListener("click", function() {
             }
         }
 
-        // 🔄 AUTOMATISCHE UPDATES
-        window.onload = function () {
-            updateCountdown();
-            setInterval(updateCountdown, 60000); // Countdown alle 60 Sekunden aktualisieren
+  window.onload = function () {
+    // Lädt ALLE Daten vom Google Sheet
+    loadAllData();
+    setInterval(loadAllData, 300000); // Alle 5 Minuten aktualisieren
 
-            updateProgress();
-            setInterval(updateProgress, 60000); // Fortschritt jede Minute aktualisieren
-        };
+    // Countdown-Funktion laden & aktualisieren
+    updateCountdown();
+    setInterval(updateCountdown, 60000); // Countdown jede Minute aktualisieren
+
+    // Fortschrittsbalken für gespielte Spiele laden & aktualisieren
+    updateProgress();
+    setInterval(updateProgress, 60000); // Fortschritt jede Minute aktualisieren
+};
+
     </script>
 
 </body>

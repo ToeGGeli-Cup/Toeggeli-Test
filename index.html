@@ -6,7 +6,7 @@
     <meta http-equiv="Cache-Control" content="max-age=0, no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
-
+    <title>TöGGeli-Cup 2025</title>
     <style>
 
         html {
@@ -247,20 +247,29 @@
     <div class="tournament-logo">
         <img src="Logo.png" alt="TöGGeli-Cup 2025 Logo">
     </div>
-<!-- COUNTDOWN -->
-<div class="countdown-container">
-    <h2>Nächste Deadline:</h2>
-    <p id="countdown">Lade Countdown...</p>
-</div>
 
-<!-- FORTSCHRITTSBALKEN FÜR GESPIELTE SPIELE -->
-<div class="progress-container">
-    <h2>Gespielte Spiele der Vorrunde</h2>
-    <div class="progress-bar">
-        <div id="progress-fill"></div>
-    </div>
-    <p id="progress-text">Lade Spielstatus...</p>
-</div>
+// 🕒 COUNTDOWN BIS ZUM ENDE DER VORRUNDE (nur Tage)
+function updateCountdown() {
+    const now = new Date().getTime();
+    const groupStageEnd = new Date("2025-06-06T23:59:59").getTime(); // Vorrunde-Ende
+
+    const distance = groupStageEnd - now;
+
+    if (distance < 0) {
+        document.getElementById("countdown").innerHTML = "Die Vorrunde ist beendet!";
+        return;
+    }
+
+    const days = Math.ceil(distance / (1000 * 60 * 60 * 24)); // Aufrunden auf volle Tage
+
+    document.getElementById("countdown").innerHTML = `Vorrunde endet in: ${days} Tage`;
+}
+
+// 🔄 AUTOMATISCHE UPDATES
+window.onload = function () {
+    updateCountdown();
+    setInterval(updateCountdown, 60000); // Countdown alle 60 Sekunden aktualisieren
+};
 
     
     <div class="container">
@@ -412,8 +421,6 @@
         };
     </script>
 
-
-    
     <script>
   function scrollToTop() {
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -432,9 +439,6 @@ function closeMenu() {
 document.querySelector(".rules-link").addEventListener("click", function() {
     closeMenu(); // Menü schließen nach Klick auf "Turnierregeln"
 });
-
-
-</script>
 
 <script>
     // 🕒 COUNTDOWN BIS ZU DEN SPIELTAGEN
@@ -501,6 +505,9 @@ document.querySelector(".rules-link").addEventListener("click", function() {
     };
 </script>
 
-    
+        
+</script>
+
+
 </body>
 </html>

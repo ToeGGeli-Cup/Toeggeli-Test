@@ -296,14 +296,15 @@ tr.rank-good td {
 <div class="navbar">
     <button class="burger-menu" onclick="toggleMenu()">☰ Menü</button>
     <div class="navbar-links">
-        <a href="#" onclick="scrollToTop()">Home</a>
-        <a href="#news" onclick="closeMenu()">News</a>
-        <a href="#teams" onclick="closeMenu()">Teams</a>
-       <a href="#" onclick="showTab('finished-games'); scrollToTabs(); closeMenu();">Spiele</a>
-        <a href="#ranking" onclick="closeMenu()">Rangliste</a>
+        <a href="#" onclick="scrollToTop(); closeMenu();">Home</a>
+        <a href="#news" onclick="scrollToSection('news'); closeMenu();">News</a>
+        <a href="#teams" onclick="scrollToSection('teams'); closeMenu();">Teams</a>
+        <a href="#" onclick="showTab('finished-games'); scrollToTabs(); closeMenu();">Spiele</a>
+        <a href="#ranking" onclick="scrollToSection('ranking'); closeMenu();">Rangliste</a>
         <a href="TC_2025_Turnierregeln.pdf" target="_blank" class="menu-item rules-link">Turnierregeln</a>
-
     </div>
+</div>
+
 </div>
 
 
@@ -329,12 +330,12 @@ tr.rank-good td {
     
     <div class="container">
         <div id="news" class="section-container">
-          <br><br><br>
+          <h2>News</h2>
             <div id="news-content"></div>
         </div>
 
         <div id="teams" class="section-container">
-        <br><br><br>  
+       <h2>Teams</h2>
             <div class="table-container">
                 <table>
                     <thead>
@@ -344,7 +345,7 @@ tr.rank-good td {
                 </table>
             </div>
         </div>
-<br><br><br>
+<h2>Spiele</h2>
      <!-- 📌 Tabs zum Umschalten -->
 <div class="tabs-container">
   <button class="tab-button active" onclick="showTab('finished-games')">Resultate</button>
@@ -389,7 +390,7 @@ tr.rank-good td {
 </div>
 
         <div id="ranking" class="section-container">
-
+<h2>Rangliste</h2>
             <div class="table-container">
               <table class="ranking-table">
                     <thead>
@@ -510,6 +511,25 @@ data.forEach((row, index) => {
     closeMenu(); // Schließt das Menü nach dem Klick auf Home
 }
 
+        function scrollToSection(id) {
+    const el = document.getElementById(id);
+    if (el) {
+        const offset = 80;
+        const topPos = el.getBoundingClientRect().top + window.pageYOffset - offset;
+        window.scrollTo({ top: topPos, behavior: 'smooth' });
+    }
+}
+
+function scrollToTabs() {
+    const element = document.querySelector('.tabs-container');
+    if (element) {
+        const offset = 80;
+        const top = element.getBoundingClientRect().top + window.pageYOffset - offset;
+        window.scrollTo({ top, behavior: 'smooth' });
+    }
+}
+
+        
 function toggleMenu() {
     const menu = document.querySelector(".navbar-links");
     menu.classList.toggle("show");

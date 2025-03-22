@@ -461,7 +461,7 @@ document.querySelector(".rules-link").addEventListener("click", function() {
                 const json = JSON.parse(text.substr(47).slice(0, -2));
                 const data = json.table.rows.map(row => row.c.map(cell => cell ? cell.v : ""));
 
-                const totalGames = 155; // Gesamtzahl der Vorrundenspiele
+                const totalGames = 153; // Gesamtzahl der Vorrundenspiele
                 const playedGames = data.filter(row => row[1] !== "" && row[3] !== "").length; // Spiele mit Ergebnissen
 
                 const progressPercentage = (playedGames / totalGames) * 100;

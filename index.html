@@ -66,11 +66,6 @@
             border-radius: 10px; /* Leicht abgerundete Ecken für das Bild */
         }
 
-    .ranking-table tr:nth-child(5) {
-    border-top: 4px solid black; /* Dicke Linie nach dem 4. Platz */
-}
-
-
         
         .container {
             width: 100%;
@@ -311,8 +306,6 @@
         <div id="ranking" class="section-container">
             <h2>Rangliste</h2>
             <div class="table-container">
-                <table class="ranking-table">
-
                 <table>
                     <thead>
                         <tr><th>Platz</th><th>Team</th><th>Punkte</th><th>Spiele</th><th>Tore</th><th>Gegentore</th><th>Tordifferenz</th></tr>
@@ -468,7 +461,7 @@ document.querySelector(".rules-link").addEventListener("click", function() {
                 const json = JSON.parse(text.substr(47).slice(0, -2));
                 const data = json.table.rows.map(row => row.c.map(cell => cell ? cell.v : ""));
 
-                const totalGames = 105; // Gesamtzahl der Vorrundenspiele
+                const totalGames = 155; // Gesamtzahl der Vorrundenspiele
                 const playedGames = data.filter(row => row[1] !== "" && row[3] !== "").length; // Spiele mit Ergebnissen
 
                 const progressPercentage = (playedGames / totalGames) * 100;

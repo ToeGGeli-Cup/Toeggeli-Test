@@ -299,7 +299,7 @@ tr.rank-good td {
         <a href="#" onclick="scrollToTop(); closeMenu();">Home</a>
         <a href="#news" onclick="scrollToSection('news'); closeMenu();">News</a>
         <a href="#teams" onclick="scrollToSection('teams'); closeMenu();">Teams</a>
-        <a href="#" onclick="showTab('finished-games'); scrollToTabs(); closeMenu();">Spiele</a>
+        <a href="#spiele" onclick="scrollToSection('spiele'); showTab('finished-games'); closeMenu();">Spiele</a>
         <a href="#ranking" onclick="scrollToSection('ranking'); closeMenu();">Rangliste</a>
         <a href="TC_2025_Turnierregeln.pdf" target="_blank" class="menu-item rules-link">Turnierregeln</a>
     </div>
@@ -344,7 +344,11 @@ tr.rank-good td {
                 </table>
             </div>
         </div>
-<h2>Spiele</h2>
+
+    <div class="section-container" id="spiele">
+  <h2>Spiele</h2>
+</div>
+        
      <!-- 📌 Tabs zum Umschalten -->
 <div class="tabs-container">
   <button class="tab-button active" onclick="showTab('finished-games')">Resultate</button>

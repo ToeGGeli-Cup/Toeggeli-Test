@@ -353,22 +353,24 @@
                     data = processFunction(data);
                 }
 
-            data.forEach((row, index) => {
+     data.forEach((row, index) => {
     const tr = document.createElement("tr");
 
-            // ⭐ HERVORHEBUNG FÜR DIE RANGLISTE
-            if (targetId === "ranking-content") {
-                if (index === 0 || index === 1) tr.classList.add("rank-top");
-                else if (index === 2 || index === 3) tr.classList.add("rank-good");
-            }
-        
-            row.forEach(cell => {
-                const td = document.createElement("td");
-                td.textContent = cell;
-                tr.appendChild(td);
+    // ⭐ HERVORHEBUNG FÜR DIE RANGLISTE
+    if (targetId === "ranking-content") {
+        if (index === 0 || index === 1) tr.classList.add("rank-top");
+        else if (index === 2 || index === 3) tr.classList.add("rank-good");
+    }
+
+    row.forEach(cell => {
+        const td = document.createElement("td");
+        td.textContent = cell;
+        tr.appendChild(td);
     });
+
     tableBody.appendChild(tr);
 });
+
 
                     
 

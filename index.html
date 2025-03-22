@@ -348,13 +348,15 @@ tr.rank-good td {
      <!-- 📌 Tabs zum Umschalten -->
 <div class="tabs-container">
   <button class="tab-button active" onclick="showTab('finished-games')">Resultate</button>
-  <button class="tab-button" onclick="showTab('open-games')">Offene Spiele</button>
+ 
 </div>
 
 <!-- 🏓 Offene Spiele -->
 <div id="open-games-tab" class="tab-content" style="display: none;">
   <div class="section-container">
     <h2>Offene Spiele</h2>
+        <!-- 🔍 Filterfeld für offene Spiele -->
+    <input type="text" id="open-games-filter" placeholder="Suche nach Teamname..." onkeyup="filterOpenGames()" />
     <div class="table-container">
       <table>
         <thead>
@@ -373,7 +375,6 @@ tr.rank-good td {
 
     <!-- 🔍 Filterfeld -->
     <input type="text" id="result-filter" placeholder="Suche nach Teamname..." onkeyup="filterResults()" />
-    <input type="text" id="open-games-filter" placeholder="Suche nach Teamname..." onkeyup="filterOpenGames()" />
 
     <div class="table-container">
       <table>

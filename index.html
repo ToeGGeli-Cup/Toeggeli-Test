@@ -278,6 +278,16 @@ tr.rank-good td {
     border-radius: 5px;
     border: 1px solid #ccc;
 }
+#open-games-filter {
+    margin-bottom: 15px;
+    padding: 8px;
+    width: 80%;
+    max-width: 300px;
+    font-size: 14px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+}
+
      
     </style>
 </head>
@@ -289,8 +299,7 @@ tr.rank-good td {
         <a href="#" onclick="scrollToTop()">Home</a>
         <a href="#news" onclick="closeMenu()">News</a>
         <a href="#teams" onclick="closeMenu()">Teams</a>
-        <a href="#open-games" onclick="closeMenu()">Offene Spiele</a>
-        <a href="#finished-games" onclick="closeMenu()">Resultate</a>
+        <a href="#finished-games-tab" onclick="showTab('finished-games'); scrollToTop(); closeMenu();">Spiele</a>
         <a href="#ranking" onclick="closeMenu()">Rangliste</a>
         <a href="TC_2025_Turnierregeln.pdf" target="_blank" class="menu-item rules-link">Turnierregeln</a>
 
@@ -338,8 +347,8 @@ tr.rank-good td {
 
      <!-- 📌 Tabs zum Umschalten -->
 <div class="tabs-container">
-  <button class="tab-button" onclick="showTab('open-games')">Offene Spiele</button>
   <button class="tab-button active" onclick="showTab('finished-games')">Resultate</button>
+  <button class="tab-button" onclick="showTab('open-games')">Offene Spiele</button>
 </div>
 
 <!-- 🏓 Offene Spiele -->
@@ -364,6 +373,7 @@ tr.rank-good td {
 
     <!-- 🔍 Filterfeld -->
     <input type="text" id="result-filter" placeholder="Suche nach Teamname..." onkeyup="filterResults()" />
+    <input type="text" id="open-games-filter" placeholder="Suche nach Teamname..." onkeyup="filterOpenGames()" />
 
     <div class="table-container">
       <table>
@@ -603,6 +613,24 @@ function filterResults() {
         }
     }
 }
+function filterOpenGames() {
+    const input = document.getElementById("open-games-filter");
+    const filter = input.value.toLowerCase();
+    const rows = document.getElementById("open-games-content").getElementsByTagName("tr");
+
+    for (let row of rows) {
+        const cells = row.getElementsByTagName("td");
+        const team1 = cells[0]?.textContent.toLowerCase();
+        const team2 = cells[2]?.textContent.toLowerCase();
+
+        if (team1.includes(filter) || team2.includes(filter)) {
+            row.style.display = "";
+        } else {
+            row.style.display = "none";
+        }
+    }
+}
+
     </script>
 
 </body>

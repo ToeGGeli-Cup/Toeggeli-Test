@@ -239,6 +239,45 @@ tr.rank-good td {
     background-color: #c8e6c9 !important; /* bisheriger Platz 1/2 Ton nun für 3/4 */
 }
 
+    .tabs-container {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin: 20px auto;
+    flex-wrap: wrap;
+}
+
+.tab-button {
+    padding: 10px 20px;
+    background-color: #0059B2;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.tab-button.active {
+    background-color: #D81B60;
+}
+
+.tab-button:hover {
+    background-color: #003D82;
+}
+
+.tab-content {
+    margin-top: 10px;
+}
+
+#result-filter {
+    margin-bottom: 15px;
+    padding: 8px;
+    width: 80%;
+    max-width: 300px;
+    font-size: 14px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+}
      
     </style>
 </head>
@@ -297,29 +336,45 @@ tr.rank-good td {
             </div>
         </div>
 
-        <div id="open-games" class="section-container">
-            <h2>Offene Spiele</h2>
-            <div class="table-container">
-                <table>
-                    <thead>
-                        <tr><th>Team 1</th><th>vs</th><th>Team 2</th></tr>
-                    </thead>
-                    <tbody id="open-games-content"></tbody>
-                </table>
-            </div>
-        </div>
+     <!-- 📌 Tabs zum Umschalten -->
+<div class="tabs-container">
+  <button class="tab-button" onclick="showTab('open-games')">Offene Spiele</button>
+  <button class="tab-button active" onclick="showTab('finished-games')">Resultate</button>
+</div>
 
-        <div id="finished-games" class="section-container">
-            <h2>Resultate</h2>
-            <div class="table-container">
-                <table>
-                    <thead>
-                        <tr><th>Team 1</th><th>Tore Team 1</th><th>Team 2</th><th>Tore Team 2</th></tr>
-                    </thead>
-                    <tbody id="finished-games-content"></tbody>
-                </table>
-            </div>
-        </div>
+<!-- 🏓 Offene Spiele -->
+<div id="open-games-tab" class="tab-content" style="display: none;">
+  <div class="section-container">
+    <h2>Offene Spiele</h2>
+    <div class="table-container">
+      <table>
+        <thead>
+          <tr><th>Team 1</th><th>vs</th><th>Team 2</th></tr>
+        </thead>
+        <tbody id="open-games-content"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- 🏁 Resultate -->
+<div id="finished-games-tab" class="tab-content">
+  <div class="section-container">
+    <h2>Resultate</h2>
+
+    <!-- 🔍 Filterfeld -->
+    <input type="text" id="result-filter" placeholder="Suche nach Teamname..." onkeyup="filterResults()" />
+
+    <div class="table-container">
+      <table>
+        <thead>
+          <tr><th>Team 1</th><th>Tore Team 1</th><th>Team 2</th><th>Tore Team 2</th></tr>
+        </thead>
+        <tbody id="finished-games-content"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
 
         <div id="ranking" class="section-container">
             <h2>Rangliste</h2>
@@ -513,8 +568,41 @@ document.querySelector(".rules-link").addEventListener("click", function() {
     // Fortschrittsbalken für gespielte Spiele laden & aktualisieren
     updateProgress();
     setInterval(updateProgress, 60000); // Fortschritt jede Minute aktualisieren
-};
 
+      
+    // 👉 Standard-Tab: Resultate
+    showTab('finished-games');
+};
+    function showTab(tabName) {
+    // Tab-Inhalte ausblenden
+    document.querySelectorAll('.tab-content').forEach(tab => tab.style.display = 'none');
+
+    // Buttons deaktivieren
+    document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
+
+    // Aktives Tab und Button anzeigen
+    document.getElementById(`${tabName}-tab`).style.display = 'block';
+    document.querySelector(`.tab-button[onclick*="${tabName}"]`).classList.add('active');
+}
+
+// 🔍 Filterfunktion für Resultate
+function filterResults() {
+    const input = document.getElementById("result-filter");
+    const filter = input.value.toLowerCase();
+    const rows = document.getElementById("finished-games-content").getElementsByTagName("tr");
+
+    for (let row of rows) {
+        const cells = row.getElementsByTagName("td");
+        const team1 = cells[0]?.textContent.toLowerCase();
+        const team2 = cells[2]?.textContent.toLowerCase();
+
+        if (team1.includes(filter) || team2.includes(filter)) {
+            row.style.display = "";
+        } else {
+            row.style.display = "none";
+        }
+    }
+}
     </script>
 
 </body>

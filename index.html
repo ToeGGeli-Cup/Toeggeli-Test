@@ -352,8 +352,7 @@
                 if (processFunction) {
                     data = processFunction(data);
                 }
-
-     data.forEach((row, index) => {
+data.forEach((row, index) => {
     const tr = document.createElement("tr");
 
     // ⭐ HERVORHEBUNG FÜR DIE RANGLISTE
@@ -371,8 +370,6 @@
     tableBody.appendChild(tr);
 });
 
-
-                    
 
             } catch (error) {
                 console.error("Fehler beim Laden der Daten:", error);

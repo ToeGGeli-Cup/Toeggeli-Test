@@ -518,7 +518,7 @@ function renderNews(data) {
 
 
         function loadAllData() {
-            loadSheet("News", "news-content");
+            loadSheet("News", "news-content", renderNews);
             loadSheet("Teams", "teams-content");
             loadSheet("Spiele", "open-games-content", processGames);
             loadSheet("Spiele", "finished-games-content", processFinishedGames);

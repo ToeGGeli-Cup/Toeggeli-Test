@@ -461,6 +461,28 @@ data.forEach((row, index) => {
             row[3] !== undefined && row[3] !== "" ? row[3] : "0"  
         ]);
 }
+function renderNews(data) {
+    const container = document.getElementById("news-content");
+    container.innerHTML = "";
+
+    data
+        .filter(row => row[0] && row[1]) // Nur Einträge mit Datum & Text
+        .sort((a, b) => {
+            // Sortierung nach Datum (als Text, absteigend)
+            const dateA = a[0];
+            const dateB = b[0];
+            return dateB.localeCompare(dateA);
+        })
+        .forEach(row => {
+            const date = row[0];
+            const text = row[1];
+
+            const p = document.createElement("p");
+            p.innerHTML = `<strong>${date}</strong><br>${text}`;
+            p.style.marginBottom = "20px";
+            container.appendChild(p);
+        });
+}
 
 
            function sortRanking(data) {

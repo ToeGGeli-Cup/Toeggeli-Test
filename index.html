@@ -288,8 +288,16 @@ tr.rank-good td {
     border-radius: 5px;
     border: 1px solid #ccc;
 }
+        .filter-row {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 15px;
+}
+
 button {
-    margin-top: 5px;
     padding: 6px 12px;
     border: none;
     background-color: #D81B60;
@@ -376,8 +384,11 @@ button:hover {
   <div class="section-container">
 
       <!-- 🔍 Filterfeld für offene Spiele -->
-<input type="text" id="open-games-filter" placeholder="Suche nach Teamname..." onkeyup="filterOpenGames()" />
-<button onclick="clearOpenGamesFilter()">Filter löschen</button>
+<div class="filter-row">
+  <input type="text" id="open-games-filter" placeholder="Suche nach Teamname..." onkeyup="filterOpenGames()" />
+  <button onclick="clearOpenGamesFilter()">✖</button>
+</div>
+
     <div class="table-container">
       <table>
         <thead>
@@ -395,8 +406,10 @@ button:hover {
  
 
     <!-- 🔍 Filterfeld -->
-    <input type="text" id="result-filter" placeholder="Suche nach Teamname..." onkeyup="filterResults()" />
-<button onclick="clearResultsFilter()">Filter löschen</button>
+<div class="filter-row">
+  <input type="text" id="result-filter" placeholder="Suche nach Teamname..." onkeyup="filterResults()" />
+  <button onclick="clearResultsFilter()">✖</button>
+</div>
     <div class="table-container">
       <table>
         <thead>

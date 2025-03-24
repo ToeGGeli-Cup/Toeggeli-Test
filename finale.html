@@ -271,14 +271,6 @@ finalGames.forEach(game => {
   }
 });
 
-    if (showScore) {
-      const g1 = parseInt(s1), g2 = parseInt(s2);
-      if (typ.toLowerCase().includes("gross")) {
-        winners.push({ match: "finale", winner: g1 > g2 ? t1 : t2, loser: g1 > g2 ? t2 : t1 });
-      } else if (typ.toLowerCase().includes("klein")) {
-        winners.push({ match: "klein", winner: g1 > g2 ? t1 : t2, loser: g1 > g2 ? t2 : t1 });
-      }
-    }
   });
 
   results.innerHTML = resultCards.join("");

@@ -213,28 +213,33 @@ async function renderFinale() {
   // 🆕 Finalpaarungen (nur Teamnamen, keine Medaillen)
 matchups.innerHTML = `
   <div class="pairing-card">
-    <h2>Finalpaarungen (Stand heute)</h2>
-    <p>${grossFinale[0]} vs ${grossFinale[1]}</p>
-    <p>${kleinFinale[0]} vs ${kleinFinale[1]}</p>
+    <h2>🏆 Finalpaarungen (Stand heute)</h2>
+    <p><strong>Um Platz 1 spielen:</strong><br>${grossFinale[0]} vs ${grossFinale[1]}</p>
+    <p><strong>Um Platz 3 spielen:</strong><br>${kleinFinale[0]} vs ${kleinFinale[1]}</p>
   </div>
 `;
+
 
 
   // 🏁 Ergebnisse anzeigen
   const resultCards = [];
   let winners = [];
+finaleData.forEach(([typ, t1, s1, t2, s2]) => {
+  if (!t1 || !t2) return; // Nur anzeigen, wenn Teams definiert sind
+  const showScore = s1 !== "" && s2 !== "";
 
-  finaleData.forEach(([typ, t1, s1, t2, s2]) => {
-    if (!t1 || !t2) return;
-    const showScore = s1 !== "" && s2 !== "";
-    resultCards.push(`
-      <div class="result-card">
-        <div><strong>${typ}</strong></div>
-        <div>${t1}${showScore ? ` (${s1})` : ""}</div>
-        <div>vs</div>
-        <div>${t2}${showScore ? ` (${s2})` : ""}</div>
-      </div>
-    `);
+  const displayT1 = showScore ? `${t1} (${s1})` : t1;
+  const displayT2 = showScore ? `${t2} (${s2})` : t2;
+
+  resultCards.push(`
+    <div class="result-card">
+      <div><strong>${typ}</strong></div>
+      <div>${displayT1}</div>
+      <div>vs</div>
+      <div>${displayT2}</div>
+    </div>
+  `);
+
 
     if (showScore) {
       const g1 = parseInt(s1), g2 = parseInt(s2);

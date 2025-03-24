@@ -668,8 +668,6 @@ uniqueTeams.forEach(team => {
     option2.textContent = team;
     resultDropdown.appendChild(option2); // Resultate
 });
-
-        // 🔄 Dropdown automatisch mit Teams befüllen
 async function populateTeamDropdown() {
     const url = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:json&sheet=Teams`;
     try {
@@ -678,19 +676,28 @@ async function populateTeamDropdown() {
         const json = JSON.parse(text.substr(47).slice(0, -2));
         const data = json.table.rows.map(row => row.c[0]?.v).filter(Boolean);
 
-        const dropdown = document.getElementById("open-games-filter");
         const uniqueTeams = [...new Set(data)].sort();
 
+        const openGamesDropdown = document.getElementById("open-games-filter");
+        const resultDropdown = document.getElementById("result-filter");
+
         uniqueTeams.forEach(team => {
-            const option = document.createElement("option");
-            option.value = team;
-            option.textContent = team;
-            dropdown.appendChild(option);
+            const option1 = document.createElement("option");
+            option1.value = team;
+            option1.textContent = team;
+            openGamesDropdown.appendChild(option1); // für offene Spiele
+
+            const option2 = document.createElement("option");
+            option2.value = team;
+            option2.textContent = team;
+            resultDropdown.appendChild(option2); // für Resultate
         });
+
     } catch (error) {
         console.error("Fehler beim Laden der Teams für Dropdown:", error);
     }
 }
+
 </script>
 
 

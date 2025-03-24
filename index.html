@@ -624,7 +624,7 @@ document.querySelector(".rules-link").addEventListener("click", function() {
     document.querySelector(`.tab-button[onclick*="${tabName}"]`).classList.add('active');
 }
 
-<script>
+
 function showTab(tabName) {
     document.querySelectorAll('.tab-content').forEach(tab => tab.style.display = 'none');
     document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));

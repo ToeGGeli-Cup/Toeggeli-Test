@@ -112,6 +112,26 @@
   box-shadow: 0 0 8px rgba(0,0,0,0.15);
   font-weight: bold;
 }
+.pairing-card {
+  background-color: white;
+  color: #333;
+  border-radius: 10px;
+  padding: 20px;
+  margin: 30px auto;
+  max-width: 500px;
+  box-shadow: 0 0 10px rgba(0,0,0,0.2);
+}
+
+.pairing-card h2 {
+  margin-top: 0;
+  color: #D81B60;
+}
+
+.pairing-card p {
+  font-size: 18px;
+  margin: 10px 0;
+  font-weight: bold;
+}
 
   </style>
 </head>
@@ -191,11 +211,14 @@ async function renderFinale() {
   const podium = document.getElementById("podium");
 
   // 🆕 Finalpaarungen (nur Teamnamen, keine Medaillen)
-  matchups.innerHTML = `
-    <h2>Finalpaarungen <span class="stand">(Stand heute)</span></h2>
+matchups.innerHTML = `
+  <div class="pairing-card">
+    <h2>Finalpaarungen (Stand heute)</h2>
     <p>${grossFinale[0]} vs ${grossFinale[1]}</p>
     <p>${kleinFinale[0]} vs ${kleinFinale[1]}</p>
-  `;
+  </div>
+`;
+
 
   // 🏁 Ergebnisse anzeigen
   const resultCards = [];

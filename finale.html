@@ -224,22 +224,52 @@ matchups.innerHTML = `
   // 🏁 Ergebnisse anzeigen
   const resultCards = [];
   let winners = [];
-finaleData.forEach(([typ, t1, s1, t2, s2]) => {
-  if (!t1 || !t2) return; // Nur anzeigen, wenn Teams definiert sind
-  const showScore = s1 !== "" && s2 !== "";
+// 🏁 Finalpartien vorbereiten
+const finalGames = [
+  { type: "Grosses Finale 1", match: "finale", teams: grossFinale },
+  { type: "Grosses Finale 2", match: "finale", teams: grossFinale },
+  { type: "Grosses Finale 3", match: "finale", teams: grossFinale },
+  { type: "Kleines Finale",   match: "klein",  teams: kleinFinale }
+];
 
-  const displayT1 = showScore ? `${t1} (${s1})` : t1;
-  const displayT2 = showScore ? `${t2} (${s2})` : t2;
+// Ergebnisse aus Google Sheet zuordnen
+let winners = [];
+
+finalGames.forEach(game => {
+  const entry = finaleData.find(row => row[0] === game.type);
+  const t1 = game.teams[0];
+  const t2 = game.teams[1];
+  let score1 = "", score2 = "";
+
+  if (entry && entry[1] && entry[3]) {
+    score1 = entry[2] || "";
+    score2 = entry[4] || "";
+  }
+
+  const showScore = score1 !== "" && score2 !== "";
+  const displayT1 = showScore ? `${t1} (${score1})` : t1;
+  const displayT2 = showScore ? `${t2} (${score2})` : t2;
 
   resultCards.push(`
     <div class="result-card">
-      <div><strong>${typ}</strong></div>
+      <div><strong>${game.type}</strong></div>
       <div>${displayT1}</div>
       <div>vs</div>
       <div>${displayT2}</div>
     </div>
   `);
 
+  // Nur für finale Wertung zählen
+  if (showScore) {
+    const g1 = parseInt(score1);
+    const g2 = parseInt(score2);
+    if (game.match === "finale") {
+      winners.push({ match: "finale", winner: g1 > g2 ? t1 : t2, loser: g1 > g2 ? t2 : t1 });
+    } else if (game.match === "klein") {
+      winners.push({ match: "klein", winner: g1 > g2 ? t1 : t2, loser: g1 > g2 ? t2 : t1 });
+    }
+  }
+});
 
     if (showScore) {
       const g1 = parseInt(s1), g2 = parseInt(s2);

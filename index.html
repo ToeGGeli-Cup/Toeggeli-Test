@@ -624,7 +624,15 @@ document.querySelector(".rules-link").addEventListener("click", function() {
     document.querySelector(`.tab-button[onclick*="${tabName}"]`).classList.add('active');
 }
 
-// 🔍 Filterfunktion für Resultate
+<script>
+function showTab(tabName) {
+    document.querySelectorAll('.tab-content').forEach(tab => tab.style.display = 'none');
+    document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
+    document.getElementById(`${tabName}-tab`).style.display = 'block';
+    document.querySelector(`.tab-button[onclick*="${tabName}"]`).classList.add('active');
+}
+
+// 🔍 Filterfunktion für Resultate (Textfeld)
 function filterResults() {
     const input = document.getElementById("result-filter");
     const filter = input.value.toLowerCase();
@@ -642,24 +650,8 @@ function filterResults() {
         }
     }
 }
-function filterOpenGames() {
-    const input = document.getElementById("open-games-filter");
-    const filter = input.value.toLowerCase();
-    const rows = document.getElementById("open-games-content").getElementsByTagName("tr");
 
-    for (let row of rows) {
-        const cells = row.getElementsByTagName("td");
-        const team1 = cells[0]?.textContent.toLowerCase();
-        const team2 = cells[2]?.textContent.toLowerCase();
-
-        if (team1.includes(filter) || team2.includes(filter)) {
-            row.style.display = "";
-        } else {
-            row.style.display = "none";
-        }
-    }
-}
-<script>
+// 🔍 Filterfunktion für Dropdown (Offene Spiele)
 function filterOpenGamesDropdown() {
     const selectedTeam = document.getElementById("open-games-filter").value.toLowerCase();
     const rows = document.getElementById("open-games-content").getElementsByTagName("tr");
@@ -677,7 +669,7 @@ function filterOpenGamesDropdown() {
     }
 }
 
-// Automatisch alle Teams in das Dropdown einfügen
+// 🔄 Dropdown automatisch mit Teams befüllen
 async function populateTeamDropdown() {
     const url = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:json&sheet=Teams`;
     try {
@@ -696,12 +688,11 @@ async function populateTeamDropdown() {
             dropdown.appendChild(option);
         });
     } catch (error) {
-        console.error("Fehler beim Laden der Teams:", error);
+        console.error("Fehler beim Laden der Teams für Dropdown:", error);
     }
 }
 </script>
 
-    </script>
 
 </body>
 </html>

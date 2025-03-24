@@ -232,8 +232,7 @@ const finalGames = [
   { type: "Kleines Finale",   match: "klein",  teams: kleinFinale }
 ];
 
-// Ergebnisse aus Google Sheet zuordnen
-let winners = [];
+
 
 finalGames.forEach(game => {
   const entry = finaleData.find(row => row[0] === game.type);

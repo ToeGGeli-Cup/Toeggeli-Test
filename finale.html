@@ -178,4 +178,26 @@
         podest.innerHTML = "";
 
         for (let i = 1; i <= 4; i++) {
-          const
+          const team = finalWinners[i - 1] || "";
+          const div = document.createElement("div");
+          div.className = "card";
+          div.innerHTML = `
+            <div class="icon ${medals[i].class}">${medals[i].icon}</div>
+            <div><strong>${medals[i].label}</strong></div>
+            <div class="team">${team}</div>`;
+          podest.appendChild(div);
+        }
+
+      } catch (e) {
+        console.error("Fehler beim Laden der Finaldaten:", e);
+      }
+    }
+
+    window.onload = () => {
+      updateCountdown();
+      setInterval(updateCountdown, 60000);
+      showFinals();
+    };
+  </script>
+</body>
+</html>

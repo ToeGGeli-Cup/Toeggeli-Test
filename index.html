@@ -362,7 +362,9 @@ tr.rank-good td {
   <div class="section-container">
 
         <!-- 🔍 Filterfeld für offene Spiele -->
-    <input type="text" id="open-games-filter" placeholder="Suche nach Teamname..." onkeyup="filterOpenGames()" />
+   <select id="open-games-filter" onchange="filterOpenGamesDropdown()">
+  <option value="">Alle Teams</option>
+</select>
     <div class="table-container">
       <table>
         <thead>
@@ -608,6 +610,7 @@ document.querySelector(".rules-link").addEventListener("click", function() {
       
     // 👉 Standard-Tab: Resultate
     showTab('finished-games');
+      populateTeamDropdown();
 };
     function showTab(tabName) {
     // Tab-Inhalte ausblenden
@@ -656,6 +659,47 @@ function filterOpenGames() {
         }
     }
 }
+<script>
+function filterOpenGamesDropdown() {
+    const selectedTeam = document.getElementById("open-games-filter").value.toLowerCase();
+    const rows = document.getElementById("open-games-content").getElementsByTagName("tr");
+
+    for (let row of rows) {
+        const cells = row.getElementsByTagName("td");
+        const team1 = cells[0]?.textContent.toLowerCase();
+        const team2 = cells[2]?.textContent.toLowerCase();
+
+        if (selectedTeam === "" || team1.includes(selectedTeam) || team2.includes(selectedTeam)) {
+            row.style.display = "";
+        } else {
+            row.style.display = "none";
+        }
+    }
+}
+
+// Automatisch alle Teams in das Dropdown einfügen
+async function populateTeamDropdown() {
+    const url = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:json&sheet=Teams`;
+    try {
+        const response = await fetch(url);
+        const text = await response.text();
+        const json = JSON.parse(text.substr(47).slice(0, -2));
+        const data = json.table.rows.map(row => row.c[0]?.v).filter(Boolean);
+
+        const dropdown = document.getElementById("open-games-filter");
+        const uniqueTeams = [...new Set(data)].sort();
+
+        uniqueTeams.forEach(team => {
+            const option = document.createElement("option");
+            option.value = team;
+            option.textContent = team;
+            dropdown.appendChild(option);
+        });
+    } catch (error) {
+        console.error("Fehler beim Laden der Teams:", error);
+    }
+}
+</script>
 
     </script>
 

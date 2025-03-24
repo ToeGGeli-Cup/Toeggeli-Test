@@ -382,7 +382,10 @@ tr.rank-good td {
  
 
     <!-- 🔍 Filterfeld -->
-    <input type="text" id="result-filter" placeholder="Suche nach Teamname..." onkeyup="filterResults()" />
+  <!-- 🔍 Dropdown-Filterfeld -->
+<select id="result-filter" onchange="filterResultsDropdown()">
+  <option value="">Alle Teams</option>
+</select>
 
     <div class="table-container">
       <table>
@@ -616,11 +619,8 @@ function showTab(tabName) {
     document.getElementById(`${tabName}-tab`).style.display = 'block';
     document.querySelector(`.tab-button[onclick*="${tabName}"]`).classList.add('active');
 }
-
-// 🔍 Filterfunktion für Resultate (Textfeld)
-function filterResults() {
-    const input = document.getElementById("result-filter");
-    const filter = input.value.toLowerCase();
+function filterResultsDropdown() {
+    const selectedTeam = document.getElementById("result-filter").value.toLowerCase();
     const rows = document.getElementById("finished-games-content").getElementsByTagName("tr");
 
     for (let row of rows) {
@@ -628,7 +628,7 @@ function filterResults() {
         const team1 = cells[0]?.textContent.toLowerCase();
         const team2 = cells[2]?.textContent.toLowerCase();
 
-        if (team1.includes(filter) || team2.includes(filter)) {
+        if (selectedTeam === "" || team1.includes(selectedTeam) || team2.includes(selectedTeam)) {
             row.style.display = "";
         } else {
             row.style.display = "none";
@@ -654,7 +654,22 @@ function filterOpenGamesDropdown() {
     }
 }
 
-// 🔄 Dropdown automatisch mit Teams befüllen
+// auch für das zweite Dropdown befüllen
+const resultDropdown = document.getElementById("result-filter");
+
+uniqueTeams.forEach(team => {
+    const option1 = document.createElement("option");
+    option1.value = team;
+    option1.textContent = team;
+    dropdown.appendChild(option1); // Offene Spiele
+
+    const option2 = document.createElement("option");
+    option2.value = team;
+    option2.textContent = team;
+    resultDropdown.appendChild(option2); // Resultate
+});
+
+        // 🔄 Dropdown automatisch mit Teams befüllen
 async function populateTeamDropdown() {
     const url = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:json&sheet=Teams`;
     try {

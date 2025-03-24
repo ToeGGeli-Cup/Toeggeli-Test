@@ -609,19 +609,7 @@ document.querySelector(".rules-link").addEventListener("click", function() {
     showTab('finished-games');
       populateTeamDropdown();
 };
-    function showTab(tabName) {
-    // Tab-Inhalte ausblenden
-    document.querySelectorAll('.tab-content').forEach(tab => tab.style.display = 'none');
-
-    // Buttons deaktivieren
-    document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
-
-    // Aktives Tab und Button anzeigen
-    document.getElementById(`${tabName}-tab`).style.display = 'block';
-    document.querySelector(`.tab-button[onclick*="${tabName}"]`).classList.add('active');
-}
-
-
+ 
 function showTab(tabName) {
     document.querySelectorAll('.tab-content').forEach(tab => tab.style.display = 'none');
     document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));

@@ -135,36 +135,41 @@
   margin: 10px 0;
   font-weight: bold;
 }
-    .back-button {
+.back-wrapper {
+  margin: 50px 0 30px;
+}
+
+.back-button {
   display: inline-block;
-  margin-top: 10px;
-  padding: 10px 20px;
-  background-color: #FFD700;
-  color: #333;
+  background-color: #D81B60;
+  color: white;
+  padding: 12px 24px;
+  font-size: 16px;
   font-weight: bold;
-  text-decoration: none;
   border-radius: 8px;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.3);
-  transition: background-color 0.3s;
+  text-decoration: none;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+  transition: background-color 0.3s ease;
 }
 
 .back-button:hover {
-  background-color: #FFC107;
+  background-color: #b1154f;
 }
+
 
 
   </style>
 </head>
 <body>
   <h1>Finalspiele - TöGGeli-Cup 2025</h1>
-  <div style="margin-top: 15px;">
-  <a href="index.html" class="back-button">⏪ Zurück zur Vorrunde</a>
-</div>
+ 
   <div class="countdown" id="countdown">Finaltag wird geladen...</div>
 <div class="pairings" id="final-matchups"></div>
 <div id="results"></div>
 <div class="podium" id="podium"></div>
-
+<div class="back-wrapper">
+  <a href="index.html" class="back-button">⏪ Zurück zur Vorrunde</a>
+</div>
 
 <script>
 const sheetId = "1qUf-YbZCdAwf5aHhdMRa2yrrqn1WRTNeZhDOwTYTPgk";

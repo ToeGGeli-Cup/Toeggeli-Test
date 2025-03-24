@@ -211,7 +211,6 @@ async function renderFinale() {
   const results = document.getElementById("results");
   const podium = document.getElementById("podium");
 
-  // Finalpaarungen
   matchups.innerHTML = `
     <div class="pairing-card">
       <h2>🏆 Finalpaarungen (Stand heute)</h2>
@@ -220,7 +219,6 @@ async function renderFinale() {
     </div>
   `;
 
-  // Finalspiele vorbereiten
   const finalGames = [
     { type: "Grosses Finale 1", match: "finale", teams: grossFinale },
     { type: "Grosses Finale 2", match: "finale", teams: grossFinale },
@@ -231,13 +229,14 @@ async function renderFinale() {
   const resultCards = [];
   let winners = [];
 
-  // Sieg-Zähler für Best-of-3
   let siegeGrossFinale = {
     [grossFinale[0]]: 0,
     [grossFinale[1]]: 0
   };
 
-  finalGames.forEach(game => {
+  let finaleFinished = false;
+
+  for (const game of finalGames) {
     const entry = finaleData.find(row => row[0] === game.type);
     const t1 = game.teams[0];
     const t2 = game.teams[1];
@@ -249,6 +248,15 @@ async function renderFinale() {
     }
 
     const showScore = score1 !== "" && score2 !== "";
+
+    // 🛑 Skip Grosses Finale 3 wenn schon 2 Siege
+    if (
+      game.type === "Grosses Finale 3" &&
+      (siegeGrossFinale[t1] >= 2 || siegeGrossFinale[t2] >= 2)
+    ) {
+      continue;
+    }
+
     const displayT1 = showScore ? `${t1} (${score1})` : t1;
     const displayT2 = showScore ? `${t2} (${score2})` : t2;
 
@@ -274,19 +282,19 @@ async function renderFinale() {
         winners.push({ match: "klein", winner: g1 > g2 ? t1 : t2, loser: g1 > g2 ? t2 : t1 });
       }
     }
-  });
+  }
 
   results.innerHTML = resultCards.join("");
 
-  // Sieger im Grossen Finale bestimmen, wenn 2 Siege erreicht
-  const bestOf3Winner = Object.entries(siegeGrossFinale).find(([team, siege]) => siege >= 2);
+  // ✅ Sieger bestimmen, wenn einer 2 Siege hat im Grossen Finale
+  const bestOf3Winner = Object.entries(siegeGrossFinale).find(([team, wins]) => wins >= 2);
   if (bestOf3Winner) {
-    const [sieger, _] = bestOf3Winner;
+    const [sieger] = bestOf3Winner;
     const loser = Object.keys(siegeGrossFinale).find(t => t !== sieger);
     winners.push({ match: "finale", winner: sieger, loser: loser });
   }
 
-  // Podium anzeigen
+  // 🏅 Podest setzen
   let finalPlatz = ["", "", "", ""];
   const finaleRes = winners.find(w => w.match === "finale");
   const kleinRes = winners.find(w => w.match === "klein");

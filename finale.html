@@ -28,11 +28,32 @@
       font-weight: bold;
     }
 
+    .finale-info {
+      margin: 20px auto;
+      background-color: #fff;
+      color: #000;
+      border-radius: 12px;
+      padding: 20px;
+      width: 90%;
+      max-width: 600px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.2);
+    }
+
+    .finale-info h2 {
+      margin-top: 0;
+      color: #D81B60;
+    }
+
+    .matchup {
+      margin: 10px 0;
+      font-size: 18px;
+    }
+
     .finale-container {
       display: flex;
       flex-wrap: wrap;
       justify-content: center;
-      margin: 20px auto;
+      margin: 30px auto;
       gap: 20px;
       max-width: 1200px;
     }
@@ -42,7 +63,7 @@
       color: #333;
       border-radius: 15px;
       padding: 20px;
-      width: 270px;
+      width: 250px;
       box-shadow: 0 0 10px rgba(0,0,0,0.2);
       position: relative;
     }
@@ -66,9 +87,10 @@
       font-size: 18px;
     }
 
-    .score {
-      font-size: 16px;
-      margin: 5px 0;
+    .note {
+      font-style: italic;
+      color: #ccc;
+      margin-top: 20px;
     }
 
     @media screen and (max-width: 768px) {
@@ -80,159 +102,156 @@
 </head>
 <body>
 
-<h1>Finalspiele - TöGGeli-Cup 2025</h1>
-<div class="countdown" id="countdown">Finaltag wird geladen...</div>
+  <h1>Finalspiele - TöGGeli-Cup 2025</h1>
+  <div class="countdown" id="countdown">Finaltag wird geladen...</div>
 
-<!-- Finalpaarungen -->
-<div class="finale-container" id="pairings-container"></div>
+  <!-- 🏆 Finalpaarungen "Stand heute" -->
+  <div class="finale-info" id="matchups">
+    <h2>Finalpaarungen (Stand heute)</h2>
+    <div class="matchup" id="grosses-finale">Großes Finale: ...</div>
+    <div class="matchup" id="kleines-finale">Kleines Finale: ...</div>
+  </div>
 
-<!-- Platzierungen -->
-<div class="finale-container" id="ranking-container"></div>
+  <!-- 🥇🥈🥉🎖 Medaillen-Platzierung -->
+  <div class="finale-container" id="finale-cards">
+    <!-- Karten werden per JS geladen -->
+  </div>
 
-<script>
-  const sheetId = "1qUf-YbZCdAwf5aHhdMRa2yrrqn1WRTNeZhDOwTYTPgk";
+  <script>
+    const sheetId = "1qUf-YbZCdAwf5aHhdMRa2yrrqn1WRTNeZhDOwTYTPgk";
 
-  const finaleIcons = {
-    "1": "🥇",
-    "2": "🥈",
-    "3": "🥉",
-    "4": "🎖️"
-  };
+    const finaleIcons = {
+      "1": "🥇",
+      "2": "🥈",
+      "3": "🥉",
+      "4": "🎖️"
+    };
 
-  const finaleColors = {
-    "1": "gold",
-    "2": "silver",
-    "3": "bronze",
-    "4": "medal"
-  };
+    const finaleColors = {
+      "1": "gold",
+      "2": "silver",
+      "3": "bronze",
+      "4": "medal"
+    };
 
-  function updateCountdown() {
-    const finaleDay = new Date("2025-06-17T12:00:00");
-    const now = new Date();
-    const diff = finaleDay - now;
+    function updateCountdown() {
+      const finaleDay = new Date("2025-06-17T12:00:00"); // Finaltag
+      const now = new Date();
+      const diff = finaleDay - now;
 
-    const days = Math.ceil(diff / (1000 * 60 * 60 * 24));
-    document.getElementById("countdown").innerText =
-      diff <= 0
-        ? "🏁 Der Finaltag ist da!"
-        : `Finaltag in ${days} Tag(en)!`;
-  }
-
-  async function getTop4FromRanking() {
-    const url = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:json&sheet=Spiele`;
-    try {
-      const res = await fetch(url);
-      const text = await res.text();
-      const json = JSON.parse(text.substr(47).slice(0, -2));
-      const data = json.table.rows.map(row => row.c.map(cell => cell ? cell.v : ""));
-
-      let ranking = {};
-      data.forEach(row => {
-        const [team1, score1, team2, score2] = row;
-        if (!(team1 in ranking)) ranking[team1] = { team: team1, points: 0, games: 0, goals: 0, conceded: 0 };
-        if (!(team2 in ranking)) ranking[team2] = { team: team2, points: 0, games: 0, goals: 0, conceded: 0 };
-
-        if (score1 !== "" && score2 !== "") {
-          ranking[team1].games++;
-          ranking[team2].games++;
-          ranking[team1].goals += parseInt(score1);
-          ranking[team2].goals += parseInt(score2);
-          ranking[team1].conceded += parseInt(score2);
-          ranking[team2].conceded += parseInt(score1);
-          if (parseInt(score1) > parseInt(score2)) ranking[team1].points += 1;
-          if (parseInt(score2) > parseInt(score1)) ranking[team2].points += 1;
-        }
-      });
-
-      return Object.values(ranking)
-        .sort((a, b) =>
-          b.points - a.points ||
-          (b.goals - b.conceded) - (a.goals - a.conceded) ||
-          b.goals - a.goals
-        )
-        .slice(0, 4)
-        .map(team => team.team);
-
-    } catch (e) {
-      console.error("Fehler beim Laden der Rangliste:", e);
-      return [];
+      const days = Math.ceil(diff / (1000 * 60 * 60 * 24));
+      document.getElementById("countdown").innerText =
+        diff <= 0
+          ? "🏁 Der Finaltag ist da!"
+          : `Finaltag in ${days} Tag(en)!`;
     }
-  }
 
-  async function loadFinaleData(top4) {
-    const url = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:json&sheet=Finale`;
-    try {
-      const res = await fetch(url);
-      const text = await res.text();
-      const json = JSON.parse(text.substr(47).slice(0, -2));
-      const data = json.table.rows.map(row => row.c.map(cell => cell ? cell.v : ""));
+    async function getTop4FromRanking() {
+      const url = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:json&sheet=Spiele`;
+      try {
+        const res = await fetch(url);
+        const text = await res.text();
+        const json = JSON.parse(text.substr(47).slice(0, -2));
+        const data = json.table.rows.map(row => row.c.map(cell => cell ? cell.v : ""));
 
-      const pairings = document.getElementById("pairings-container");
-      const ranking = document.getElementById("ranking-container");
-      pairings.innerHTML = "";
-      ranking.innerHTML = "";
+        let ranking = {};
+        data.forEach(row => {
+          const [team1, score1, team2, score2] = row;
+          if (!(team1 in ranking)) ranking[team1] = { team: team1, points: 0, games: 0, goals: 0, conceded: 0 };
+          if (!(team2 in ranking)) ranking[team2] = { team: team2, points: 0, games: 0, goals: 0, conceded: 0 };
 
-      let finalTeams = ["", "", "", ""]; // 0–1: Gross, 2–3: Klein
-
-      data.forEach(row => {
-        const [typ, t1, g1, t2, g2] = row;
-        if (!t1 || !t2) return;
-
-        // Paarungsanzeige
-        const card = document.createElement("div");
-        card.className = "card";
-        card.innerHTML = `
-          <h3>${typ}</h3>
-          <div class="team">${t1} ${g1 !== "" ? "(" + g1 + ")" : ""}</div>
-          <div class="score">vs</div>
-          <div class="team">${t2} ${g2 !== "" ? "(" + g2 + ")" : ""}</div>
-        `;
-        pairings.appendChild(card);
-
-        // Wenn Ergebnis vorhanden, bestimme Platzierungen
-        if (g1 !== "" && g2 !== "") {
-          const goals1 = parseInt(g1);
-          const goals2 = parseInt(g2);
-          if (typ.toLowerCase().includes("gross")) {
-            finalTeams[goals1 > goals2 ? 0 : 1] = t1;
-            finalTeams[goals1 > goals2 ? 1 : 0] = t2;
-          } else if (typ.toLowerCase().includes("klein")) {
-            finalTeams[goals1 > goals2 ? 2 : 3] = t1;
-            finalTeams[goals1 > goals2 ? 3 : 2] = t2;
+          if (score1 !== "" && score2 !== "") {
+            ranking[team1].games++;
+            ranking[team2].games++;
+            ranking[team1].goals += parseInt(score1);
+            ranking[team2].goals += parseInt(score2);
+            ranking[team1].conceded += parseInt(score2);
+            ranking[team2].conceded += parseInt(score1);
+            if (parseInt(score1) > parseInt(score2)) ranking[team1].points += 1;
+            if (parseInt(score2) > parseInt(score1)) ranking[team2].points += 1;
           }
-        }
-      });
+        });
 
-      // Wenn Platzierungen bekannt, anzeigen
-      if (finalTeams.filter(t => t).length === 4) {
-        const labels = ["Sieger", "Finalist", "3. Platz", "4. Platz"];
-        finalTeams.forEach((team, i) => {
+        return Object.values(ranking)
+          .sort((a, b) =>
+            b.points - a.points ||
+            (b.goals - b.conceded) - (a.goals - a.conceded) ||
+            b.goals - a.goals
+          )
+          .slice(0, 4)
+          .map(team => team.team);
+
+      } catch (e) {
+        console.error("Fehler beim Laden der Rangliste:", e);
+        return ["?", "?", "?", "?"];
+      }
+    }
+
+    async function loadFinaleGames(top4) {
+      const url = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:json&sheet=Finale`;
+      try {
+        const res = await fetch(url);
+        const text = await res.text();
+        const json = JSON.parse(text.substr(47).slice(0, -2));
+        const data = json.table.rows.map(row => row.c.map(cell => cell ? cell.v : ""));
+
+        // Default: keine Ergebnisse
+        let finalTeams = [...top4];
+
+        // Ergebnisse prüfen
+        data.forEach(row => {
+          const [typ, team1, g1, team2, g2] = row;
+          if (!team1 || !team2 || g1 === "" || g2 === "") return;
+
+          const score1 = parseInt(g1);
+          const score2 = parseInt(g2);
+
+          if (typ.toLowerCase().includes("gross")) {
+            finalTeams[score1 > score2 ? 0 : 1] = team1;
+            finalTeams[score1 > score2 ? 1 : 0] = team2;
+          }
+          if (typ.toLowerCase().includes("klein")) {
+            finalTeams[score1 > score2 ? 2 : 3] = team1;
+            finalTeams[score1 > score2 ? 3 : 2] = team2;
+          }
+        });
+
+        // Platzierungs-Karten rendern
+        const container = document.getElementById("finale-cards");
+        container.innerHTML = "";
+
+        for (let i = 0; i < 4; i++) {
           const card = document.createElement("div");
           card.className = "card";
+
           card.innerHTML = `
             <div class="icon ${finaleColors[i + 1]}">${finaleIcons[i + 1]}</div>
-            <h3>${labels[i]}</h3>
-            <div class="team">${team}</div>
+            <h3>Platz ${i + 1}</h3>
+            <div class="team">${finalTeams[i] || "—"}</div>
           `;
-          ranking.appendChild(card);
-        });
+
+          container.appendChild(card);
+        }
+
+        // Paarungen "Stand heute"
+        document.getElementById("grosses-finale").innerHTML = `🥇 ${top4[0]} vs 🥈 ${top4[1]}`;
+        document.getElementById("kleines-finale").innerHTML = `🥉 ${top4[2]} vs 🎖️ ${top4[3]}`;
+
+      } catch (e) {
+        console.error("Fehler beim Laden der Finaldaten:", e);
       }
-
-    } catch (e) {
-      console.error("Fehler beim Laden der Finaldaten:", e);
     }
-  }
 
-  async function init() {
-    updateCountdown();
-    setInterval(updateCountdown, 60000);
+    async function init() {
+      updateCountdown();
+      setInterval(updateCountdown, 60000);
 
-    const top4 = await getTop4FromRanking();
-    await loadFinaleData(top4);
-  }
+      const top4 = await getTop4FromRanking();
+      await loadFinaleGames(top4);
+    }
 
-  window.onload = init;
-</script>
+    window.onload = init;
+  </script>
 
 </body>
 </html>

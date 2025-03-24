@@ -199,6 +199,7 @@ async function getTop4Teams() {
     .slice(0, 4)
     .map(t => t.team);
 }
+
 async function renderFinale() {
   const top4 = await getTop4Teams();
   const finaleData = await fetchSheet("Finale");
@@ -210,67 +211,95 @@ async function renderFinale() {
   const results = document.getElementById("results");
   const podium = document.getElementById("podium");
 
-  // 🆕 Finalpaarungen (nur Teamnamen, keine Medaillen)
-matchups.innerHTML = `
-  <div class="pairing-card">
-    <h2>🏆 Finalpaarungen (Stand heute)</h2>
-    <p><strong>Um Platz 1 spielen:</strong><br>${grossFinale[0]} vs ${grossFinale[1]}</p>
-    <p><strong>Um Platz 3 spielen:</strong><br>${kleinFinale[0]} vs ${kleinFinale[1]}</p>
-  </div>
-`;
+  // Finalpaarungen
+  matchups.innerHTML = `
+    <div class="pairing-card">
+      <h2>🏆 Finalpaarungen (Stand heute)</h2>
+      <p><strong>Um Platz 1 spielen:</strong><br>${grossFinale[0]} vs ${grossFinale[1]}</p>
+      <p><strong>Um Platz 3 spielen:</strong><br>${kleinFinale[0]} vs ${kleinFinale[1]}</p>
+    </div>
+  `;
 
+  // Finalspiele vorbereiten
+  const finalGames = [
+    { type: "Grosses Finale 1", match: "finale", teams: grossFinale },
+    { type: "Grosses Finale 2", match: "finale", teams: grossFinale },
+    { type: "Grosses Finale 3", match: "finale", teams: grossFinale },
+    { type: "Kleines Finale",   match: "klein",  teams: kleinFinale }
+  ];
 
-
-  // 🏁 Ergebnisse anzeigen
   const resultCards = [];
   let winners = [];
-// 🏁 Finalpartien vorbereiten
-const finalGames = [
-  { type: "Grosses Finale 1", match: "finale", teams: grossFinale },
-  { type: "Grosses Finale 2", match: "finale", teams: grossFinale },
-  { type: "Grosses Finale 3", match: "finale", teams: grossFinale },
-  { type: "Kleines Finale",   match: "klein",  teams: kleinFinale }
-];
 
+  // Sieg-Zähler für Best-of-3
+  let siegeGrossFinale = {
+    [grossFinale[0]]: 0,
+    [grossFinale[1]]: 0
+  };
 
+  finalGames.forEach(game => {
+    const entry = finaleData.find(row => row[0] === game.type);
+    const t1 = game.teams[0];
+    const t2 = game.teams[1];
+    let score1 = "", score2 = "";
 
-finalGames.forEach(game => {
-  const entry = finaleData.find(row => row[0] === game.type);
-  const t1 = game.teams[0];
-  const t2 = game.teams[1];
-  let score1 = "", score2 = "";
+    if (entry && entry[1] && entry[3]) {
+      score1 = entry[2] || "";
+      score2 = entry[4] || "";
+    }
 
-  if (entry && entry[1] && entry[3]) {
-    score1 = entry[2] || "";
-    score2 = entry[4] || "";
-  }
+    const showScore = score1 !== "" && score2 !== "";
+    const displayT1 = showScore ? `${t1} (${score1})` : t1;
+    const displayT2 = showScore ? `${t2} (${score2})` : t2;
 
-  const showScore = score1 !== "" && score2 !== "";
-  const displayT1 = showScore ? `${t1} (${score1})` : t1;
-  const displayT2 = showScore ? `${t2} (${score2})` : t2;
+    resultCards.push(`
+      <div class="result-card">
+        <div><strong>${game.type}</strong></div>
+        <div>${displayT1}</div>
+        <div>vs</div>
+        <div>${displayT2}</div>
+      </div>
+    `);
 
-  resultCards.push(`
-    <div class="result-card">
-      <div><strong>${game.type}</strong></div>
-      <div>${displayT1}</div>
-      <div>vs</div>
-      <div>${displayT2}</div>
-    </div>
-  `);
+    if (showScore) {
+      const g1 = parseInt(score1);
+      const g2 = parseInt(score2);
 
+      if (game.match === "finale") {
+        if (g1 > g2) siegeGrossFinale[t1]++;
+        if (g2 > g1) siegeGrossFinale[t2]++;
+      }
+
+      if (game.match === "klein") {
+        winners.push({ match: "klein", winner: g1 > g2 ? t1 : t2, loser: g1 > g2 ? t2 : t1 });
+      }
+    }
   });
 
   results.innerHTML = resultCards.join("");
 
-  // 🏆 PODIUM ANZEIGEN – nur bei vollständigem Ergebnis
-  let finalPlatz = ["", "", "", ""]; // Platz 1 bis 4
-  if (winners.length >= 2) {
-    const f = winners.find(w => w.match === "finale");
-    const k = winners.find(w => w.match === "klein");
-    finalPlatz = [f.winner, f.loser, k.winner, k.loser];
+  // Sieger im Grossen Finale bestimmen, wenn 2 Siege erreicht
+  const bestOf3Winner = Object.entries(siegeGrossFinale).find(([team, siege]) => siege >= 2);
+  if (bestOf3Winner) {
+    const [sieger, _] = bestOf3Winner;
+    const loser = Object.keys(siegeGrossFinale).find(t => t !== sieger);
+    winners.push({ match: "finale", winner: sieger, loser: loser });
   }
 
-  // 🏅 Medaillen-Karten
+  // Podium anzeigen
+  let finalPlatz = ["", "", "", ""];
+  const finaleRes = winners.find(w => w.match === "finale");
+  const kleinRes = winners.find(w => w.match === "klein");
+
+  if (finaleRes && kleinRes) {
+    finalPlatz = [
+      finaleRes.winner,
+      finaleRes.loser,
+      kleinRes.winner,
+      kleinRes.loser
+    ];
+  }
+
   const cards = finalPlatz.map((team, idx) => `
     <div class="podium-card">
       <div class="icon ${colors[idx + 1]}">${icons[idx + 1]}</div>
@@ -281,7 +310,7 @@ finalGames.forEach(game => {
   podium.innerHTML = cards.join("");
 }
 
-// 🚀 Init-Funktion beim Laden
+// Start
 window.onload = () => {
   updateCountdown();
   setInterval(updateCountdown, 60000);

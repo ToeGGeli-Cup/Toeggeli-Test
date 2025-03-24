@@ -259,18 +259,6 @@ finalGames.forEach(game => {
     </div>
   `);
 
-  // Nur für finale Wertung zählen
-  if (showScore) {
-    const g1 = parseInt(score1);
-    const g2 = parseInt(score2);
-    if (game.match === "finale") {
-      winners.push({ match: "finale", winner: g1 > g2 ? t1 : t2, loser: g1 > g2 ? t2 : t1 });
-    } else if (game.match === "klein") {
-      winners.push({ match: "klein", winner: g1 > g2 ? t1 : t2, loser: g1 > g2 ? t2 : t1 });
-    }
-  }
-});
-
   });
 
   results.innerHTML = resultCards.join("");
